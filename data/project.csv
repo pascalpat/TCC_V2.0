@@ -1,0 +1,6 @@
+project_number,user_id,project_name,status,start_date,end_date
+24-401,101,Montreal New City Hall Development,active,2024-01-01,2024-12-31
+24-402,201,Mirabel Airport Extension,active,2024-01-15,2024-10-15
+24-403,301,Quebec City Library,inactive,2023-01-01,2023-12-31
+24-404,101,Trois Riviere Lithium Plant,not_started,2024-06-01,2025-06-01
+24-405,201,Sept-Iles Hydro Plant,active,2024-03-01,2024-12-31

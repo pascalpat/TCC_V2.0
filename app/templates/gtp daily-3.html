@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Daily Report - Tabbed Projects</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 1rem;
+    }
+    .project-tab {
+      margin: 1rem 0;
+      border: 1px solid #ccc;
+      padding: 1rem;
+    }
+    h1, h2 {
+      margin-bottom: 0.5rem;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+    }
+    select, input[type="number"], input[type="date"], input[type="text"] {
+      width: 100%;
+    }
+    .small-input {
+      width: 60px; /* to keep hours short */
+    }
+    .project-section {
+      display: none; /* hide by default */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Daily Report (Tabbed / Sub-Forms)</h1>
+  <div>
+    <label for="reportDate">Date:</label>
+    <input type="date" id="reportDate" value=""><br><br>
+
+    <label for="weather">Weather (opt):</label>
+    <input type="text" id="weather" placeholder="e.g. Sunny, 25°C">
+  </div>
+
+  <h2>Select Projects Worked On</h2>
+  <div>
+    <label>
+      <input type="checkbox" class="projectCheck" value="10"> Project A
+    </label>
+    <br>
+    <label>
+      <input type="checkbox" class="projectCheck" value="11"> Project B
+    </label>
+    <br>
+    <label>
+      <input type="checkbox" class="projectCheck" value="12"> Project C
+    </label>
+    <br>
+    <button type="button" onclick="createProjectTabs()">Load Selected Projects</button>
+  </div>
+
+  <!-- Container for the sub-forms -->
+  <div id="projectsContainer"></div>
+
+  <!-- Worker hour totals across all projects -->
+  <h3>Worker Total Hours</h3>
+  <div id="workerTotals"></div>
+
+  <button type="button" onclick="submitAll()">Submit Daily Report</button>
+
+  <script>
+    // Example data:
+    const projectsMap = {
+      '10': 'Project A',
+      '11': 'Project B',
+      '12': 'Project C'
+    };
+    const workersList = [
+      {id: 101, name: 'John'},
+      {id: 102, name: 'Jane'}
+    ];
+    const activityCodes = [
+      {id: 501, code: 'AC-10'},
+      {id: 502, code: 'AC-20'}
+    ];
+    const tasksList = [
+      {id: 601, name: 'Task A'},
+      {id: 602, name: 'Task B'}
+    ];
+    const paymentItemsList = [
+      {id: 701, name: 'P-Item 1'},
+      {id: 702, name: 'P-Item 2'}
+    ];
+
+    function createProjectTabs() {
+      // Clear the container
+      const container = document.getElementById('projectsContainer');
+      container.innerHTML = '';
+
+      // For each checked project, create a sub-form
+      const checks = document.querySelectorAll('.projectCheck:checked');
+      checks.forEach(check => {
+        const projectId = check.value;
+        const projectName = projectsMap[projectId] || 'Unknown';
+
+        // Create a div to hold the sub-form
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'project-section';
+        sectionDiv.id = `projectSection_${projectId}`;
+
+        // Build the HTML
+        sectionDiv.innerHTML = `
+          <div class="project-tab">
+            <h2>${projectName}</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Worker</th>
+                  <th>Activity Code (opt)</th>
+                  <th>Task (opt)</th>
+                  <th>Payment Item (opt)</th>
+                  <th>Hours</th>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody id="tbody_${projectId}">
+                <!-- Rows inserted here -->
+              </tbody>
+            </table>
+            <button type="button" onclick="addRow('${projectId}')">Add Row</button>
+          </div>
+        `;
+        container.appendChild(sectionDiv);
+
+        // By default, show the newly created section
+        sectionDiv.style.display = 'block';
+
+        // Optionally add a default row
+        addRow(projectId);
+      });
+    }
+
+    function addRow(projectId) {
+      const tbody = document.getElementById(`tbody_${projectId}`);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select class="workerName" onchange="updateWorkerTotals()">
+            <option value="">-- Select Worker --</option>
+            ${workersList.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Activity Code --</option>
+            ${activityCodes.map(a => `<option value="${a.id}">${a.code}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Task --</option>
+            ${tasksList.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Payment Item --</option>
+            ${paymentItemsList.map(pi => `<option value="${pi.id}">${pi.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" class="small-input hoursInput" step="0.5" placeholder="0" oninput="updateWorkerTotals()">
+        </td>
+        <td>
+          <button type="button" onclick="this.closest('tr').remove(); updateWorkerTotals();">X</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function updateWorkerTotals() {
+      // Go through all project sections, sum up hours by worker
+      const totals = {};
+
+      const allworkerNames = document.querySelectorAll('.workerName');
+      allworkerNames.forEach(select => {
+        const row = select.closest('tr');
+        const workerId = select.value;
+        const hoursInput = row.querySelector('.hoursInput');
+        const hrs = parseFloat(hoursInput?.value) || 0;
+
+        if (workerId) {
+          if (!totals[workerId]) totals[workerId] = 0;
+          totals[workerId] += hrs;
+        }
+      });
+
+      // Display totals
+      const workerTotalsDiv = document.getElementById('workerTotals');
+      workerTotalsDiv.innerHTML = '';
+
+      Object.keys(totals).forEach(workerId => {
+        const workerName = workersList.find(w => w.id == workerId)?.name || workerId;
+        workerTotalsDiv.innerHTML += `<div>${workerName}: ${totals[workerId]} hrs</div>`;
+      });
+    }
+
+    function submitAll() {
+      // Gather data from each project's table, etc.
+      alert('Daily report (multiple projects) submitted (demo).');
+    }
+  </script>
+
+</body>
+</html>

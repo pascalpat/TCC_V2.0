@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Daily Report - Single Table Approach</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 1rem;
+    }
+    h1, h2 {
+      margin-bottom: 0.5rem;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+      vertical-align: middle;
+    }
+    select, input[type="number"], input[type="date"], input[type="text"] {
+      width: 100%;
+    }
+    .small-input {
+      width: 60px;  /* for a quick hours input */
+    }
+    .right-align {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Daily Report (Single Table)</h1>
+
+  <!-- Basic info: date, maybe weather -->
+  <div class="section">
+    <label for="reportDate">Date: </label>
+    <input type="date" id="reportDate" name="reportDate" value=""><br><br>
+
+    <label for="weather">Weather (optional): </label>
+    <input type="text" id="weather" name="weather" placeholder="e.g. Sunny, 25°C">
+  </div>
+
+  <!-- Single big table for all daily entries -->
+  <h2>Daily Entries</h2>
+  <div class="section">
+    <table id="dailyEntriesTable">
+      <thead>
+        <tr>
+          <th>Worker</th>
+          <th>Project</th>
+          <th>Activity Code (opt)</th>
+          <th>Task (opt)</th>
+          <th>Payment Item (opt)</th>
+          <th>Hours</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows added dynamically -->
+      </tbody>
+    </table>
+    <button type="button" onclick="addEntryRow()">Add Entry Row</button>
+  </div>
+
+  <!-- Some place to show total hours by worker (optional) -->
+  <h3>Worker Hour Totals</h3>
+  <div id="workerTotals"></div>
+
+  <!-- Submit button -->
+  <button type="button" onclick="submitDailyReport()">Submit Daily Report</button>
+
+  <script>
+    // Example dimension data
+    const projectsList = [
+      {id: 10, name: 'Project A'},
+      {id: 11, name: 'Project B'},
+      {id: 12, name: 'Project C'}
+    ];
+    const workersList = [
+      {id: 101, name: 'John'},
+      {id: 102, name: 'Jane'}
+    ];
+    const activityCodes = [
+      {id: 501, code: 'AC-10'},
+      {id: 502, code: 'AC-20'}
+    ];
+    const tasksList = [
+      {id: 601, name: 'Task A'},
+      {id: 602, name: 'Task B'}
+    ];
+    const paymentItemsList = [
+      {id: 701, name: 'P-Item 1'},
+      {id: 702, name: 'P-Item 2'}
+    ];
+
+    function addEntryRow() {
+      const tbody = document.querySelector('#dailyEntriesTable tbody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select class="workerName" onchange="updateWorkerTotals()">
+            <option value="">-- Select Worker --</option>
+            ${workersList.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Project --</option>
+            ${projectsList.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Activity Code --</option>
+            ${activityCodes.map(a => `<option value="${a.id}">${a.code}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Task --</option>
+            ${tasksList.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Payment Item --</option>
+            ${paymentItemsList.map(pi => `<option value="${pi.id}">${pi.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" class="small-input hoursInput" step="0.5" placeholder="0" oninput="updateWorkerTotals()">
+        </td>
+        <td>
+          <button type="button" onclick="this.closest('tr').remove(); updateWorkerTotals();">X</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function updateWorkerTotals() {
+      // Tally hours by worker
+      const rows = document.querySelectorAll('#dailyEntriesTable tbody tr');
+      const totals = {};
+
+      rows.forEach(row => {
+        const workerName = row.querySelector('.workerName');
+        const hoursInput = row.querySelector('.hoursInput');
+        const workerId = workerName?.value;
+        const hrs = parseFloat(hoursInput?.value) || 0;
+
+        if (workerId) {
+          if (!totals[workerId]) totals[workerId] = 0;
+          totals[workerId] += hrs;
+        }
+      });
+
+      // Display results
+      const workerTotalsDiv = document.getElementById('workerTotals');
+      workerTotalsDiv.innerHTML = '';
+      Object.keys(totals).forEach(workerId => {
+        const workerName = workersList.find(w => w.id == workerId)?.name || workerId;
+        workerTotalsDiv.innerHTML += `<div>${workerName}: ${totals[workerId]} hours</div>`;
+      });
+    }
+
+    function submitDailyReport() {
+      // Gather all data from the form...
+      alert('Daily report submitted (demo).');
+    }
+
+    // On page load, add a row or two by default
+    window.onload = () => {
+      addEntryRow();
+      addEntryRow();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# Python-specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+env/
+.env
+# Virtual environments
+venv/
+
+# User uploads and sessions
+uploads/
+flask_session/
+
+# Backup files
+backup/
+*.tmp
+
+# IDE files
+.vscode/
+*.code-workspace
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Project data files
+*.xlsx
+*.pdf
+
+*.sqlite3

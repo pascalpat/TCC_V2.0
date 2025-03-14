@@ -1,0 +1,100 @@
+
+Total Cost Control (TCC) App Development Plan
+=============================================
+
+Phase 1: Core Foundation
+-------------------------
+1. Data Collection Workflow
+   - Build a tabbed interface with sections for:
+     - Workers
+     - Equipment
+     - Materials
+     - Subcontractors
+     - General Notes
+     - Work Orders
+     - Pictures of the Day
+   - Each tab includes:
+     - A form on the left for data entry.
+     - A dynamically populated table on the right displaying entered data.
+   - Data entry flow:
+     1. User fills the form.
+     2. On submission, data is added to the table and form is reset.
+     3. Once all entries are done, the user confirms the tab, marking it as complete in a progress bar.
+   - A final confirmation button appears when all tabs are complete to finalize the daily report.
+
+2. Backend Data Handling
+   - Modularize routes for different data types (e.g., workers_routes.py, materials_routes.py).
+   - Implement a shared backend route for activity codes.
+   - Use CSV files as temporary storage for:
+     - Workers (employees).
+     - Equipment.
+     - Materials.
+     - Subcontractors.
+     - General Notes.
+
+3. Data Validation
+   - Create validation functions in utils/validation.py.
+   - Ensure no duplicate entries in temporary tables unless intentionally allowed (e.g., the same worker performing multiple activities).
+
+4. Progress Tracking
+   - Implement server-side tracking to:
+     - Allow users to leave and return without losing progress.
+     - Sync progress across devices.
+
+Phase 2: Data Management
+-------------------------
+1. Final Report Generation
+   - Aggregate and save all data into a project_data file with:
+     - Timestamp.
+     - Project number.
+     - All entries from different tabs, organized by activity codes.
+
+2. Editing and Deletion
+   - Allow users to modify or delete entries before finalizing the report.
+
+3. File Structure
+   - Standardize file and folder names for consistency (e.g., use workers.csv for employees).
+   - Modularize backend code into subfolders:
+     - routes: All route-related files.
+     - data: CSV files for different data types.
+     - utils: Validation and helper functions.
+
+Phase 3: Frontend Enhancements
+------------------------------
+1. UI/UX Improvements
+   - Keep forms and tables visually minimalistic to reduce intimidation.
+   - Include intuitive buttons for actions like "Add Entry" and "Confirm Tab."
+
+2. Responsive Design
+   - Optimize the layout for mobile and tablet users, focusing on ease of use in the field.
+
+3. Speech-to-Text Integration
+   - Prioritize speech as a primary input method to simplify data entry for foremen.
+
+Phase 4: Advanced Features
+---------------------------
+1. AI Integration
+   - Implement AI-driven insights, such as:
+     - Auto-suggestions for activity codes based on past entries.
+     - Detecting anomalies in reported data.
+
+2. IoT Compatibility
+   - Plan for future integration of IoT devices for equipment tracking as a modular add-on.
+
+3. Dashboard and Analytics
+   - Provide summary dashboards for:
+     - Daily activity breakdowns.
+     - Cost estimates per activity code.
+     - Project-wide performance metrics.
+
+Phase 5: Final Refinement
+-------------------------
+1. Feedback and Testing
+   - Conduct user testing with foremen and project managers.
+   - Gather feedback to refine UI, UX, and workflows.
+
+2. Documentation
+   - Document all code modules, workflows, and UI components.
+
+3. Deployment
+   - Deploy the app on a scalable platform like Azure for multi-user access.

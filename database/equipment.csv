@@ -1,0 +1,8 @@
+id,equipment_id,name,serial_number,assigned_to,assigned_project_id,maintenance_status,hourly_rate,last_maintenance_date,next_maintenance_date,latitude,longitude,device_id,telemetry_data,created_at,updated_at
+1,,,,,,,,,,,,,,,
+2,BU-06,"BU-06_Bouteur Moyen (750, D6, D61 )_KOMATSU D61PX
+",12341324f523r3q,,,operational,120.0,2024-12-01,2025-03-01,,,,,2025-01-06,
+3,L-25,"L-25_Chargeur sur roues_TAKEUCHI TW95C
+",67h63f6u457g6766,,,operational,125.0,2024-12-01,2025-03-01,,,,,2025-01-07,
+4,PE-45,"PE-45_Excavatrice 35 Tonnes_KOMATSU PC360
+",654654we5tvfdg541654,,,operational,200.0,2024-12-01,2025-03-01,,,,,2025-01-07,

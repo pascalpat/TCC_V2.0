@@ -1,0 +1,107 @@
+/* Layout for form and table */
+.form-table-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Styling the form box */
+.form-box {
+    width: 40%;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif; /* ✅ Ensuring same font */
+}
+
+.form-box h2 {
+    font-size: 22px; /* ✅ Matched size */
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Styling the inputs and labels in the form */
+.form-box label {
+    font-size: 16px; /* ✅ Match Worker/Equipment Tab */
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-box input, 
+.form-box select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px; /* ✅ Ensure uniform font size */
+    height: 55px; /* ✅ Match input height */
+}
+
+/* Buttons */
+.button-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: Arial, sans-serif; /* ✅ Match button font */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Table Containers (Ensures same structure for both tabs) */
+#workersTableContainer, #materialsTableContainer {
+    width: 50%;
+}
+
+/* Tables Styling (Ensures both tables look the same) */
+#workersTable, #materialsTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    font-family: Arial, sans-serif; /* ✅ Ensuring both tables use the same font */
+    font-size: 20px; /* ✅ Match font size in both tables */
+}
+
+#workersTable thead, #materialsTable thead {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+#workersTable th, #materialsTable th {
+    padding: 12px;
+    text-align: left;
+}
+
+/* ✅ Fix Thin Row Issue */
+#workersTable td, #materialsTable td {
+    padding: 15px; /* ✅ Increased padding */
+    border: 1px solid #ddd;
+    font-size: 25px; /* ✅ Ensuring text consistency */
+}
+
+/* ✅ Ensure row height is correct */
+#workersTable tr, #materialsTable tr {
+    height: 50px; /* ✅ Increased row height for better visibility */
+}

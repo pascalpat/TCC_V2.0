@@ -1,0 +1,2 @@
+id,work_order_id,worker_id,task_id,activity_code_id,hours_worked,date,description,labor_cost,equipement_cost,subcontractor_cost,service_cost,total_cost,progress_percentage,created_at,updated_at,updated_by,status
+1,1,2,,8,10.0,,,,,,,,,,,,

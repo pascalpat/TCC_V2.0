@@ -1,0 +1,151 @@
+<!-- templates/combined_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Workers + Equipment Combined</title>
+</head>
+<body>
+  <h3>Project {{ project_id }} - Date {{ date_of_report }}</h3>
+
+  <table id="combinedTable" border="1">
+    <thead>
+      <tr>
+        <th>Type</th> <!-- emp/eq -->
+        <th>Worker</th>
+        <th>Equipment</th>
+        <th>Pension</th>
+        <th>Transport1</th>
+        <th>Transport2</th>
+        {% for ac in activity_codes %}
+          <th>Hours ({{ ac.code }})</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <!-- We'll start with 1 or 2 blank rows. The user can add more in JS. -->
+      <tr>
+        <td>
+          <select name="row_type">
+            <option value="emp">emp</option>
+            <option value="eq">eq</option>
+          </select>
+        </td>
+        <td>
+          <!-- Worker dropdown; only used if type=emp -->
+          <select name="worker_id">
+            <option value="">--Select Worker--</option>
+            {% for w in all_workers %}
+              <option value="{{w.id}}">{{ w.name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td>
+          <!-- Equipment dropdown; only used if type=eq -->
+          <select name="equipment_id">
+            <option value="">--Select Equipment--</option>
+            {% for e in all_equipment %}
+              <option value="{{ e.id }}">{{ e.name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td>
+          <select name="pension">
+            <option value="n/a">n/a</option>
+            <option value="yes">yes</option>
+            <option value="no">no</option>
+          </select>
+        </td>
+        <td>
+          <select name="transport1">
+            <option value="n/a">n/a</option>
+            <option value="yes">yes</option>
+            <option value="no">no</option>
+          </select>
+        </td>
+        <td>
+          <select name="transport2">
+            <option value="n/a">n/a</option>
+            <option value="yes">yes</option>
+            <option value="no">no</option>
+          </select>
+        </td>
+        
+        {% for ac in activity_codes %}
+          <td>
+            <input type="number" step="0.5" name="hours_{{ ac.id }}" />
+          </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+  
+  <button id="addRowBtn">Add Row</button>
+  <button id="submitBtn">Submit All</button>
+
+  <script>
+    // 1) Let user add more rows
+    document.getElementById("addRowBtn").addEventListener("click", function() {
+      const tableBody = document.querySelector("#combinedTable tbody");
+      const newRow = tableBody.rows[0].cloneNode(true); // or build a new <tr> from scratch
+      // Clear out any values
+      newRow.querySelectorAll("input, select").forEach(el => {
+        if(el.tagName === "SELECT") el.value = "n/a";
+        else el.value = "";
+      });
+      tableBody.appendChild(newRow);
+    });
+    
+    // 2) On submit, gather JSON
+    document.getElementById("submitBtn").addEventListener("click", function() {
+      const rows = document.querySelectorAll("#combinedTable tbody tr");
+      let payload = [];
+      rows.forEach(row => {
+        const row_type = row.querySelector('select[name="row_type"]').value;
+        
+        // Grab worker/equipment
+        const worker_id = row.querySelector('select[name="worker_id"]').value;
+        const equipment_id = row.querySelector('select[name="equipment_id"]').value;
+
+        const pension = row.querySelector('select[name="pension"]').value;
+        const transport1 = row.querySelector('select[name="transport1"]').value;
+        const transport2 = row.querySelector('select[name="transport2"]').value;
+
+        let rowData = {
+          row_type, 
+          worker_id, 
+          equipment_id, 
+          pension, transport1, transport2,
+          activity_hours: {}
+        };
+
+        // gather hours
+        {% for ac in activity_codes %}
+        const acHours = row.querySelector('input[name="hours_{{ac.id}}"]').value;
+        if(acHours) {
+          rowData.activity_hours["{{ac.id}}"] = parseFloat(acHours);
+        }
+        {% endfor %}
+        
+        payload.push(rowData);
+      });
+      console.log("Submitting payload: ", payload);
+
+      fetch("/combined/submit", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if(data.error) {
+          alert("Error: " + data.error);
+        } else {
+          alert("Successfully saved!");
+        }
+      })
+      .catch(err => console.error("Submit error:", err));
+    });
+  </script>
+</body>
+</html>

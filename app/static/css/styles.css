@@ -1,0 +1,636 @@
+
+    /* General Settings */
+    .logo {
+        height: 70px; /* Adjust logo height as needed */
+    }
+
+    .left-info, .center-info, .right-info {
+        flex: 1;
+        
+    }
+    
+    .left-info {
+        flex: 1; /* Ensure that the left section takes some space */
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Center Heading */
+    .center-info h1 {
+        flex: 2; /* Ensure the center takes more space */
+        text-align: center;
+        font-size: 30px;
+        color: #007bff;
+    }
+    
+    /* Right Info Styling */
+    .right-info {
+    flex: 1; /* Ensure the right section takes some space */
+    text-align: center;
+    text-wrap: wrap;
+    font-size: 25px; /* Adjust the font size */
+    }
+
+    #logoutButton {
+        background-color: #ebb239;
+        color: white;
+        padding: 10px 30px;
+        border: 3px solid #e40707;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 30px;
+    }
+    
+    #logoutButton:hover {
+        background-color: #5fbd6b;
+    }
+    /* Styling for project selection below the header */
+    .project-selection {
+            display: flex;
+            font-size: 40px !important;
+            justify-content: center !important;
+            align-items: center; 
+            width: 85%;
+            background-color: #71a6eb85 !important;
+            padding: 10px; /* Add some padding for spacing around the dropdown */
+            margin: 0px auto;
+            border-radius: 8px; /* Make it slightly rounded */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+        }
+
+    .project-selection label {
+        font-size: 40px !important;
+        font-weight: bold; /* Make the label text bold for emphasis */
+        color: #007bff !important;/* Change label color to contrast with the background */
+        margin-right: 10px; /* Add some space between label and select box */
+    }
+
+    .project-selection select {
+        width: 400px !important;
+        font-size: 80px !important;
+        zoom: 1.5;
+        background-color: #eff5ef !important;
+        padding: 8px;
+        color: #333 !important;/* Darker text for contrast */
+        border: 2px solid #007bff; /* Border matching the container background */
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a shadow to the select box */
+        cursor: pointer; /* Change the cursor to pointer on hover */
+        transition: background-color 0.3s, border-color 0.3s ease-in-out; /* Smooth transition */
+        
+    }
+
+    /* Styling for the date selector */
+    .project-selection input[type="date"],
+    .project-selection input[type="text"] {
+        width: 260px;
+        font-size: 20px;
+        zoom: 1.5;
+        background-color: #eff5ef !important;
+        padding: 8px;
+        color: #333 !important;
+        border: 2px solid #007bff;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-left: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s ease-in-out;
+    }
+    /* Change the background and border color on hover */
+    .project-selection select:hover, 
+    .project-selection input[type="date"]:hover {
+        background-color: #eba8b3; /* Make the background lighter on hover */
+        border-color: #f1081c; /* Change the border color on hover */
+    }
+
+    /* Focus effect when the user selects the dropdown */
+    .project-selection select:focus, 
+    .project-selection input[type="date"]:focus {
+        outline: none;
+        background-color: #f04360; /* Highlight background when in focus */
+        border-color: #181716;
+    }
+
+    #weatherIcon {
+        vertical-align: middle;
+        width: 50px;
+        height: 75px;
+        margin-right: 5px;
+    }
+    .submit-container {
+        display:flex;
+        justify-content:center;
+        align-self: flex-end;
+        text-align: center; /* This will center the button horizontally */
+        margin-top: 20px;
+        position: relative;
+        bottom: 0; /* Ensures it stays at the bottom of the form or container */
+    }
+    
+    .date-selection {
+        margin-top: 10px;
+    }
+    
+    .date-selection label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    #submitReportBtn {
+        width: 50px;
+        height: 20 px;
+        font-size: 16px;
+        margin-left: 15px; /* Space between select and button */
+        background-color: #b87333;
+        color: rgb(252, 4, 4);
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease; /* Smooth transition on hover */
+    }
+    
+    #submitReportBtn:hover {
+        background-color: #45a049;
+    }
+
+    
+            
+    /* Progress Bar Styling */
+    .progress-bar {
+        width: 0%;
+        height: 20px;
+        background: linear-gradient(135deg, #85ecb0 0%, #15c765 100%);
+        transition: width 0.5s ease; /* Smooth transition for progress */
+        
+            
+    }
+
+    .progress-container {
+        width: 100%;
+        background-color: hsl(116, 22%, 87%);
+        border-radius: 20px;
+        height: 20px;
+        overflow: hidden;
+        animation: progressAnimation 5s forwards;
+    }
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: -20px;
+        width: 100px;
+        height: 10px;
+        animation: progressAnimation 5s forwards;
+        background-color: #11a554;
+        clip-path: polygon(100% 50%, 0% 100%, 0% 0%); /* The triangular arrow at the end */
+
+        
+    }
+    /* When the progress is complete, it remains green */
+    .progress-bar.complete {
+        background-color: #4caf50; /* Maintain green color */
+    }
+    /* Optional: Arrow effect during progress */
+    @keyframes progressAnimation {
+        from {
+            width: 0%;
+        }
+        to {
+            width: 100%;
+        }
+    }
+
+   
+
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 5px;
+        background-color: #71a6eb85;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 5;
+    }
+
+    .tab {
+        display: flex;
+        justify-content: space-between;
+        padding: 0px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+
+    .tab button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 4px 10px;
+        transition: 0.3s;
+        font-size: 25px;
+        border-radius: 5px 5px 0 0;
+        flex: 1 1 auto; /* Flex properties for equal button width */
+        margin: 2px;
+    }
+
+    .tab button:hover {
+        background-color: #0056b3;
+    }
+
+    .tab button.active {
+        background-color: #fff;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .tab button.completed {
+        background-color: #28a745;
+    }
+
+    .tabcontent {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-top: none;
+        background-color: #fff;
+        margin-top: 20px; /* Space between tabs and content */
+    }
+
+    .tabcontent.active {
+        display: block;
+    }
+
+    .tab-status {
+        font-size: 1.2em;
+        color: green;
+        margin-left: 5px;
+        display: none; /* Hidden by default */
+    }
+    
+    .tab-status.completed {
+        display: inline; /* Show only when the tab is completed */
+    }
+
+
+    /* Corporate-style buttons */
+    button {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 25px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        background-color: #1320dd; /* Darker green on hover */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-box {
+        position: sticky;
+        border: 2px solid #ccc; /* Border around the form */
+        border-radius: 10px; /* Rounded corners */
+        padding: 20px; /* Space inside the box */
+        margin-bottom: 10px; /* Space around the box */
+        margin-top: 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow */
+        background-color: #f9f9f9; /* Background color */
+        width: 35%;
+    }
+
+    /* Increase the size of label titles in the entry form */
+    .form-box label {
+        font-size: 30px; /* Adjust the size as needed */
+        font-weight: bold; /* Make it bold for better visibility */
+        color: #333; /* Adjust the color if necessary */
+    }
+
+    /* Increase font size for the labels in the worker form */
+    #WorkersForm label {
+        font-size: 30px !important;
+        
+        /* font-weight: bold !important; /* Make the text bold for better readability */
+        /*color: #333 !important; /* Darker color for better contrast */
+        /*margin-bottom: 5px; /* Add some space below each label */
+        /*display: block; /* Ensure labels take full width */
+    }
+    
+    form #workerName, form #laborHours, form #activityCode {
+        font-size: 30px !important;
+        width: 100% !important;
+    }
+    form #laborHours {
+        font-size: 20px !important;
+        width: 100% !important;
+    }
+
+    form #activityCode {
+        font-size: 20px !important;
+        width: 100% !important;
+    }
+    /* Increase font size for the input and select fields */
+    #WorkersForm input, #WorkersForm select {
+        font-size: 25px !important;
+        padding: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important; /* Ensure padding is included in the width */
+        /* margin-bottom: 10px !important;/* Space between fields */
+    }
+
+    #workersTable {
+        width: 100%; /* Make the table take up full width */
+        border-collapse: collapse;
+        border: 1px solid #ddd; /* Add border to the table */
+    }
+
+    #workersTable th, #workersTable td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        font-size: 25px;
+    }
+
+    /* Adjust the specific width for the Hours Worked column */
+    #workersTable td:nth-child(2), #workersTable th:nth-child(2) {
+        width: 150px; /* Set a custom width for the Hours Worked column */
+    }
+
+    #addWorkerBtn, #confirmWorkersBtn {
+        margin-top: 10px;
+        display: inline-block;
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    /* Ensure the 'Ajouter Employé' button has appropriate font size */
+    #addWorkerBtn {
+        font-size: 22px !important; /* Force larger font size for the button */
+        background-color: #007bff;
+       
+    }
+
+
+    /* Styling the Confirm Workers Button */
+    #confirmWorkersBtn {
+        display: block;
+        margin: 10px 0;
+        background-color: #4caf50;
+    
+    }
+        
+    #confirmWorkersBtn:hover, #addWorkerBtn:hover {
+        background-color: #45a049;
+    }
+    
+    /* Styles for the image previews */
+    .image-preview {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .image-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    
+    .workerEntry, .materialEntry, .equipmentEntry, .subcontractorEntry, .workOrderEntry {
+        margin-bottom: 10px; /* Space between dynamic entries */
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9; /* Light background for sections */
+    }
+
+    /* Adjusting layout for form and table */
+    .form-table-container {
+        display: flex;               /* Flexbox to display form and table side by side */
+        justify-content: space-between; /* Ensure space between form and table */
+        gap: 20px;                    /* Space between form and table */
+        
+    }
+    
+    /* Ensure both form and table take up appropriate space */
+    .form-container {
+        flex-grow: 1;
+        width: 25%;
+        margin: 10px;
+    }
+    
+    /* Form and table will still take up space even if empty */
+    #workersTableContainer, .form-container {
+        flex: 1;
+        margin: 10px;
+        min-height: 500px;           /* Ensure there's a minimum height for both sections */
+    }
+
+    #workersTableContainer {
+        flex-grow: 2px;
+        max-height: 800px; /* Adjust this to your desired height */
+        overflow-y: auto; /* Enable scrolling */
+        min-width: 300px;                  /* The table will take up 50% of the container */
+    }
+
+    /* Styling for the check mark */
+    .check-mark {
+        font-size:20px; /* Increase the size of the check mark */
+        color: #fd020f; /* Green color */
+        font-weight: bold; /* Make it bolder */
+        margin-left: 5px;
+        vertical-align: middle;
+        display: inline;
+    }
+
+    /* Optional: Add some animation or effects to make it stand out */
+    .check-mark::before {
+        content: "✔"; /* Unicode for check mark */
+        display: block;
+        animation: pulse 1s infinite; /* Add a pulsing effect */
+    }
+
+    /* Pulse animation */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+
+    .footer-container {
+        display: flex;
+        justify-content: space-between; /* Center the button */
+        align-items: center;
+        background-color: #f8f9fa;
+        width: 100%;
+        position: fixed; /* Keep the footer always visible at the bottom */
+        bottom: 0;
+        left: 0;
+        padding: 0;
+    }
+    .footer-left {
+        flex: 1; /* Left side takes space */
+        text-align: left; /* Align copyright to the left */
+    }
+
+    .footer-center {
+        flex: 1; /* Center part */
+        display: flex;
+        justify-content: center;
+        
+    }
+        
+    /* Responsive styles for mobile devices */
+    @media only screen and (max-width: 600px) {
+        .logo {
+        height: 40px; /* Adjust logo height as needed */
+        }
+
+        
+
+        .left-info, .center-info, .right-info {
+        flex: 1;
+        }
+        
+        .left-info {
+        text-align: left;
+        
+        }
+        
+
+        .right-info {
+            text-align: center;
+            display: block;
+            font-size: 8px;
+        }
+        
+        .center-info h1 {
+        font-size: 13px;
+        color: #007bff;
+        text-align: left;
+        }
+
+        
+        /* Styling for project selection below the header */
+        .project-selection {
+            display: flex;
+            justify-content: center !important;
+            align-items: center; 
+            margin-top: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            background-color: #aa4a12 !important;
+            padding: 10px; /* Add some padding for spacing around the dropdown */
+            border-radius: 8px; /* Make it slightly rounded */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+        }
+
+        .project-selection label {
+            font-size: 25px !important;
+            font-weight: bold; /* Make the label text bold for emphasis */
+            color: #fff !important;/* Change label color to contrast with the background */
+            margin-right: 10px; /* Add some space between label and select box */
+        }
+
+        .project-selection select {
+            width: 150px !important;;
+            font-size: 25px !important;
+            background-color: #e98e06 !important;
+            padding: 10px;
+            color: #333 !important;/* Darker text for contrast */
+            border: 2px solid #aa4a12; /* Border matching the container background */
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a shadow to the select box */
+            cursor: pointer; /* Change the cursor to pointer on hover */
+            
+        }
+
+        /* Change the background and border color on hover */
+        .project-selection select:hover {
+            background-color: #ffc107; /* Make the background lighter on hover */
+            border-color: #ff9800; /* Change the border color on hover */
+        }
+
+        /* Focus effect when the user selects the dropdown */
+        .project-selection select:focus {
+            outline: none;
+            background-color: #ffd54f; /* Highlight background when in focus */
+            border-color: #ff9800;
+        }
+
+        /* Basic styles */
+        .body {
+        margin-top: 10px; /* Adjust this based on the height of your header */
+        align-items: center;
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e0e4e8 100%);
+        color: #333;
+                    
+        }
+
+        h1 {
+        text-align: center;
+        color: #007bff;
+        
+        } 
+        
+        .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        margin-top: 0px;
+        flex-direction: column;
+        text-align: center;
+        
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4caf50; /* Green color */
+            border-radius: 20px;
+        }
+
+        
+        .tabcontent {
+            padding: 8px; /* Less padding on mobile */
+        }
+
+        
+        .image-preview img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+    }

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Report Entry</title>
+  <style>
+    /* Just some quick styling for readability */
+    body { font-family: Arial, sans-serif; margin: 1rem; }
+    h2 { margin-top: 2rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+    .section { margin-bottom: 2rem; }
+    input[type="text"], input[type="number"], input[type="date"], select {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Basic Info -->
+  <h1>Daily Report</h1>
+  <div class="section">
+    <label for="projectSelect">Project:</label><br>
+    <!-- Could auto-fill if user picks it once at login -->
+    <select id="projectSelect" name="project_id">
+      <option value="">-- Select Project --</option>
+      <option value="10">Project #10</option>
+      <option value="11">Project #11</option>
+      <!-- ... -->
+    </select>
+
+    <br><br>
+
+    <label for="reportDate">Date:</label><br>
+    <!-- Could default to today's date -->
+    <input type="date" id="reportDate" name="report_date" value="">
+
+    <br><br>
+
+    <label for="weather">Weather (optional):</label><br>
+    <!-- Quick free-text or a simple dropdown for “Sunny, Cloudy” etc. -->
+    <input type="text" id="weather" name="weather" placeholder="e.g. Sunny, 25°C">
+  </div>
+
+  <!-- 2. Worker Hours -->
+  <h2>Worker Hours</h2>
+  <div class="section" id="workerHoursSection">
+    <table id="workerHoursTable">
+      <thead>
+        <tr>
+          <th>Worker</th>
+          <th>Activity Code (optional)</th>
+          <th>Task (optional)</th>
+          <th>Payment Item (optional)</th>
+          <th>Hours Worked</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be added dynamically -->
+      </tbody>
+    </table>
+    <button type="button" onclick="addWorkerRow()">Add Worker Row</button>
+  </div>
+
+  <!-- 3. Equipment Usage -->
+  <h2>Equipment Usage</h2>
+  <div class="section">
+    <table id="equipmentTable">
+      <thead>
+        <tr>
+          <th>Equipment</th>
+          <th>Activity Code (optional)</th>
+          <th>Task (optional)</th>
+          <th>Payment Item (optional)</th>
+          <th>Hours Used</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows added dynamically -->
+      </tbody>
+    </table>
+    <button type="button" onclick="addEquipmentRow()">Add Equipment Row</button>
+  </div>
+
+  <!-- 4. Materials -->
+  <h2>Materials</h2>
+  <div class="section">
+    <table id="materialsTable">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Activity Code (optional)</th>
+          <th>Task (optional)</th>
+          <th>Payment Item (optional)</th>
+          <th>Quantity Used</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows added dynamically -->
+      </tbody>
+    </table>
+    <button type="button" onclick="addMaterialsRow()">Add Material Row</button>
+  </div>
+
+  <!-- 5. Notes or Attachments -->
+  <h2>Additional Notes</h2>
+  <div class="section">
+    <label for="notes">Notes / Observations:</label><br>
+    <textarea id="notes" name="notes" rows="4" style="width:100%"></textarea>
+  </div>
+
+  <!-- 6. Submit Button -->
+  <button type="button" onclick="submitDailyReport()">Submit Daily Report</button>
+
+  <script>
+    // Example data for demonstration
+    const workersList = [
+      {id: 101, name: 'John Doe'},
+      {id: 102, name: 'Jane Smith'},
+      // ...
+    ];
+    const equipmentList = [
+      {id: 201, name: 'Excavator L-45'},
+      {id: 202, name: 'Bulldozer D-7'},
+      // ...
+    ];
+    const materialsList = [
+      {id: 301, name: 'Concrete'},
+      {id: 302, name: 'Rebar'},
+      // ...
+    ];
+    const activityCodes = [
+      {id: 501, code: 'AC-10'},
+      {id: 502, code: 'AC-20'},
+      // ...
+    ];
+    const tasksList = [
+      {id: 601, name: 'Task A'},
+      {id: 602, name: 'Task B'},
+      // ...
+    ];
+    const paymentItemsList = [
+      {id: 701, name: 'P-Item 1'},
+      {id: 702, name: 'P-Item 2'},
+      // ...
+    ];
+
+    function addWorkerRow() {
+      const tableBody = document.querySelector('#workerHoursTable tbody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td>
+          <select>
+            <option value="">-- Select Worker --</option>
+            ${workersList.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Activity Code --</option>
+            ${activityCodes.map(ac => `<option value="${ac.id}">${ac.code}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Task --</option>
+            ${tasksList.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Payment Item --</option>
+            ${paymentItemsList.map(pi => `<option value="${pi.id}">${pi.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" step="0.5" placeholder="Hours Worked">
+        </td>
+        <td>
+          <button type="button" onclick="this.closest('tr').remove()">X</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    }
+
+    function addEquipmentRow() {
+      const tableBody = document.querySelector('#equipmentTable tbody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td>
+          <select>
+            <option value="">-- Select Equipment --</option>
+            ${equipmentList.map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Activity Code --</option>
+            ${activityCodes.map(ac => `<option value="${ac.id}">${ac.code}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Task --</option>
+            ${tasksList.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Payment Item --</option>
+            ${paymentItemsList.map(pi => `<option value="${pi.id}">${pi.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" step="0.5" placeholder="Hours Used">
+        </td>
+        <td>
+          <button type="button" onclick="this.closest('tr').remove()">X</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    }
+
+    function addMaterialsRow() {
+      const tableBody = document.querySelector('#materialsTable tbody');
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td>
+          <select>
+            <option value="">-- Select Material --</option>
+            ${materialsList.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Activity Code --</option>
+            ${activityCodes.map(ac => `<option value="${ac.id}">${ac.code}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Select Task --</option>
+            ${tasksList.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select>
+            <option value="">-- Payment Item --</option>
+            ${paymentItemsList.map(pi => `<option value="${pi.id}">${pi.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="number" step="0.1" placeholder="Quantity Used">
+        </td>
+        <td>
+          <button type="button" onclick="this.closest('tr').remove()">X</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    }
+
+    function submitDailyReport() {
+      // Here you’d gather all inputs and send them to the server via fetch/axios or a form POST
+      alert('Daily report submitted (demo).');
+    }
+
+    // Optionally auto-add a single row for each category on page load:
+    window.onload = () => {
+      addWorkerRow();
+      addEquipmentRow();
+      addMaterialsRow();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestion de projet — TCC App{% endblock %}</title>
+    <!-- Base styles for header, footer, and general layout -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-container">
+            <div class="left-info">
+                <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+            </div>
+            <div class="center-info">
+                <h1>Gestion de projet — Module Rapport Journalier</h1>
+            </div>
+            <div class="right-info">
+                <p>Bonjour, {{ user_id }}</p>
+                <a href="{{ url_for('auth_bp.logout') }}" id="logoutButton">Log Out</a>
+                <div style="display: flex; align-items: center;">
+                    <img id="weatherIcon" alt="Weather Icon">
+                    <span id="currentTemperature"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 MyCompany — Tous droits réservés.</p>
+    </footer>
+
+    <!-- Additional Scripts -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

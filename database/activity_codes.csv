@@ -1,0 +1,9 @@
+id,code,project_id,cwp,description,unit,std_man_hours_per_unit,created_at
+1,,,,,,,
+2,1313,,,Gestion de projet,hrs,1.0,2025-01-07
+3,1521,,,Bureaux de chantier/sanitaire,,,2025-01-07
+4,31000,,,Excavations,m3,0.03,2025-01-07
+5,32111,,,Clotures et barrieres,ml,,2025-01-07
+6,33000,,,Egouts et aqueducs,ml,1.0,2024-01-07
+7,33011,,,Aqueduc,ml,0.8,2024-01-07
+8,80001,,,deplacement des roulottes de chantier,,,

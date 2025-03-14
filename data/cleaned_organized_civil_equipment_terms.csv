@@ -1,0 +1,27 @@
+User Input,Correct Term,Category
+Niveleuse,Niveleuse,Equipement
+Grader,Niveleuse,Equipement
+Grador,Niveleuse,Equipement
+Bouteur,Bouteur,Equipement
+Bull,Bouteur,Equipement
+Chargeur,Chargeur ,Equipement
+Chargeur sur roues,Chargeur sur roues,Equipement
+Chargeur sur pneus,Chargeur sur roues,Equipement
+Chargeuse  ,Chargeur ,Equipement
+Chargeuse sur pneus,Chargeur sur roues,Equipement
+Chargeur sur roues,Chargeur sur roues,Equipement
+Loader,Chargeur ,Equipement
+Loader sur pneus,Chargeur sur roues,Equipement
+Loader sur roues,Chargeur sur roues,Equipement
+Chargeur sur chenille,Chargeur sur chenilles,Equipement
+Chargeur sur track,Chargeur sur chenilles,Equipement
+Chargeuse sur chenille,Chargeur sur chenilles,Equipement
+Chargeuse sur track,Chargeur sur chenilles,Equipement
+Tracteur sur pneus,Tractor sur pneus,Equipement
+Pelle  ,Excavatrice,Equipement
+Pelle hydraulique,Excavatrice,Equipement
+Excavatrice,Excavatrice,Equipement
+Grue hydraulique,Grue,Equipement
+Rouleau compresseur,Rouleau compresseur,Equipement
+Rouleau sur roues,Rouleau compresseur,Equipement
+Rouleau compacteur,Rouleau compresseur,Equipement

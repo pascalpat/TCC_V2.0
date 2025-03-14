@@ -1,0 +1,206 @@
+{% block title %}Gestion de projet{% endblock %}
+
+{% block head %}
+    <!-- Microsoft Speech SDK -->
+    <!-- Note: This script is loaded as type="module" but it won't affect the openTab function -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main_imports.js') }}" defer></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+      /* Basic styles for tab content */
+      .tabcontent {
+          display: none;
+      }
+      .tablinks.active {
+          font-weight: bold;
+      }
+    </style>
+
+    <!-- IMPORTANT: Define openTab in a non-module <script> so it’s in global scope -->
+    <script>
+      function openTab(evt, tabName) {
+          console.log("openTab called for tab:", tabName);
+          // Hide all .tabcontent
+          var tabcontent = document.getElementsByClassName("tabcontent");
+          for (var i = 0; i < tabcontent.length; i++) {
+              tabcontent[i].style.display = "none";
+          }
+          // Remove the "active" class from all .tablinks
+          var tablinks = document.getElementsByClassName("tablinks");
+          for (var i = 0; i < tablinks.length; i++) {
+              tablinks[i].classList.remove("active");
+          }
+          // Show the chosen tab
+          var activeTab = document.getElementById(tabName);
+          if (activeTab) {
+              activeTab.style.display = "block";
+          } else {
+              console.error("Tab content with id '" + tabName + "' not found.");
+          }
+          // Mark the clicked button as active
+          evt.currentTarget.classList.add("active");
+      }
+    </script>
+{% endblock %}
+
+{% block content %}
+<header>
+    <div class="header-container">
+        <div class="left-info">
+            <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+        </div>
+        <div class="center-info">
+            <h1>Gestion de projet -- Module Rapport Journalier</h1>
+        </div>
+        <div class="right-info">
+            <p>Bonjour, {% if username %}{{ username }}{% else %}Utilisateur{% endif %}</p>
+            <a href="{{ url_for('auth_bp.logout') }}" id="logoutButton" style="color: red; font-weight: bold;">Log Out</a>
+            <span id="currentDate"></span><br>
+            <img id="weatherIcon" alt="Weather Icon" style="vertical-align: middle; width: 50px; height: 50px; margin-right: 5px;">
+            <span id="currentTemperature"></span>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+<body>
+    <!-- Tab Navigation -->
+    <div class="tab">
+        <button class="tablinks" id="tabLaborEquipment" onclick="openTab(event, 'LaborEquipment')">
+            Empl/Equip. <span class="tab-status" id="laborequipment"></span>
+        </button>
+        <button class="tablinks" id="tabMaterials" onclick="openTab(event, 'Materials')">
+            Matériaux <span class="tab-status" id="statusmaterials"></span>
+        </button>
+        <button class="tablinks" id="tabSubcontractors" onclick="openTab(event, 'Subcontractors')">
+            Sous-traitants <span class="tab-status" id="statusSubcontractors"></span>
+        </button>
+        <button class="tablinks" id="tabNotes" onclick="openTab(event, 'Notes')">
+            Notes du jour <span class="tab-status" id="statusNotes"></span>
+        </button>
+        <button class="tablinks" id="tabWorkOrders" onclick="openTab(event, 'WorkOrders')">
+            Bons de travail <span class="tab-status" id="statusWorkOrders"></span>
+        </button>
+        <button class="tablinks" id="tabPictures" onclick="openTab(event, 'Pictures')">
+            Photos du jour <span class="tab-status" id="statusPictures"></span>
+        </button>
+        <button id="submitReportBtn" class="btn btn-primary" style="display:none;">Submit Report</button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <hr>
+
+    <!-- Project and Date Selection -->
+    <div class="project-selection">
+        <label for="projectNumber">Projet Actif:</label>
+        <input type="text" id="projectNumber" value="{{ project_id }}" readonly>
+        <label for="dateSelector" style="margin-left: 20px;">Date active:</label>
+        <input type="date" id="dateSelector" value="{{ report_date }}" readonly>
+        <a href="/calendar" id="viewCalendarLink" style="margin-left: 80px; text-decoration: none; color: blue; font-weight: bold;">
+            Changer Date
+        </a>
+    </div>
+    <hr>
+
+    <!-- Materials Tab Content -->
+    <div id="Materials" class="tabcontent">
+        <h3>Matériaux</h3>
+        <div id="materialsForm">
+            <label for="materialName">Nom du Matériel:</label>
+            <input type="text" id="materialName">
+            <label for="materialQuantity">Quantité:</label>
+            <input type="number" id="materialQuantity" min="0" step="1">
+            <label for="materialUnit">Unité:</label>
+            <input type="text" id="materialUnit">
+            <button type="button" id="addMaterialBtn">Ajouter Matériaux</button>
+        </div>
+        <div id="materialsContainer">
+            <table id="materialsTable">
+                <thead>
+                    <tr>
+                        <th>Nom du Matériel</th>
+                        <th>Quantité</th>
+                        <th>Unité</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button type="button" id="confirmMaterialsBtn">Confirmer les matériaux</button>
+    </div>
+    
+    <!-- (Other tabcontent divs omitted for brevity) -->
+    
+    <footer>
+        <div class="footer-container">
+            <div class="footer-center">
+                <p>&copy; 2024 Total Cost Control. All rights reserved. - Developed by Projestim</p>
+            </div>
+        </div>
+    </footer>
+    
+    {% block extra_js %}
+    <script type="module">
+        import { populateDropdowns, populateFormFromSession } from "/static/js/populate_drop_downs.js";
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("✅ Initializing dropdowns and session data...");
+            populateDropdowns();
+            populateFormFromSession();
+
+            // Materials Tab: Add Material Entry
+            const addMaterialBtn = document.getElementById('addMaterialBtn');
+            addMaterialBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const materialName = document.getElementById('materialName').value;
+                const materialQuantity = document.getElementById('materialQuantity').value;
+                const materialUnit = document.getElementById('materialUnit').value;
+                if (!materialName || !materialQuantity || !materialUnit) {
+                    alert("Veuillez remplir tous les champs pour le matériel.");
+                    return;
+                }
+                const tbody = document.getElementById('materialsTable').getElementsByTagName('tbody')[0];
+                let row = tbody.insertRow();
+                row.innerHTML = `<td>${materialName}</td><td>${materialQuantity}</td><td>${materialUnit}</td>`;
+                console.log("Material row added:", { materialName, materialQuantity, materialUnit });
+                // Clear the inputs
+                document.getElementById('materialName').value = "";
+                document.getElementById('materialQuantity').value = "";
+                document.getElementById('materialUnit').value = "";
+            });
+
+            // Materials Tab: Confirm Materials - Save to session
+            const confirmMaterialsBtn = document.getElementById('confirmMaterialsBtn');
+            confirmMaterialsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tbody = document.getElementById('materialsTable').getElementsByTagName('tbody')[0];
+                let materialEntries = [];
+                for (let row of tbody.rows) {
+                    let name = row.cells[0].innerText;
+                    let quantity = row.cells[1].innerText;
+                    let unit = row.cells[2].innerText;
+                    materialEntries.push({ materialName: name, quantity: quantity, unit: unit });
+                }
+                fetch("/data_entry/save_draft", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ entries: materialEntries, tab: "materials" })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Materials draft saved successfully:", data);
+                    alert("Les matériaux ont été sauvegardés en tant que brouillon.");
+                })
+                .catch(error => {
+                    console.error("Error saving materials draft:", error);
+                    alert("Erreur lors de la sauvegarde des brouillons des matériaux.");
+                });
+            });
+        });
+    </script>
+    {% endblock %}
+</body>

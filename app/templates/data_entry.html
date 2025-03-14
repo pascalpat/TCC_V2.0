@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Module Rapport Journalier{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/data_entry.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- TAB NAVIGATION -->
+<div class="tab">
+    <button class="tablinks" onclick="openTab(event, 'LaborEquipTab')">Employé / Équipement</button>
+    <button class="tablinks" onclick="openTab(event, 'MaterialsTab')">Matériaux</button>
+    <button class="tablinks" onclick="openTab(event, 'SubcontractorsTab')">Sous-traitants</button>
+    <button class="tablinks" onclick="openTab(event, 'NotesTab')">Notes du jour</button>
+    <button class="tablinks" onclick="openTab(event, 'PicturesTab')">Photos du jour</button>
+</div>
+
+<!-- PROJECT SELECTION -->
+<div class="project-selection">
+    <label for="projectNumber">Projet Actif:</label>
+    <input type="text" id="projectNumber" value="{{ project_id }}" readonly>
+    <label for="dateSelector">Date active:</label>
+    <input type="date" id="dateSelector" value="{{ report_date }}" readonly>
+    <button id="changeDateBtn">Changer Date</button>
+    <a href="/calendar" id="viewCalendarLink">Voir Calendrier</a>
+</div>
+
+<hr>
+
+<!-- TAB CONTENT: LaborEquipTab (Workers/Equipment) -->
+<div id="LaborEquipTab" class="tabcontent">
+    <div class="form-table-container">
+        <form id="WorkersForm" class="form-box">
+            <h2>Ajouter un Employé ou Équipement</h2>
+            <label for="workerName">Sélectionner Employé / Équipement:</label>
+            <select id="workerName">
+                <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
+            </select>
+
+            <label for="laborHours">Heures de travail:</label>
+            <input type="number" id="laborHours" min="0" step="0.1">
+
+            <label for="activityCode">Code d'Activité:</label>
+            <select id="activityCode">
+                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+            </select>
+            
+            <div class="button-container">
+                <button id="addEntryBtn">Ajouter Entrée</button>
+                <button id="confirmEntriesBtn">Confirmer les entrées</button>
+            </div>
+        </form>
+
+        <div id="workersTableContainer">
+            <h3>Liste des Employés / Équipements</h3>
+            <table id="workersTable">
+                <thead>
+                    <tr>
+                        <th>Nom Employé / Équipement</th>
+                        <th>Heures de travail</th>
+                        <th>Code d'activité</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB CONTENT: MaterialsTab (Matching Workers/Equipment Format) -->
+<div id="MaterialsTab" class="tabcontent">
+    <div class="form-table-container">
+        <form id="WorkersForm" class="form-box">
+            <h2>Ajouter des Matériaux</h2>
+
+            <label for="materialName">Nom du Matériel:</label>
+            <input type="text" id="materialName" required>
+
+            <label for="materialQuantity">Quantité:</label>
+            <input type="number" id="materialQuantity" min="0" step="1" required>
+
+            <label for="materialUnit">Unité:</label>
+            <input type="text" id="materialUnit" required>
+
+            <label for="materialActivityCode">Code d'Activité:</label>
+            <select id="materialActivityCode">
+                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+            </select>
+
+            <div class="button-container">
+                <button type="button" id="addMaterialBtn">Ajouter Matériaux</button>
+                <button type="button" id="confirmMaterialsBtn">Confirmer les matériaux</button>
+            </div>
+        </form>
+
+        <div id="materialsTableContainer" class="table-container"> <!-- ✅ Added class for styling -->
+            <h3>Liste des Matériaux</h3>
+            <table id="materialsTable" class="styled-table"> <!-- ✅ Added styling class -->
+                <thead>
+                    <tr>
+                        <th>Nom du Matériel</th>
+                        <th>Quantité</th>
+                        <th>Unité</th>
+                        <th>Code d'Activité</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB CONTENT: SubcontractorsTab -->
+<div id="SubcontractorsTab" class="tabcontent">
+    <div class="form-table-container">
+        <form id="SubcontractorsForm" class="form-box">
+            <h2>Ajouter un Sous-traitant</h2>
+
+            <label for="subcontractorName">Nom de la compagnie:</label>
+            <input type="text" id="subcontractorName" required>
+
+            <label for="numEmployees">Nombre d'employés:</label>
+            <input type="number" id="numEmployees" min="1" required>
+
+            <label for="totalHours">Total des heures:</label>
+            <input type="number" id="totalHours" min="0" step="0.1" required>
+
+            <label for="subcontractorActivityCode">Code d'Activité:</label>
+            <select id="subcontractorActivityCode">
+                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+            </select>
+
+            <div class="button-container">
+                <button type="button" id="addSubcontractorBtn">Ajouter Sous-traitant</button>
+                <button type="button" id="confirmSubcontractorsBtn">Confirmer les sous-traitants</button>
+            </div>
+        </form>
+
+        <div id="subcontractorsTableContainer" class="table-container">
+            <h3>Liste des Sous-traitants</h3>
+            <table id="subcontractorsTable" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Nom de la compagnie</th>
+                        <th>Nombre d'employés</th>
+                        <th>Total des heures</th>
+                        <th>Code d'Activité</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB CONTENT: NotesTab -->
+<div id="NotesTab" class="tabcontent">
+    <h2>Notes du jour</h2>
+    <p>Contenu pour les notes...</p>
+</div>
+
+<!-- TAB CONTENT: PicturesTab -->
+<div id="PicturesTab" class="tabcontent">
+    <h2>Photos du jour</h2>
+    <p>Contenu pour les photos...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Non-module script: openTab function (global scope) -->
+<script>
+function openTab(evt, tabName) {
+    console.log("openTab called for tab:", tabName);
+    var tabcontent = document.getElementsByClassName("tabcontent");
+    for (var i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    var tablinks = document.getElementsByClassName("tablinks");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    var activeTab = document.getElementById(tabName);
+    if (activeTab) {
+        activeTab.style.display = "block";
+    } else {
+        console.error("Tab content with id '" + tabName + "' not found.");
+    }
+    evt.currentTarget.classList.add("active");
+}
+</script>
+
+<script type="module">
+    import { populateDropdowns, populateFormFromSession } from "/static/js/populate_drop_downs.js";
+
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("✅ Initializing dropdowns and session data...");
+        populateDropdowns();
+        populateFormFromSession();
+
+        // --- Worker/Equipment Logic (unchanged) ---
+        const addEntryBtn = document.getElementById("addEntryBtn");
+        if (addEntryBtn) {
+            addEntryBtn.addEventListener("click", function(event) {
+                event.preventDefault();
+                const workerSelect = document.getElementById("workerName");
+                const laborHoursInput = document.getElementById("laborHours");
+                const activityCodeSelect = document.getElementById("activityCode");
+                if (!workerSelect || !laborHoursInput || !activityCodeSelect) {
+                    console.error("One or more worker/equipment elements are missing.");
+                    return;
+                }
+                if (!workerSelect.value || !laborHoursInput.value || !activityCodeSelect.value) {
+                    alert("Veuillez remplir tous les champs (employé/équipement)!");
+                    return;
+                }
+                const workerText = workerSelect.options[workerSelect.selectedIndex].text;
+                const laborHours = laborHoursInput.value;
+                const activityText = activityCodeSelect.options[activityCodeSelect.selectedIndex].text;
+                const tableBody = document.getElementById("workersTable").querySelector("tbody");
+                if (!tableBody) {
+                    console.error("workersTable tbody not found.");
+                    return;
+                }
+                let newRow = tableBody.insertRow();
+                newRow.innerHTML = `<td>${workerText}</td><td>${laborHours}</td><td>${activityText}</td>`;
+                console.log("Worker/Equip row added:", { worker: workerText, laborHours, activityCode: activityText });
+                laborHoursInput.value = "";
+            });
+        } else {
+            console.error("addEntryBtn not found.");
+        }
+
+        // --- Materials Logic ---
+        // Add Material Entry with Activity Code
+        const addMaterialBtn = document.getElementById('addMaterialBtn');
+        if (addMaterialBtn) {
+            addMaterialBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const name = document.getElementById('materialName').value.trim();
+                const quantity = document.getElementById('materialQuantity').value.trim();
+                const unit = document.getElementById('materialUnit').value.trim();
+                const matActivitySelect = document.getElementById('materialActivityCode'); // ✅ Corrected ID
+
+                if (!matActivitySelect) {
+                    console.error("Material activity code dropdown not found.");
+                    return;
+                }
+
+                const matActivityText = matActivitySelect.options[matActivitySelect.selectedIndex]?.text || "";
+
+                if (!name || !quantity || !unit || !matActivitySelect.value) {
+                    alert("Veuillez remplir tous les champs pour le matériel (y compris le code d'activité).");
+                    return;
+                }
+
+                const materialsTable = document.getElementById('materialsTable'); // ✅ Corrected Reference
+                if (!materialsTable) {
+                    console.error("Materials table not found.");
+                    return;
+                }
+
+                const tbody = materialsTable.querySelector("tbody");
+                if (!tbody) {
+                    console.error("Materials table tbody not found.");
+                    return;
+                }
+
+                let row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${quantity}</td>
+                    <td>${unit}</td>
+                    <td>${matActivityText}</td>
+                `;
+
+                console.log("Material row added:", { name, quantity, unit, activityCode: matActivityText });
+
+                // Clear inputs after adding
+                document.getElementById('materialName').value = "";
+                document.getElementById('materialQuantity').value = "";
+                document.getElementById('materialUnit').value = "";
+                matActivitySelect.selectedIndex = 0;
+            });
+        }
+        // Confirm Materials: Save data to session via POST
+        const confirmMaterialsBtn = document.getElementById('confirmMaterialsBtn');
+        confirmMaterialsBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tbody = document.getElementById('materialsTable').querySelector('tbody');
+            let materialEntries = [];
+            for (let row of tbody.rows) {
+                let matName = row.cells[0].innerText;
+                let matQuantity = row.cells[1].innerText;
+                let matUnit = row.cells[2].innerText;
+                let matActivity = row.cells[3]?.innerText || "";
+                materialEntries.push({
+                    materialName: matName,
+                    quantity: matQuantity,
+                    unit: matUnit,
+                    activityCode: matActivity
+                });
+            }
+            fetch("/data_entry/save_draft", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ entries: materialEntries, tab: "materials" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Materials draft saved successfully:", data);
+                alert("Les matériaux ont été sauvegardés en tant que brouillon.");
+            })
+            .catch(error => {
+                console.error("Error saving materials draft:", error);
+                alert("Erreur lors de la sauvegarde des brouillons des matériaux.");
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,51 @@
+# app/routes/main_routes.py
+from flask import Blueprint, render_template, current_app as app, redirect, url_for
+from app.utils.data_loader import load_data
+import requests
+from flask import jsonify, session
+from ..utils.data_loader import save_to_csv
+import pandas as pd
+from flask import send_from_directory
+from flask import current_app
+
+
+# Create a Blueprint instance for general routes
+main_bp = Blueprint('main_bp', __name__, static_folder='static', template_folder='templates')
+
+
+@main_bp.route('/')
+def home():
+    
+    """
+    Render the main page with pre-filled project and date selection.
+    
+    """
+    if 'user_id' not in session or 'project_id' not in session or 'report_date' not in session:
+        return redirect(url_for('auth_bp.login'))  # Redirect to login if data is missing
+
+    current_app.logger.info("Rendering main page with project and date pre-selected.")
+    return render_template('index_old.html', user_id=session['user_id'], project_id=session['project_id'], report_date=session['report_date'], username=session.get('username', 'Utilisateur'))
+    
+@main_bp.route('/favicon.ico')
+def favicon():
+    # Logic for serving the favicon
+    return send_from_directory(main_bp.static_folder, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@main_bp.route('/save-report', methods=['POST'])
+def save_report():
+    """
+    Save session data for the selected reporting date to the CSV file.
+    """
+    # Get the current date from session
+    date = session.get('current_reporting_date')
+    if not date or date not in session.get('daily_data', {}):
+        return jsonify({'error': 'No data to save for the selected date'}), 400
+
+    # Save session data to CSV
+    try:
+        save_to_csv(session['daily_data'], date)
+        return jsonify({'message': f'Data for {date} saved successfully!'}), 200
+    except Exception as e:
+        print(f"Error saving data: {e}")
+        return jsonify({'error': 'Failed to save data. Please try again.'}), 500
+    

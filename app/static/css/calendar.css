@@ -1,0 +1,234 @@
+/* Body Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: linear-gradient(135deg, #e3f2fd, #66b0ec); /* Subtle gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Calendar Container */
+.calendar-container {
+    width: 1200px; /* Wider for better layout */
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9); /* White with slight transparency */
+    border-radius: 15px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow for a polished look */
+    text-align: center;
+    margin-top: 20px;
+    border: 2px solid #ccc; /* Frame around the calendar */
+}
+
+/* Month Header */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 2px solid #ccc; /* Divider between month header and dates */
+    margin-bottom: 20px;
+}
+
+.calendar-header h1 {
+    font-size: 28px;
+    color: #007bff;
+    margin: 0;
+    text-transform: uppercase; /* Capitalize the month name */
+}
+
+.calendar-header .navigation button {
+    background: linear-gradient(145deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 24px 32px;
+    font-size: 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header .navigation button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+/* Calendar Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 columns for days */
+    gap: 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* Frame around the grid */
+}
+
+/* Calendar Date */
+.calendar-date {
+    width: 130px;
+    height: 150px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6); /* Cleaner gradient */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Day of the Week */
+.calendar-date .day-of-week {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    padding: 5px 0;
+    border-radius: 10px 10px 0 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Non-Working Days (Saturdays and Sundays) */
+.calendar-date.weekend {
+    background-color: #f0f0f0; /* Light grey for weekends */
+    cursor: not-allowed; /* Show as non-interactive */
+    box-shadow: none; /* Remove hover shadow */
+}
+
+/* Hover Effect for Weekdays */
+.calendar-date:hover:not(.weekend) {
+    transform: translateY(-5px); /* Lift effect */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Pronounced shadow on hover */
+}
+
+/* Status Colors */
+.calendar-date.completed {
+    background: linear-gradient(145deg, #28a745, #218838);
+    color: white;
+}
+
+.calendar-date.in-progress {
+    background: linear-gradient(145deg, #ffc107, #e0a800);
+    color: black;
+}
+
+.calendar-date.not-started {
+    background: linear-gradient(145deg, #dc3545, #c82333);
+    color: white;
+}
+
+/* Empty Dates */
+.calendar-date.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+    box-shadow: none;
+}
+
+/* Selected Date */
+.calendar-date.selected {
+    outline: 3px solid #007bff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Prominent shadow for selection */
+}
+
+/* Project Status Text */
+.status {
+    margin-top: 8px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Confirm Button */
+button#confirmDateBtn {
+    margin-top: 20px;
+    padding: 15px 35px;
+    font-size: 18px;
+    background: linear-gradient(145deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+button#confirmDateBtn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05); /* Slight zoom on hover */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+/* Project Selection */
+.project-selection {
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.project-selection label {
+    font-size: 36px; /* Increase font size of label */
+    font-weight: bold;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.project-selection select {
+    width: 700px; /* Double the original width */
+    padding: 15px; /* Double the padding */
+    font-size: 24px; /* Double the font size */
+    border: 2px solid #ccc; /* Slightly thicker border */
+    border-radius: 10px; /* Larger rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-selection select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.5);
+}
+
+/* Selected Project Button */
+.project-list button.selected-project {
+    background: linear-gradient(145deg, #007bff, #0056b3); /* Blue gradient */
+    color: white; /* White text for contrast */
+    font-weight: bold; /* Bold text to emphasize selection */
+    border: 2px solid #0056b3; /* Slightly thicker border */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+    border-radius: 5px; /* Rounded corners */
+}
+
+/* Hover Effect for Selected Project */
+.project-list button.selected-project:hover {
+    background-color: #0056b3; /* Slightly darker blue on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+    transform: scale(1.05); /* Slight zoom effect */
+}
+/* Standard Project Button Styling */
+.project-list button {
+    margin: 5px;
+    padding: 5px 10px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9; /* Light background for unselected buttons */
+    color: #333;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.project-list button:hover {
+    background-color: #e0e0e0; /* Light grey on hover */
+    transform: scale(1.02); /* Subtle zoom effect */
+}

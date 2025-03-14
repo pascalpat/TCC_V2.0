@@ -1,0 +1,33 @@
+{% extends "base_temp.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block head %}
+    <!-- Link to Login-Specific CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+<body>
+    <div class="login-container">
+        <form method="POST" action="{{ url_for('auth_bp.login') }}">
+            <h2>Login to Your Account</h2>
+            <!-- Display error messages if any -->
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <!-- Username input -->
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            <!-- Password input -->
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <!-- Submit button -->
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+{% endblock %}
+</html>
