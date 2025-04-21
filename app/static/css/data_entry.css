@@ -105,3 +105,46 @@ button:hover {
 #workersTable tr, #materialsTable tr {
     height: 50px; /* ✅ Increased row height for better visibility */
 }
+
+.manual-entry-input {
+    display: none;
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.manual-entry-input.visible {
+    display: inline-block;
+}
+  
+.manual-toggle-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+  
+.hidden {
+    display: none !important;
+}
+
+
+
+/* ------------------------------
+   👇 Styling for Confirmed Entries in Table
+   Used after user clicks "Confirmer les entrées" in Labor/Equipment tab
+   ------------------------------ */
+.confirmed-row {
+  background-color: #e7f7e7;       /* Light green background for visibility */
+  font-style: italic;              /* Slightly different font style */
+  opacity: 0.9;                    /* Softened to visually differentiate */
+  transition: background-color 0.3s ease;
+}
+
+.confirmed-row td {
+  border-top: 1px solid #ccc;
+}
+
+.confirmed-row:hover {
+  background-color: #d0f0d0;       /* Slightly darker on hover */
+}

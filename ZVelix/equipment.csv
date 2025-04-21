@@ -1,0 +1,7 @@
+id,equipment_id,name,serial_number,assigned_to,maintenance_status,hourly_rate,last_maintenance_date,next_maintenance_date
+1,BU-06,"BU-06_Bouteur Moyen (750, D6, D61 )_KOMATSU D61PX",12341324f523r3q,Armand le Bull,operational, $120.00 ,2024-12-01,2025-03-01
+2,L-25,L-25_Chargeur sur roues_TAKEUCHI TW95C,67h63f6u457g6766,Serge le chargeur,operational, $125.00 ,2024-12-01,2025-03-01
+3,PE-45,PE-45_Excavatrice 35 Tonnes_KOMATSU PC360,654654we5tvfdg541654,Joe Lapelle,operational, $200.00 ,2024-12-01,2025-03-01
+4,PU-01,PU-01 Camionette de chantier,24jk54t09tkj2t556t,Marc Tiboss,operational, $35.00 ,2024-12-01,2025-03-01
+5,PE-26,PE-26 Excavatrice 22 tonne,36y67i656ey35eytrsg46y,Simon tit pelle,operational, $175.00 ,2024-12-01,2025-03-01
+,,,,,,, , 

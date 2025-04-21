@@ -1,0 +1,7 @@
+id,worker_name,genre,worker_id,code_postal,num_cell,courriel,certifications,experience_years,metier,convention,taux_horaire,taux_over,Gite_couvert,transp_1,transp_2,equip_asso,departement,role
+1,Joe Lapelle,male,1234,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,20,operateur pelle,genie civil annexe b1, $75.00 , $150.00 , $175.00 , $75.00 , $90.00 ,BU-06,genie civil,employe
+2,Serge le chargeur,male,4567,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,15,operateur machinerie lourde,genie civil annexe b1, $72.00 , $145.00 , $175.00 , $75.00 , $90.00 ,L-25,genie civil,employe
+3,Marc Tiboss,male,7891,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,30,contremaitre,genie civil annexe b1, $90.00 , $180.00 , $200.00 , $75.00 , $90.00 ,PU-01,genie civil,employe
+4,Simon tit pelle,male,2243,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,25,operateur pelle,genie civil annexe b1, $75.00 , $150.00 , $175.00 , $75.00 , $90.00 ,PE-26,genie civil,employe
+5,Pierre Laroche,male,4367,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,15,Journalier specialise,genie civil annexe b1, $68.00 , $136.00 , $175.00 , $75.00 , $90.00 ,,genie civil,employe
+6,Armand le Bull,male,5742,J5A1P8,514-892-6501,patricepascal1@gmail.com,CCQ,20,operateur machinerie lourde,genie civil annexe b1, $72.00 , $145.00 , $175.00 , $75.00 , $90.00 ,BU-06,genie civil,employe

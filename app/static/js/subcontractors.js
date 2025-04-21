@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const activityText = activitySelect.options[activitySelect.selectedIndex]?.text || "";
 
             if (!name || !numEmployees || !totalHours || !activitySelect.value) {
-                alert("Veuillez remplir tous les champs (y compris le code d'activité).");
+                alert("Veuillez remplir tous les champs (y compris le code activité).");
                 return;
             }
 

@@ -7,9 +7,6 @@ export async function populateDropdowns() {
     console.log("[populateDropdowns] All dropdowns populated.");
 }
 
-/**
- * Fetch and populate the #workerName <select> with both workers and equipment
- */
 async function populateWorkersAndEquipmentDropdown() {
     try {
         console.log("[populateWorkersAndEquipmentDropdown] Fetching /workers/list & /equipment/list...");
@@ -35,26 +32,23 @@ async function populateWorkersAndEquipmentDropdown() {
             console.error("[populateWorkersAndEquipmentDropdown] #workerName element not found!");
             return;
         }
-        // Set default option
         dropdown.innerHTML = '<option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>';
 
-        // Create optgroup for workers
         let workerGroup = document.createElement("optgroup");
         workerGroup.label = "👤 Employés";
         workersData.workers.forEach(worker => {
             let option = document.createElement("option");
-            option.value = `worker|${worker.name}`;
+            option.value = `worker|${worker.id}`;
             option.textContent = `👤 ${worker.name}`;
             workerGroup.appendChild(option);
         });
         dropdown.appendChild(workerGroup);
 
-        // Create optgroup for equipment
         let equipmentGroup = document.createElement("optgroup");
         equipmentGroup.label = "🛠️ Équipements";
         equipmentData.equipment.forEach(equipment => {
             let option = document.createElement("option");
-            option.value = `equipment|${equipment.name}`;
+            option.value = `equipment|${equipment.id}`;
             option.textContent = `🛠️ ${equipment.name}`;
             equipmentGroup.appendChild(option);
         });
@@ -66,10 +60,7 @@ async function populateWorkersAndEquipmentDropdown() {
     }
 }
 
-/**
- * Fetch and populate the #activityCode <select> with data from /activity-codes/get_activity_codes
- */
-export async function populateActivityDropdown() {  // ✅ Correct function name
+export async function populateActivityDropdown() {
     console.log("[populateActivityDropdown] Running...");
     try {
         const response = await fetch('/activity-codes/get_activity_codes');
@@ -84,11 +75,10 @@ export async function populateActivityDropdown() {  // ✅ Correct function name
             return;
         }
 
-        // Populate all dropdowns
         const activityDropdowns = [
-            document.getElementById("activityCode"),  // Worker/Equipment tab
-            document.getElementById("materialActivityCode"), // Materials tab
-            document.getElementById("subcontractorActivityCode") // Subcontractors tab ✅ ADDED
+            document.getElementById("activityCode"),
+            document.getElementById("materialActivityCode"),
+            document.getElementById("subcontractorActivityCode")
         ];
 
         activityDropdowns.forEach(dropdown => {
@@ -103,15 +93,12 @@ export async function populateActivityDropdown() {  // ✅ Correct function name
     }
 }
 
-/**
- * Helper function to populate a dropdown with activity codes.
- */
 function populateDropdown(dropdown, data) {
-    dropdown.innerHTML = '<option value="" disabled selected>-- Sélectionner Code d\'Activité --</option>';
+    dropdown.innerHTML = '<option value="" disabled selected>-- Sélectionner Code Activité --</option>';
     data.forEach(activity => {
-        if (activity.code.trim() !== "") {  
+        if (activity.code.trim() !== "") {
             const option = document.createElement("option");
-            option.value = activity.id;
+            option.value = activity.code;
             option.textContent = `${activity.code} - ${activity.description}`;
             dropdown.appendChild(option);
         }
@@ -119,10 +106,7 @@ function populateDropdown(dropdown, data) {
     console.log(`[populateActivityDropdown] ${dropdown.id} populated with ${data.length} items.`);
 }
 
-/**
- * Fetch session data and populate the form fields with stored entries
- */
-export async function populateFormFromSession() {  // ✅ Now correctly exported
+export async function populateFormFromSession() {
     console.log("[populateFormFromSession] Fetching session data...");
     try {
         const response = await fetch('/debug/session');

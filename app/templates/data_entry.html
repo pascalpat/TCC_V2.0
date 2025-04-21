@@ -16,7 +16,7 @@
     <button class="tablinks" onclick="openTab(event, 'NotesTab')">Notes du jour</button>
     <button class="tablinks" onclick="openTab(event, 'PicturesTab')">Photos du jour</button>
 </div>
-
+  
 <!-- PROJECT SELECTION -->
 <div class="project-selection">
     <label for="projectNumber">Projet Actif:</label>
@@ -28,43 +28,76 @@
 </div>
 
 <hr>
-
+  
 <!-- TAB CONTENT: LaborEquipTab (Workers/Equipment) -->
 <div id="LaborEquipTab" class="tabcontent">
     <div class="form-table-container">
         <form id="WorkersForm" class="form-box">
-            <h2>Ajouter un Employé ou Équipement</h2>
-            <label for="workerName">Sélectionner Employé / Équipement:</label>
-            <select id="workerName">
-                <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
-            </select>
+        <h2>Ajouter un Employé ou Équipement</h2>
 
-            <label for="laborHours">Heures de travail:</label>
-            <input type="number" id="laborHours" min="0" step="0.1">
+        <label for="workerName">Sélectionner Employé / Équipement:</label>
+        <select id="workerName">
+            <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
+            <!-- Dynamic options will be populated here -->
+        </select>
 
-            <label for="activityCode">Code d'Activité:</label>
-            <select id="activityCode">
-                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-            </select>
-            
-            <div class="button-container">
-                <button id="addEntryBtn">Ajouter Entrée</button>
-                <button id="confirmEntriesBtn">Confirmer les entrées</button>
+        <!-- Manual Inputs -->
+        <div class="manual-entry-group">
+            <div class="manual-toggle-group">
+              <button type="button" id="manualEntryToggle">➕ Ajouter manuellement</button>
+              <button type="button" id="manualEquipToggle">➕ Ajouter équipement manuellement</button>
             </div>
+
+            <!-- Worker Manual Input -->
+            <input 
+                type="text"
+                id="manualWorkerName"
+                class="manual-entry-input"
+                style="display:none;"
+                placeholder="Nom travailleur manuel" 
+            />
+
+            <!-- Equipment Manual Input -->
+            <input 
+                type="text"
+                id="manualEquipmentName"
+                class="manual-entry-input"
+                style="display:none;"
+                placeholder="Nom équipement manuel" 
+            />
+        </div>
+
+
+            <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
+        </select>
+        
+
+        <label for="laborHours">Heures de travail:</label>
+        <input type="number" id="laborHours" min="0" step="0.1">
+
+        <label for="activityCode">Code d'Activité:</label>
+        <select id="activityCode">
+            <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+        </select>
+        
+        <div class="button-container">
+            <button id="addEntryBtn">Ajouter Entrée</button>
+            <button id="confirmEntriesBtn">Confirmer les entrées</button>
+        </div>
         </form>
 
         <div id="workersTableContainer">
-            <h3>Liste des Employés / Équipements</h3>
-            <table id="workersTable">
-                <thead>
-                    <tr>
-                        <th>Nom Employé / Équipement</th>
-                        <th>Heures de travail</th>
-                        <th>Code d'activité</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <h3>Liste des Employés / Équipements</h3>
+        <table id="workersTable">
+            <thead>
+            <tr>
+                <th>Nom Employé / Équipement</th>
+                <th>Heures de travail</th>
+                <th>Code d'activité</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
         </div>
     </div>
 </div>
@@ -169,6 +202,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<script type="module" src="{{ url_for('static', filename='js/LaborEquipment.js') }}"></script>
+
 <!-- Non-module script: openTab function (global scope) -->
 <script>
 function openTab(evt, tabName) {
@@ -193,44 +228,22 @@ function openTab(evt, tabName) {
 
 <script type="module">
     import { populateDropdowns, populateFormFromSession } from "/static/js/populate_drop_downs.js";
+    import { initLaborEquipmentTab } from "/static/js/LaborEquipment.js";
 
     document.addEventListener('DOMContentLoaded', function () {
         console.log("✅ Initializing dropdowns and session data...");
         populateDropdowns();
         populateFormFromSession();
-
-        // --- Worker/Equipment Logic (unchanged) ---
-        const addEntryBtn = document.getElementById("addEntryBtn");
-        if (addEntryBtn) {
-            addEntryBtn.addEventListener("click", function(event) {
-                event.preventDefault();
-                const workerSelect = document.getElementById("workerName");
-                const laborHoursInput = document.getElementById("laborHours");
-                const activityCodeSelect = document.getElementById("activityCode");
-                if (!workerSelect || !laborHoursInput || !activityCodeSelect) {
-                    console.error("One or more worker/equipment elements are missing.");
-                    return;
-                }
-                if (!workerSelect.value || !laborHoursInput.value || !activityCodeSelect.value) {
-                    alert("Veuillez remplir tous les champs (employé/équipement)!");
-                    return;
-                }
-                const workerText = workerSelect.options[workerSelect.selectedIndex].text;
-                const laborHours = laborHoursInput.value;
-                const activityText = activityCodeSelect.options[activityCodeSelect.selectedIndex].text;
-                const tableBody = document.getElementById("workersTable").querySelector("tbody");
-                if (!tableBody) {
-                    console.error("workersTable tbody not found.");
-                    return;
-                }
-                let newRow = tableBody.insertRow();
-                newRow.innerHTML = `<td>${workerText}</td><td>${laborHours}</td><td>${activityText}</td>`;
-                console.log("Worker/Equip row added:", { worker: workerText, laborHours, activityCode: activityText });
-                laborHoursInput.value = "";
-            });
-        } else {
-            console.error("addEntryBtn not found.");
-        }
+        initLaborEquipmentTab();
+        //document.getElementById('manualEntryToggle')?.addEventListener('click', () => {
+            //const dropdown = document.getElementById('workerName');
+            //const manualInput = document.getElementById('manualWorkerName');
+            //const toggleBtn = document.getElementById('manualEntryToggle');
+            //const isManual = manualInput.style.display === 'inline-block';
+            //manualInput.style.display = isManual ? 'none' : 'inline-block';
+            //dropdown.style.display = isManual ? 'inline-block' : 'none';
+            //toggleBtn.textContent = isManual ? '➕ Ajouter manuellement' : '❌ Annuler';
+        //});
 
         // --- Materials Logic ---
         // Add Material Entry with Activity Code
@@ -321,5 +334,3 @@ function openTab(evt, tabName) {
     });
 </script>
 {% endblock %}
-
-

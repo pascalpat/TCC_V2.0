@@ -1,0 +1,6 @@
+id,project_id,payment_code,activity_code_id,task_id,item_name,unit,rate_per_unit,created_at
+1,24-401,1.01,1313,1,Mobilisation et gestion du projet,glob,25000,2025-01-06
+2,24-401,2.01,31000,3,Excavation et remblayage,m3,35,2025-01-07
+3,24-401,3.01,33000,3,Egouts et aqueducs,ml,225,2025-01-06
+4,24-408,1.01,1313,1,Mobilisation de chantier,glob,25000,2025-01-06
+5,24-408,2.01,33011,3,conduites eqgouts et aqueducs,ml,325,2025-01-06

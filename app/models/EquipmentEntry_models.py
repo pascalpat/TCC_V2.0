@@ -8,7 +8,8 @@ class EquipmentEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date_of_report = db.Column(db.Date, nullable=False, index=True)  # Date of the report
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
+    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=True)
+    equipment_name = db.Column(db.Text, nullable=True)  # Equipment name (optional, can be derived from equipment_id)
     hours_used = db.Column(db.Float, nullable=False, default=0.0)
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
 

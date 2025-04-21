@@ -1,0 +1,7 @@
+id,project_id,name,activity_code_id,start_date,end_date,status,progress %,man_hour_budget,unit,qte, PV(Planned value) 
+1,24-401,Gestion de projet,1313,2025-05-01,2025-12-31,not started,0,1000,hrs,1000,"$200,000.00"
+2,24-401,Installation des bureaux ,1521,2025-05-15,2025-05-30,not started,0,200,forf,1,"$25,000.00"
+3,24-401,Excavation de masse phase 1,31000,2025-06-01,2025-10-31,not started,0,200,m3,5000,"$175,000.00"
+4,24-408,Gestion de projet,1313,2025-05-01,2025-12-31,not started,0,1000,hrs,1000,"$200,000.00"
+5,24-408,Installation des bureaux ,1521,2025-05-15,2025-05-30,not started,0,200,forf,1,"$25,000.00"
+6,24-408,Excavation de masse phase 1,31000,2025-06-01,2025-10-31,not started,0,200,m3,5000,"$175,000.00"

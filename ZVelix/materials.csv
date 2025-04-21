@@ -1,0 +1,4 @@
+id,material_id,name,unit,std_cost_per_unit,description
+1,10001,Bois 2x4x8,un,8,Bois epinette 2x4x8
+2,20001,Pierre Mg-20 DB,tm,15,Pierre MG-20 DB
+3,30001,Tuyaux pvc sdr-35 250mm diam,ml,35,Tuyaux pvc sdr-35 250mm diam

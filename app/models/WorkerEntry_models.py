@@ -12,7 +12,8 @@ class WorkerEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date_of_report = db.Column(db.Date, nullable=False, index=True)  # Date of the report
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)  # FK to Projects
-    worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=False)  # FK to Workers
+    worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=True)  # FK to Workers
+    worker_name = db.Column(db.Text, nullable=True) ## Worker name (optional, can be derived from worker_id)
     hours_worked = db.Column(db.Float, nullable=False, default=0.0)  # Hours worked
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
 
@@ -27,8 +28,9 @@ class WorkerEntry(db.Model):
     project = db.relationship('Project', back_populates='worker_entries')  # Relates to Project model
     worker = db.relationship('Worker', back_populates='worker_entries')  # Relates to Worker model
     activity = db.relationship('ActivityCode', back_populates='worker_entries')  # Relates to ActivityCode model
-    related_project = db.relationship("Project", back_populates="worker_entries"  # match the other side’s property name
-    )
+    related_project = db.relationship("Project", back_populates="worker_entries")  # match the other side’s property name
+    
+    
     def __repr__(self):
         return f"<WorkerEntry id={self.id}, worker_id={self.worker_id}, date={self.date_of_report}>"
 
