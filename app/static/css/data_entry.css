@@ -114,10 +114,12 @@ button:hover {
     font-size: 14px;
 }
 
+
 .manual-entry-input.visible {
-    display: inline-block;
+    display: inline-block !important; /* Show the input when needed */
 }
-  
+
+
 .manual-toggle-group {
     display: flex;
     gap: 10px;

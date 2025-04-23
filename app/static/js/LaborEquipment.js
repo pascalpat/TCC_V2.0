@@ -12,8 +12,9 @@ export function initLaborEquipmentTab() {
 
   document.getElementById('addEntryBtn')?.addEventListener('click', addUsageLine);
   document.getElementById('confirmEntriesBtn')?.addEventListener('click', confirmUsageLines);
-  document.getElementById("manualEntryToggle")?.addEventListener("click", toggleManualWorkerEntry);
-  document.getElementById("manualEquipToggle")?.addEventListener("click", toggleManualEquipEntry);
+  document.getElementById("manualEntryToggle")?.addEventListener("click", () => toggleManualEntry("worker"));
+  document.getElementById("manualEquipToggle")?.addEventListener("click", () => toggleManualEntry("equipment"));
+
 
   const projectId = document.getElementById("projectNumber")?.value;
   const reportDate = document.getElementById("dateSelector")?.value;
@@ -25,111 +26,66 @@ export function initLaborEquipmentTab() {
   /// Ensure inputs are hidden on init
   resetFormUI();
 
-  // Ensure inputs are hidden on init
-  // document.getElementById("manualWorkerName").style.display = "none";
-  // document.getElementById("manualEquipmentName").style.display = "none";
-  // document.getElementById("manualWorkerName").classList.add("hidden");
-  // document.getElementById("manualEquipmentName").classList.add("hidden")
 }
 function toggleManualEntry(mode) {
-  const dropdown = document.getElementById("workerName");
-  const manualWorkerInput = document.getElementById("manualWorkerName");
-  const manualEquipInput = document.getElementById("manualEquipmentName");
+  const dropdown       = document.getElementById("workerName");
+  const manualWorkerIn = document.getElementById("manualWorkerName");
+  const manualEquipIn  = document.getElementById("manualEquipmentName");
 
-  manualWorkerMode = (mode === 'worker');
-  manualEquipMode = (mode === 'equipment');
-
-  dropdown.disabled = true;
-  dropdown.classList.add("hidden");
-
-  if (manualWorkerMode) {
-    manualWorkerInput.classList.remove("hidden");
-    manualWorkerInput.style.display = "inline-block";
-    manualWorkerInput.focus();
-    manualEquipInput.style.display = "none";
-    manualEquipInput.classList.add("hidden");
-    manualEquipInput.value = "";
-    console.log("✅ Manual Worker Mode ON");
-  } else if (manualEquipMode) {
-    manualEquipInput.classList.remove("hidden");
-    manualEquipInput.style.display = "inline-block";
-    manualEquipInput.focus();
-    manualWorkerInput.style.display = "none";
-    manualWorkerInput.classList.add("hidden");
-    manualWorkerInput.value = "";
-    console.log("✅ Manual Equipment Mode ON");
+  // 1) Toggle flags
+  if (mode === 'worker') {
+    manualWorkerMode = !manualWorkerMode;
+    manualEquipMode  = false;
+  } else {
+    manualEquipMode  = !manualEquipMode;
+    manualWorkerMode = false;
   }
+
+  // 2) Dropdown visible only when no manual mode
+  const anyManual = manualWorkerMode || manualEquipMode;
+  dropdown.disabled = anyManual;
+  dropdown.classList.toggle("hidden", anyManual);
+
+  // 3) Worker input
+  manualWorkerIn.classList.toggle("hidden",  !manualWorkerMode);
+  manualWorkerIn.classList.toggle("visible", manualWorkerMode);
+  if (manualWorkerMode) manualWorkerIn.focus();
+
+  // 4) Equipment input
+  manualEquipIn.classList.toggle("hidden",  !manualEquipMode);
+  manualEquipIn.classList.toggle("visible", manualEquipMode);
+  if (manualEquipMode) manualEquipIn.focus();
+
+  console.log(
+    manualWorkerMode ? "✅ Manual Worker Mode ON"
+  : manualEquipMode  ? "✅ Manual Equipment Mode ON"
+  :                     "↩️ Back to dropdown-only mode"
+  );
 }
 
-//function toggleManualWorkerEntry() {
-  //const dropdown = document.getElementById("workerName");
-  //const manualWorkerInput = document.getElementById("manualWorkerName");
-  //const manualEquipInput = document.getElementById("manualEquipmentName");
-
-  // Reset manual input states
-  //manualWorkerMode = true;
-  //manualEquipMode = false;
-
-  // Hide dropdown
-  //dropdown.disabled = true;
-  //dropdown.classList.add("hidden");
-
-  // Show manual worker input
-  //manualWorkerInput.classList.remove("hidden");
-  //manualWorkerInput.style.display = "inline-block";
-  //manualWorkerInput.focus();
-
-  // Hide equipment input
-  //manualEquipInput.classList.add("hidden");
-  //manualEquipInput.style.display = "none";
-  //manualEquipInput.value = "";
-
-  //console.log("Manual Worker mode ON");
-//}
-
-//function toggleManualEquipEntry() {
-  //const dropdown = document.getElementById("workerName");
-  //const manualWorkerInput = document.getElementById("manualWorkerName");
-  //const manualEquipInput = document.getElementById("manualEquipmentName");
-
-  //manualEquipMode = true;
-  //manualWorkerMode = false;
-
-  //dropdown.disabled = true;
-  //dropdown.classList.add("hidden");
-
-  //manualEquipInput.classList.remove("hidden");
-  //manualEquipInput.style.display = "inline-block";
-  //manualEquipInput.focus();
-
-  //manualWorkerInput.classList.add("hidden");
-  //manualWorkerInput.style.display = "none";
-  //manualWorkerInput.value = "";
-  //console.log("Manual Equipment mode ON");
-//}
 
 function resetFormUI() {
-  const dropdown = document.getElementById("workerName");
-  const manualWorkerInput = document.getElementById("manualWorkerName");
-  const manualEquipInput = document.getElementById("manualEquipmentName");
+  const dropdown         = document.getElementById("workerName");
+  const manualWorkerIn   = document.getElementById("manualWorkerName");
+  const manualEquipIn    = document.getElementById("manualEquipmentName");
 
   dropdown.disabled = false;
   dropdown.classList.remove("hidden");
   dropdown.selectedIndex = 0;
 
-  manualWorkerInput.style.display = "none";
-  manualWorkerInput.classList.add("hidden");
-  manualWorkerInput.value = "";
+  manualWorkerIn.value = "";
+  manualWorkerIn.classList.add("hidden");
+  manualWorkerIn.classList.remove("visible");
 
-  manualEquipInput.style.display = "none";
-  manualEquipInput.classList.add("hidden");
-  manualEquipInput.value = "";
+  manualEquipIn.value = "";
+  manualEquipIn.classList.add("hidden");
+  manualEquipIn.classList.remove("visible");
 
-  document.getElementById("laborHours").value = "";
+  document.getElementById("laborHours").value       = "";
   document.getElementById("activityCode").selectedIndex = 0;
 
   manualWorkerMode = false;
-  manualEquipMode = false;
+  manualEquipMode  = false;
 }
 
 // ----------------------
@@ -420,41 +376,3 @@ function handleDeleteConfirmedRow(event) {
 }
 
 
-// ----------------------
-// Manual Entry Toggles for Worker & Equipment
-// ----------------------
-document.addEventListener("DOMContentLoaded", () => {
-  const manualWorkerToggle = document.getElementById("manualEntryToggle");
-  const manualEquipToggle = document.getElementById("manualEquipToggle");
-  const manualWorkerInput = document.getElementById("manualWorkerName");
-  const manualEquipInput = document.getElementById("manualEquipmentName");
-  const dropdown = document.getElementById("workerName");
-
-  function resetManualInputs() {
-    manualWorkerInput.style.display = "none";
-    manualEquipInput.style.display = "none";
-    manualWorkerInput.value = "";
-    manualEquipInput.value = "";
-    dropdown.disabled = false;
-    manualWorkerMode = false;
-    manualEquipMode = false;
-  }
-
-  manualWorkerToggle?.addEventListener("click", () => {
-      resetManualInputs();
-      manualWorkerInput.style.display = "inline-block";
-      dropdown.disabled = true;
-      manualWorkerMode = true;
-      console.log("✅ Manual worker mode ON");
-    });
-  
-
-  manualEquipToggle?.addEventListener("click", () => {
-      resetManualInputs();
-      manualEquipInput.style.display = "inline-block";
-      dropdown.disabled = true;
-      manualEquipMode = true;
-      console.log("✅ Manual equipment mode ON");
-    });
-  
-});
