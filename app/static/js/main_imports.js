@@ -3,7 +3,7 @@ import { clearErrorStyles, showError } from './validation.js';
 import { openTab } from './openTab.js';
 import { fetchProjectNumbers } from './projects.js';
 // import { addWorker, fetchAndRenderWorkers } from './workers.js';
-import { initLaborEquipmentTab } from '/static/js/laborEquipment.js';
+import { initLaborEquipmentTab } from '/static/js/LaborEquipment.js';
 import { fetchAndRenderMaterials, addMaterial } from './materials.js';
 // import { fetchAndRenderEquipment, addEquipment } from './equipment.js';
 import { fetchAndRenderSubcontractors } from './subcontractors.js';
