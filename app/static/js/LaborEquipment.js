@@ -1,5 +1,8 @@
 // laborEquipment.js
 
+import { populateFormFromSession } from './populate_drop_downs.js';
+
+
 let confirmedUsageData = [];
 let manualWorkerMode = false;
 let manualEquipMode = false;
@@ -20,6 +23,7 @@ export function initLaborEquipmentTab() {
   const reportDate = document.getElementById("dateSelector")?.value;
 
   if (projectId && reportDate) {
+    ///populateFormFromSession(projectId, reportDate, renderConfirmedTableFromServer);
     loadPendingEntries(projectId, reportDate);
   }
 
@@ -69,10 +73,12 @@ function resetFormUI() {
   const manualWorkerIn   = document.getElementById("manualWorkerName");
   const manualEquipIn    = document.getElementById("manualEquipmentName");
 
+  // Restore the worker/equipment selector
   dropdown.disabled = false;
   dropdown.classList.remove("hidden");
   dropdown.selectedIndex = 0;
 
+  // Clear manual‐entry inputs
   manualWorkerIn.value = "";
   manualWorkerIn.classList.add("hidden");
   manualWorkerIn.classList.remove("visible");
@@ -81,9 +87,15 @@ function resetFormUI() {
   manualEquipIn.classList.add("hidden");
   manualEquipIn.classList.remove("visible");
 
-  document.getElementById("laborHours").value       = "";
+  // Clear the hours & activity code
+  document.getElementById("laborHours").value = "";
   document.getElementById("activityCode").selectedIndex = 0;
 
+  // ← NEW: reset bordereau & CWP selects
+  document.getElementById("payment_item_id").selectedIndex = 0;
+  document.getElementById("cwp_code").selectedIndex       = 0;
+
+  // Reset toggles
   manualWorkerMode = false;
   manualEquipMode  = false;
 }
@@ -94,52 +106,91 @@ function resetFormUI() {
 function addUsageLine(event) {
   event.preventDefault();
 
-  const workerSelect = document.getElementById("workerName");
+  // grab all inputs
+  const workerSelect      = document.getElementById("workerName");
   const manualWorkerInput = document.getElementById("manualWorkerName");
-  const manualEquipInput = document.getElementById("manualEquipmentName");
-  const hoursInput = document.getElementById("laborHours");
-  const activitySelect = document.getElementById("activityCode");
+  const manualEquipInput  = document.getElementById("manualEquipmentName");
+  const hoursInput        = document.getElementById("laborHours");
+  const activitySelect    = document.getElementById("activityCode");
+  const paymentSelect     = document.getElementById('payment_item_id');
+  const cwpSelect         = document.getElementById('cwp_code');
 
-  const hours = hoursInput.value;
+  const hours        = hoursInput.value;
   const activityCode = activitySelect.value;
-  const activityText = activitySelect.options[activitySelect.selectedIndex]?.text || "";
+  const activityText = activitySelect.options[activitySelect.selectedIndex]?.text || '';
+  const payment_item_id = paymentSelect.value || null;
+  const paymentText  = paymentSelect.options[paymentSelect.selectedIndex]?.text || '';
+  const cwp_code     = cwpSelect.value || null;
+  const cwpText      = cwpSelect.options[cwpSelect.selectedIndex]?.text || '';
 
+  // determine type/name/id
   let type, entityId, name;
-
   if (manualWorkerMode && manualWorkerInput.value.trim()) {
-    type = "worker";
+    type     = 'worker';
     entityId = null;
-    name = manualWorkerInput.value.trim();
+    name     = manualWorkerInput.value.trim();
   } else if (manualEquipMode && manualEquipInput.value.trim()) {
-    type = "equipment";
+    type     = 'equipment';
     entityId = null;
-    name = manualEquipInput.value.trim();
+    name     = manualEquipInput.value.trim();
   } else if (workerSelect.value) {
-    const selectedValue = workerSelect.value;
-    const selectedText = workerSelect.options[workerSelect.selectedIndex]?.text || "";
-    const [parsedType, parsedId] = selectedValue.split('|');
-    type = parsedType;
+    const [parsedType, parsedId] = workerSelect.value.split('|');
+    type     = parsedType;
     entityId = parsedId;
-    name = selectedText;
+    name     = workerSelect.options[workerSelect.selectedIndex].text;
   } else {
-    alert("Veuillez remplir tous les champs.");
-    return;
+    return alert("Veuillez remplir tous les champs.");
   }
 
   if (!hours || !activityCode) {
-    alert("Veuillez remplir tous les champs.");
-    return;
+    return alert("Veuillez remplir tous les champs.");
   }
 
-  const usageTableBody = document.querySelector("#workersTable tbody");
-  const row = usageTableBody.insertRow();
-  row.innerHTML = `
-    <td data-type="${type}" data-id="${entityId ?? ''}">${name}</td>
-    <td>${hours}</td>
-    <td data-actval="${activityCode}">${activityText}</td>
-  `;
+  // push into our array
+  confirmedUsageData.push({
+    type,
+    entityId,
+    name,
+    hours,
+    activityCode,
+    activityText,
+    payment_item_id,
+    paymentText,
+    cwp_code,
+    cwpText,
+    isManual:    !entityId,
+    manual_name: (!entityId ? name : null)
+  });
 
+  // re-render the preview table (just the preview rows)
+  renderPreviewTable();
+
+  // clear the form
   resetFormUI();
+}
+
+/**
+ * Renders the unconfirmed rows from confirmedUsageData into the preview table
+ */
+function renderPreviewTable() {
+  const tbody = document.querySelector('#workersTable tbody');
+
+  // 1) Remove only the old preview rows
+  tbody.querySelectorAll('tr.preview-row').forEach(r => r.remove());
+
+  // 2) Append the current preview entries
+  confirmedUsageData.forEach(entry => {
+    const row = document.createElement('tr');
+    row.classList.add('preview-row'); // mark it!
+    row.innerHTML = `
+      <td data-type="${entry.type}" data-id="${entry.entityId || ''}">${entry.name}</td>
+      <td>${entry.hours}</td>
+      <td data-actval="${entry.activityCode}">${entry.activityText}</td>
+      <td data-payment-id="${entry.payment_item_id}">${entry.paymentText}</td>
+      <td data-cwp-id="${entry.cwp_code}">${entry.cwpText}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 
 // ----------------------
@@ -147,83 +198,42 @@ function addUsageLine(event) {
 // ----------------------
 async function confirmUsageLines(event) {
   event.preventDefault();
-
-  const usageTableBody = document.querySelector('#workersTable tbody');
-  const rows = usageTableBody.querySelectorAll('tr');
-  if (rows.length === 0) {
+  if (confirmedUsageData.length === 0) {
     alert('Aucune entrée à confirmer.');
     return;
   }
 
-  const usageArr = [];
+  // Build payload straight from the array
+  const usageArr = confirmedUsageData.map(e => ({
+      type:           e.type,                   // if your back-end reads this as 'type'
+      entity_id:      e.entityId,               // instead of entityId
+      hours:          e.hours,
+      activityCode:   e.activityCode,           // instead of activityCode
+      payment_item_id:e.payment_item_id,
+      cwp:            e.cwp_code,
+      isManual:       e.isManual,               // snake_case
+      manual_name:    e.manual_name
+  }));
 
-  rows.forEach(row => {
-    if (row.classList.contains('confirmed-row')) return;
-
-    const cells = row.querySelectorAll('td');
-    const type = cells[0].getAttribute('data-type');
-    const entityId = cells[0].getAttribute('data-id');
-    const name = cells[0].textContent.trim();
-    const hours = cells[1].textContent.trim();
-    const actCode = cells[2].getAttribute('data-actval');
-    const isManual = !entityId || entityId === "undefined" || entityId === "";
-
-    // Manual entry must have a name
-    if (!type || !hours || !actCode || (isManual && !name)) {
-      console.warn("Skipping malformed row:", { type, entityId, name, hours, actCode });
-      return;
-    }
-
-    usageArr.push({
-      type,
-      entityId: isManual ? null : entityId,
-      hours,
-      activityCode: actCode,
-      isManual,
-      manual_name: isManual ? name : null
-    });
-  });
-
+  // … then the exact same fetch logic …
   try {
-    const projectId = document.getElementById("projectNumber").value;
-    const reportDate = document.getElementById("dateSelector").value;
-
+    const projectId  = document.getElementById('projectNumber').value;
+    const reportDate = document.getElementById('dateSelector').value;
     const resp = await fetch('/labor-equipment/confirm-labor-equipment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        usage: usageArr,
-        project_id: projectId,
-        date_of_report: reportDate
-      }),
+      body: JSON.stringify({ usage: usageArr, project_id: projectId, date_of_report: reportDate })
     });
-
-    if (!resp.ok) {
-      const errData = await resp.json();
-      throw new Error(errData.error || 'Erreur de confirmation');
-    }
-
-    alert("Les données ont été confirmées.");
+    if (!resp.ok) throw new Error((await resp.json()).error || 'Erreur de confirmation');
+    alert('Les données ont été confirmées.');
+    // clear local state
+    confirmedUsageData = [];
+    renderPreviewTable();
     loadPendingEntries(projectId, reportDate);
 
-  } catch (error) {
-    console.error('Erreur lors de la confirmation :', error);
-    alert('Erreur : ' + error.message);
-  }
-}
-
-// ----------------------
-// 4. Load From Backend
-// ----------------------
-async function loadPendingEntries(projectId, reportDate) {
-  try {
-    const resp = await fetch(`/labor-equipment/by-project-date?project_id=${projectId}&date=${reportDate}`);
-    if (!resp.ok) throw new Error("Impossible de charger les données du serveur.");
-
-    const data = await resp.json();
-    renderConfirmedTableFromServer(data.workers, data.equipment);
   } catch (err) {
-    console.error("Erreur lors du chargement des entrées :", err);
+    console.error('Erreur lors de la confirmation :', err);
+    alert('Erreur : ' + err.message);
   }
 }
 
@@ -232,40 +242,68 @@ async function loadPendingEntries(projectId, reportDate) {
 // ----------------------
 function renderConfirmedTableFromServer(workers = [], equipment = []) {
   const tableBody = document.querySelector("#workersTable tbody");
-  tableBody.innerHTML = "";
 
+  // Remove only the previous confirmed‐rows (leave previews intact)
+  tableBody.querySelectorAll("tr.confirmed-row").forEach(r => r.remove());
+
+  // merge workers + equipment
   [...workers, ...equipment].forEach(entry => {
-    const isWorker = entry.worker_id !== undefined;
-    const type = isWorker ? "worker" : "equipment";
-    const entityId = isWorker ? entry.worker_id : entry.equipment_id;
-    const name = entry.worker_name ?? entry.equipment_name ?? `ID-${entityId}`;
-    const hours = entry.hours ?? entry.hours_worked ?? entry.hours_used ?? '??';
-    const activity = entry.activity_code
-      ? `${entry.activity_code} - ${entry.activity_description || ''}`
-      : "<em>Code-undefined</em>";
+    const isWorker   = entry.worker_id !== undefined;
+    const type       = isWorker ? "worker" : "equipment";
+    const entityId   = isWorker ? entry.worker_id : entry.equipment_id;
+    const name       = entry.worker_name ?? entry.equipment_name ?? `ID-${entityId}`;
+    const hours      = entry.hours ?? "??";
+    const activity   = entry.activity_code
+      ? `${entry.activity_code} – ${entry.activity_description || ""}`
+      : "<em>—</em>";
+
+    // pull bordereau & CWP from JSON
+    const paymentId   = entry.payment_item_id || "";
+    const bordereau   = (entry.payment_item_code && entry.payment_item_name)
+      ? `${entry.payment_item_code} – ${entry.payment_item_name}`
+      : "";
+    const cwp         = entry.cwp || "";
+    const cwpCode   = entry.cwp_code || entry.cwp || "";
 
     const row = document.createElement("tr");
-    row.classList.add("confirmed-row");
-
+    row.classList.add("confirmed-row"); // mark it!
     row.innerHTML = `
       <td data-type="${type}" data-id="${entityId}">${name}</td>
       <td>${hours}</td>
       <td data-actval="${entry.activity_id}">${activity}</td>
+      <td data-payment-id="${paymentId}">${bordereau}</td>
+      <td data-cwp-code="${cwpCode}">${cwpCode}</td>
       <td class="actions">
-        <button class="edit-btn" data-entry-id="${entry.id}" data-type="${type}">✏️</button>
+        <button class="edit-btn"   data-entry-id="${entry.id}" data-type="${type}">✏️</button>
         <button class="delete-btn" data-entry-id="${entry.id}" data-type="${type}">🗑️</button>
       </td>
     `;
-
     tableBody.appendChild(row);
   });
 
-  document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', handleEditConfirmedRow);
-  });
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', handleDeleteConfirmedRow);
-  });
+  // re-attach handlers
+  document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditConfirmedRow));
+  document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteConfirmedRow));
+}
+
+/**
+ * Fetch pending entries (workers & equipment) from the server
+ * and render them into the confirmed table.
+ */
+async function loadPendingEntries(projectId, reportDate) {
+  try {
+    const resp = await fetch(
+      `/labor-equipment/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}`
+    );
+    if (!resp.ok) {
+      console.error('Failed to load pending entries', await resp.text());
+      return;
+    }
+    const { workers, equipment } = await resp.json();
+    renderConfirmedTableFromServer(workers, equipment);
+  } catch (err) {
+    console.error('Error loading pending entries:', err);
+  }
 }
 
 // Edit and Save Handlers (as previously implemented)

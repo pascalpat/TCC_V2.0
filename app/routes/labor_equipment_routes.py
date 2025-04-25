@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models.WorkerEntry_models import WorkerEntry
 from app.models.EquipmentEntry_models import EquipmentEntry
-from app.models.core_models import ActivityCode, Project
+from app.models.core_models import ActivityCode, Project, PaymentItem
 from datetime import datetime
 
 labor_equipment_bp = Blueprint('labor_equipment_bp', __name__)
@@ -16,83 +16,89 @@ def confirm_labor_equipment():
             return jsonify({"error": "Missing 'usage' array in request"}), 400
 
         usage_lines = payload['usage']
-        if not isinstance(usage_lines, list):
-            return jsonify({"error": "Expected 'usage' to be a list"}), 400
-
         project_number = payload.get("project_id")
         project = Project.query.filter_by(project_number=project_number).first()
         if not project:
             return jsonify({"error": "Invalid project number"}), 400
-
         project_id = project.id
-        date_of_report = payload.get('date_of_report')
-        if not date_of_report:
-            return jsonify({"error": "Missing date_of_report in request"}), 400
 
+        date_str = payload.get('date_of_report')
+        if not date_str:
+            return jsonify({"error": "Missing date_of_report in request"}), 400
         try:
-            date_obj = datetime.strptime(date_of_report, '%Y-%m-%d').date()
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
-            return jsonify({"error": f"Invalid date format: {date_of_report}"}), 400
+            return jsonify({"error": f"Invalid date format: {date_str}"}), 400
 
         new_records = []
-
         for line in usage_lines:
-            usage_type = line.get('type')
-            entity_id_str = line.get('entityId')
-            hours_str = line.get('hours')
-            activity_code_str = line.get('activityCode')
-            manual_name = line.get('name') or line.get('manual_name')  # Handle both field variants
-            is_manual = line.get('isManual', False)
+            usage_type   = line.get('type')
+            entity_id    = line.get('entityId')
+            hours_str    = line.get('hours')
+            activity_str = line.get('activityCode')
 
-            if not (usage_type and hours_str and activity_code_str):
-                return jsonify({"error": "One or more fields missing in usage line"}), 400
+            # support both JS and Python keys
+            payment_item_id = (
+                line.get('payment_item_id')
+                or line.get('paymentId')
+                or None
+            )
+            cwp_code = (
+                line.get('cwp_code')
+                or line.get('cwp')
+                or line.get('cwpCode')
+                or None
+            )
+            manual_name = line.get('manual_name') or line.get('name')
+            is_manual   = line.get('isManual', False)
 
+            if not (usage_type and hours_str and activity_str):
+                return jsonify({"error": "Missing field in usage line"}), 400
             try:
                 hours_val = float(hours_str)
             except ValueError:
                 return jsonify({"error": f"Invalid hours: {hours_str}"}), 400
 
-            activity = ActivityCode.query.filter_by(code=activity_code_str).first()
+            activity = ActivityCode.query.filter_by(code=activity_str).first()
             if not activity:
-                return jsonify({"error": f"Invalid activity code: {activity_code_str}"}), 400
-
+                return jsonify({"error": f"Invalid activity code: {activity_str}"}), 400
             activity_id = activity.id
 
             if usage_type.lower() == 'worker':
-                worker_id = int(entity_id_str) if entity_id_str else None
-                worker_entry = WorkerEntry(
-                    project_id=project_id,
-                    worker_id=worker_id,
-                    worker_name=manual_name if not worker_id else None,
-                    date_of_report=date_obj,
-                    hours_worked=hours_val,
-                    activity_id=activity_id,
-                    status='pending'
+                w_id = int(entity_id) if entity_id else None
+                entry = WorkerEntry(
+                    project_id      = project_id,
+                    worker_id       = w_id,
+                    worker_name     = None if w_id else manual_name,
+                    date_of_report  = date_obj,
+                    hours_worked    = hours_val,
+                    activity_id     = activity_id,
+                    payment_item_id = payment_item_id,
+                    cwp             = cwp_code,
+                    status          = 'pending'
                 )
-                db.session.add(worker_entry)
-                new_records.append(worker_entry)
-
             elif usage_type.lower() == 'equipment':
-                equipment_id = int(entity_id_str) if entity_id_str else None
-                equipment_entry = EquipmentEntry(
-                    project_id=project_id,
-                    equipment_id=equipment_id,
-                    equipment_name=manual_name if not equipment_id else None,
-                    date_of_report=date_obj,
-                    hours_used=hours_val,
-                    activity_id=activity_id,
-                    status='pending'
+                e_id = int(entity_id) if entity_id else None
+                entry = EquipmentEntry(
+                    project_id      = project_id,
+                    equipment_id    = e_id,
+                    equipment_name  = None if e_id else manual_name,
+                    date_of_report  = date_obj,
+                    hours_used      = hours_val,
+                    activity_id     = activity_id,
+                    payment_item_id = payment_item_id,
+                    cwp             = cwp_code,
+                    status          = 'pending'
                 )
-                db.session.add(equipment_entry)
-                new_records.append(equipment_entry)
-
             else:
-                return jsonify({"error": f"Unsupported usage type '{usage_type}'"}), 400
+                return jsonify({"error": f"Unsupported type {usage_type}"}), 400
+
+            db.session.add(entry)
+            new_records.append(entry)
 
         db.session.commit()
-
         return jsonify({
-            "message": f"{len(new_records)} usage lines saved successfully!",
+            "message": f"{len(new_records)} lines saved",
             "recordsSaved": len(new_records)
         }), 200
 
@@ -100,57 +106,56 @@ def confirm_labor_equipment():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
 @labor_equipment_bp.route('/by-project-date', methods=['GET'])
 def get_pending_labor_equipment():
     project_number = request.args.get("project_id")
-    date = request.args.get("date")
-
-    if not project_number or not date:
+    date_str       = request.args.get("date")
+    if not project_number or not date_str:
         return jsonify({"error": "Missing project_id or date"}), 400
 
     project = Project.query.filter_by(project_number=project_number).first()
     if not project:
         return jsonify({"error": "Invalid project number"}), 400
-
     try:
-        date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return jsonify({"error": "Invalid date format"}), 400
 
-    entries_workers = WorkerEntry.query.filter_by(
+    w_entries = WorkerEntry.query.filter_by(
+        project_id=project.id,
+        date_of_report=date_obj,
+        status="pending"
+    ).all()
+    e_entries = EquipmentEntry.query.filter_by(
         project_id=project.id,
         date_of_report=date_obj,
         status="pending"
     ).all()
 
-    entries_equipment = EquipmentEntry.query.filter_by(
-        project_id=project.id,
-        date_of_report=date_obj,
-        status="pending"
-    ).all()
+    def serialize(entry, is_worker=True):
+        # pull PaymentItem relationship if set
+        # pi = getattr(entry, 'payment_item', None)
+        pi = None
+        if entry.payment_item_id:
+            pi = PaymentItem.query.get(entry.payment_item_id)
+
+        return {
+            "id":                   entry.id,
+            **({"worker_id":        entry.worker_id,     "worker_name":    entry.worker.name if entry.worker else entry.worker_name} 
+               if is_worker else
+               {"equipment_id":     entry.equipment_id,  "equipment_name": entry.equipment.name if entry.equipment else entry.equipment_name}),
+            "hours":                entry.hours_worked   if is_worker else entry.hours_used,
+            "activity_code":        entry.activity.code if entry.activity else None,
+            "activity_description": entry.activity.description if entry.activity else None,
+            "payment_item_id":      entry.payment_item_id,
+            "payment_item_code":    pi.payment_code   if pi else None,
+            "payment_item_name":    pi.item_name      if pi else None,
+            "cwp":                  entry.cwp,
+        }
 
     return jsonify({
-        "workers": [
-            {
-                "id": w.id,
-                "worker_id": w.worker_id,
-                "worker_name": w.worker.name if w.worker else (w.worker_name or f"ID-{w.worker_id}"),
-                "hours": w.hours_worked,
-                "activity_code": w.activity.code if w.activity else None,
-                "activity_description": w.activity.description if w.activity else None
-            } for w in entries_workers
-        ],
-        "equipment": [
-            {
-                "id": e.id,
-                "equipment_id": e.equipment_id,
-                "equipment_name": e.equipment.name if e.equipment else (e.equipment_name or f"ID-{e.equipment_id}"),
-                "hours": e.hours_used,
-                "activity_code": e.activity.code if e.activity else None,
-                "activity_description": e.activity.description if e.activity else None
-            } for e in entries_equipment
-        ]
+        "workers":   [serialize(w, True) for w in w_entries],
+        "equipment": [serialize(e, False) for e in e_entries]
     }), 200
 
 

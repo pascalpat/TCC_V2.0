@@ -15,33 +15,33 @@
     padding: 20px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif; /* ✅ Ensuring same font */
+    font-family: Arial, sans-serif; /* Ensuring same font */
 }
 
 .form-box h2 {
-    font-size: 22px; /* ✅ Matched size */
+    font-size: 22px;
     color: #333;
     font-weight: bold;
     margin-bottom: 15px;
 }
 
-/* Styling the inputs and labels in the form */
+/* Styling the inputs and selects in the form */
 .form-box label {
-    font-size: 16px; /* ✅ Match Worker/Equipment Tab */
+    font-size: 16px;
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
 }
 
-.form-box input, 
+.form-box input,
 .form-box select {
     width: 100%;
     padding: 8px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 14px; /* ✅ Ensure uniform font size */
-    height: 55px; /* ✅ Match input height */
+    font-size: 14px;
+    height: 55px;
 }
 
 /* Buttons */
@@ -62,50 +62,43 @@ button {
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-family: Arial, sans-serif; /* ✅ Match button font */
+    font-family: Arial, sans-serif;
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
-/* Table Containers (Ensures same structure for both tabs) */
+/* Table Containers */
 #workersTableContainer, #materialsTableContainer {
-    width: 50%;
+    width: 55%;
 }
 
-/* Tables Styling (Ensures both tables look the same) */
-#workersTable, #materialsTable {
+/* Generic styled-table for uniform look */
+.styled-table {
     width: 100%;
     border-collapse: collapse;
     border: 1px solid #ddd;
-    font-family: Arial, sans-serif; /* ✅ Ensuring both tables use the same font */
-    font-size: 20px; /* ✅ Match font size in both tables */
+    font-family: Arial, sans-serif;
+    font-size: 20px;
 }
 
-#workersTable thead, #materialsTable thead {
+.styled-table thead {
     background-color: #007bff;
     color: white;
     font-weight: bold;
 }
 
-#workersTable th, #materialsTable th {
-    padding: 12px;
-    text-align: left;
-}
-
-/* ✅ Fix Thin Row Issue */
-#workersTable td, #materialsTable td {
-    padding: 15px; /* ✅ Increased padding */
+.styled-table th, .styled-table td {
+    padding: 15px;
     border: 1px solid #ddd;
-    font-size: 25px; /* ✅ Ensuring text consistency */
 }
 
-/* ✅ Ensure row height is correct */
-#workersTable tr, #materialsTable tr {
-    height: 50px; /* ✅ Increased row height for better visibility */
+.styled-table tr {
+    height: 50px;
 }
 
+/* Manual entry inputs */
 .manual-entry-input {
     display: none;
     width: 100%;
@@ -114,32 +107,25 @@ button:hover {
     font-size: 14px;
 }
 
-
 .manual-entry-input.visible {
-    display: inline-block !important; /* Show the input when needed */
+    display: inline-block !important;
 }
-
 
 .manual-toggle-group {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
 }
-  
+
 .hidden {
     display: none !important;
 }
 
-
-
-/* ------------------------------
-   👇 Styling for Confirmed Entries in Table
-   Used after user clicks "Confirmer les entrées" in Labor/Equipment tab
-   ------------------------------ */
+/* Confirmed entries styling */
 .confirmed-row {
-  background-color: #e7f7e7;       /* Light green background for visibility */
-  font-style: italic;              /* Slightly different font style */
-  opacity: 0.9;                    /* Softened to visually differentiate */
+  background-color: #e7f7e7;
+  font-style: italic;
+  opacity: 0.9;
   transition: background-color 0.3s ease;
 }
 
@@ -148,5 +134,5 @@ button:hover {
 }
 
 .confirmed-row:hover {
-  background-color: #d0f0d0;       /* Slightly darker on hover */
+  background-color: #d0f0d0;
 }

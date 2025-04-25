@@ -190,3 +190,15 @@ class PaymentItem(db.Model):
             raise ValueError("Rate per unit cannot be negative.")
         return value
 
+class CWPackage(db.Model):
+    __tablename__ = 'cw_packages'
+
+    project_id = db.Column(
+        db.Integer,
+        db.ForeignKey('projects.id'),
+        primary_key=True
+    )
+    code       = db.Column(db.String(50), primary_key=True)
+    name       = db.Column(db.String(255), nullable=False)
+    unit       = db.Column(db.String(20), nullable=True)
+    project_id = db.Column(db.String(50), nullable=False, index=True)

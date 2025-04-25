@@ -16,6 +16,7 @@ class EquipmentEntry(db.Model):
     ############################## Additional Fields #########################
     activity_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
+    payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
     phase = db.Column(db.String(50), nullable=True)
     usage_description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,6 +40,7 @@ class EquipmentEntry(db.Model):
             'activity_id': self.activity_id,
             'cwp': self.cwp,
             'phase': self.phase,
+            'payment_item_id': self.payment_item_id,
             'usage_description': self.usage_description,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,

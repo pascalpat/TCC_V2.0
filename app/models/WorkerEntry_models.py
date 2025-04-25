@@ -16,7 +16,8 @@ class WorkerEntry(db.Model):
     worker_name = db.Column(db.Text, nullable=True) ## Worker name (optional, can be derived from worker_id)
     hours_worked = db.Column(db.Float, nullable=False, default=0.0)  # Hours worked
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
-
+    payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)  # FK to Payment Items
+    
     ################################## Additional Fields ##########################################
     activity_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)  # FK to Activity Codes
     cwp = db.Column(db.String(50), nullable=True)  # Construction Work Package
@@ -47,6 +48,7 @@ class WorkerEntry(db.Model):
             'activity_id': self.activity_id,
             'cwp': self.cwp,
             'phase': self.phase,
+            'payment_item_id': self.payment_item_id, 
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

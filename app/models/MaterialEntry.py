@@ -15,6 +15,8 @@ class MaterialEntry(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('project_tasks.id'), nullable=True)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
+    payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
+    cwp = db.Column(db.String(50), nullable=True)
 
     ############################## Additional Fields ########################
     material_name = db.Column(db.String(255), nullable=True)
@@ -47,19 +49,21 @@ class MaterialEntry(db.Model):
         """
         return {
             'id': self.id,
-            'material_id': self.material_id,
-            'project_id': self.project_id,
-            'purchase_order_id': self.purchase_order_id,
-            'activity_code_id': self.activity_code_id,
-            'task_id': self.task_id,
-            'work_order_id': self.work_order_id,
-            'material_name': self.material_name,
-            'unit': self.unit,
-            'unit_price': self.unit_price,
-            'quantity_used': self.quantity_used,
-            'supplier_name': self.supplier_name,
-            'cost': self.cost,
-            'procurement_status': self.procurement_status,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'material_id':          self.material_id,
+            'project_id':           self.project_id,
+            'purchase_order_id':    self.purchase_order_id,
+            'activity_code_id':     self.activity_code_id,
+            'task_id':              self.task_id,
+            'work_order_id':        self.work_order_id,
+            'material_name':        self.material_name,
+            'unit':                 self.unit,
+            'unit_price':           self.unit_price,
+            'quantity_used':        self.quantity_used,
+            'supplier_name':        self.supplier_name,
+            'cost':                 self.cost,
+            'procurement_status':   self.procurement_status,
+            'payment_item_id':      self.payment_item_id,
+            'cwp':                  self.cwp,
+            'created_at':           self.created_at.isoformat() if self.created_at else None,
+            'updated_at':           self.updated_at.isoformat() if self.updated_at else None,
         }

@@ -1,7 +1,10 @@
 # app/routes/data_entry_routes.py
 from flask import Blueprint, request, session, jsonify, flash, redirect, url_for, render_template, current_app
 from app.models.workforce_models import Worker
-from app.models.core_models import ActivityCode
+try:
+    from app.models.core_models import ActivityCode, PaymentItem, CWPackage, Project
+except ImportError as e:
+    raise ImportError(f"Error importing models from core_models: {e}")
 import logging
 from datetime import datetime
 import openpyxl
@@ -91,70 +94,32 @@ def submit_data_entry():
     #validates it, and stores it in the appropriate format.
     #"""
     #try:
-        current_app.logger.info("Data_entry function called.")
+    current_app.logger.info("Data_entry function called.")
 
         
-        project_id = session.get('project_number', '????')
-        report_date = session.get('current_reporting_date', '????')
-        return render_template('data_entry.html', project_id=project_id, report_date=report_date)
-        # -----------------
-        # STEP 1: Validate session and project info
-        # -----------------
-        #project_number = session.get('project_number') or request.form.get('projectNumber')
-        #report_date = session.get('current_reporting_date')
+    project_number = session.get('project_number')
+    report_date    = session.get('current_reporting_date')
 
-        # Validate project and report date
-        #if not project_number or not report_date:
-        #    flash('Project ID or Report Date is missing. Please select a project and date.', 'danger')
-        #    return redirect(url_for('calendar_bp.calendar_page'))
-        
-        # Store project number in session if not already set
-        #if 'project_number' not in session:
-        #    session['project_number'] = project_number
-        #    session.modified = True
-        #    print(f"Project number set in session: {session['project_number']}")
+    # 1) resolve numeric PK from the project_number
+    project = Project.query.filter_by(project_number=project_number).first()
+    if project is None:
+        flash("Projet introuvable !", "danger")
+        return redirect(url_for('calendar_bp.calendar_page'))
 
-        #if 'current_reporting_date' not in session:
-        #    session['current_reporting_date'] = report_date
-        #   session.modified = True
-        #    print(f"Report date set in session: {session['current_reporting_date']}")
+    # 2) now query by project.id
+    activity_codes = ActivityCode.  query. filter_by(project_id=project.id).all()
+    payment_items  = PaymentItem.   query. filter_by(project_id=project.id).all()
+    cwps           = CWPackage.     query.filter_by(project_id=project_number).all()
 
-        # -----------------
-        # STEP 2 (POST logic only): Collect form data if we're saving
-        # -----------------
-        # 4. Load equipment data (still CSV or DB)
-        # 3. Placeholder for collecting form data
-        #form_data = collect_form_data('worker', ['workerName', 'laborHours', 'activityCode'], 100)
-        #work_orders = collect_work_orders(100, UPLOAD_FOLDER)
-        #daily_pictures = collect_daily_pictures(request.files)
-        #daily_pictures = [] # a remplacer pour mettre en fonction
-        #equipment_data = load_data(EQUIPMENT_FILE, ['equipment_name'])  
+    return render_template('data_entry.html',
+        project_id=project_number,
+        report_date=report_date,
+        activity_codes=activity_codes,
+        payment_items=payment_items,
+        cwps=cwps
+    )
 
-        # Save everything (Excel, CSV, or DB). 
-        # Adjust arguments if your `save_data_to_excel` signature differs.
-        #save_data_to_excel(
-        #    workers_data=form_data,
-        #    work_orders_data=work_orders,
-        #    pictures_of_the_day=daily_pictures,
-        #    equipment_data=equipment_data,
-        #    project_number=project_number,
-        #    general_notes=request.form.get('generalNotes', ''),
-        #    timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        #)
-        #current_app.logger.info("Data has been saved successfully!")
-        #flash("Data has been saved successfully!", "success")
-        
-        # -----------------
-        # STEP 3: Render a template (GET or after POST)
-        # -----------------
-        
-        # Render the index_old.html with the active project and report date
-        #return render_template('index_old.html', project_id=project_number, report_date=report_date)
 
-    #except Exception as e:
-        #logging.error(f"Error in submit_data_entry: {e}", exc_info=True)
-        #flash("An unexpected error occurred. Please try again.", 'danger')
-        #return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
     
 @data_entry_bp.route('/report', methods=['POST'])
 def redirect_to_data_entry():
