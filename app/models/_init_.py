@@ -1,4 +1,4 @@
-from .core_models import Project, ActivityCode, ProjectTask, PaymentItem
+from .core_models import Project, ActivityCode, ProjectTask, PaymentItem, CWPackage
 from .workforce_models import Worker
 from .material_models import Material
 from .equipment_models import Equipment
@@ -44,6 +44,8 @@ __all__ = [
             "SubcontractorEntry",
             "MaterialEntry",
             "WorkOrderEntry",
-            "WorkOrderEntryAttachment"
+            "WorkOrderEntryAttachment",
+            "CWPackage",
+            "ProjectTask",
 
         ]

@@ -80,7 +80,7 @@ button:hover {
     border-collapse: collapse;
     border: 1px solid #ddd;
     font-family: Arial, sans-serif;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .styled-table thead {
@@ -90,12 +90,26 @@ button:hover {
 }
 
 .styled-table th, .styled-table td {
-    padding: 15px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
 }
 
 .styled-table tr {
-    height: 50px;
+    height: auto;
+}
+
+/* ───────────────────────────────────────────────────────────── */
+ /* Force the edit/delete buttons side-by-side and compact     */
+ /* ───────────────────────────────────────────────────────────── */
+ .styled-table td.actions {
+    white-space: nowrap;    /* keep buttons on one line */
+ }
+.styled-table td.actions button {
+    display: inline-block;
+    margin: 0 4px;        /* small space between buttons */
+    padding: 4px 6px;     /* smaller padding for buttons */
+    font-size: 0.85em;      /* smaller font size for buttons */
+    line-height: 1;     /* smaller line height for buttons */
 }
 
 /* Manual entry inputs */
