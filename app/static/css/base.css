@@ -17,33 +17,65 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Flex settings for header sections */
+.left-info,
+.center-info,
+.right-info {
+    display: flex;
+    align-items: center;
+}
+
+/* Center section expands and keeps the title centered */
+.center-info {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Right section aligns its items to the right with spacing */
+.right-info {
+    justify-content: flex-end;
+    gap: 1rem;           /* space between greeting and logout */
+    /* drop text-align to let flex do the work */
+    text-align: initial;
+}
+
+/* Logo height */
 .header-container .left-info img {
     height: 70px;
 }
 
+/* Title styling */
 .header-container .center-info h1 {
-    font-size: 24px;
-    text-align: center;
+    font-size: 30px;
     color: #007bff;
+    margin: 0;
 }
 
-.header-container .right-info {
-    text-align: right;
-    font-size: 14px;
+/* Greeting text */
+.header-container .right-info p {
+    margin: 0;
+    font-size: 21px;
 }
 
-#logoutButton {
-    background-color: #ebb239;
-    color: white;
-    padding: 10px 15px;
-    border: 2px solid #e40707;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 14px;
+.project-selection #viewCalendarLink {
+    margin-left: 2.5rem;
 }
 
-#logoutButton:hover {
-    background-color: #d9534f;
+/* Logout Button */
+#logoutButton,
+#viewCalendarLink {
+    background-color: #ebb239 !important;
+    color: rgb(15, 15, 15) !important;
+    padding: 10px 15px !important;
+    border: 2px solid #e40707 !important;
+    border-radius: 5px !important;
+    text-decoration: none !important;
+    font-size: 20px !important;
+}
+
+#logoutButton:hover,
+#viewCalendarLink:hover {
+    background-color: #d9534f !important;
 }
 
 /* Footer */
@@ -65,4 +97,18 @@ footer {
 
 .center {
     text-align: center;
+}
+
+/* Weather Widget */
+.weather-widget {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+    font-size: 1.25rem;   /* 25% larger text */
+}
+
+.weather-widget img {
+    width: 1.5em;          /* scale icon up */
+    height: auto;
+    margin-right: 0.5em;   /* gap between icon and temp */
 }

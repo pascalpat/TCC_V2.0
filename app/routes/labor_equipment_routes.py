@@ -13,98 +13,121 @@ def confirm_labor_equipment():
     try:
         payload = request.get_json()
         if not payload or 'usage' not in payload:
-            return jsonify({"error": "Missing 'usage' array in request"}), 400
+            return jsonify(error="Missing 'usage' array in request"), 400
 
-        usage_lines = payload['usage']
-        project_number = payload.get("project_id")
+        usage_lines   = payload['usage']
+        project_number = payload.get('project_id')
         project = Project.query.filter_by(project_number=project_number).first()
         if not project:
-            return jsonify({"error": "Invalid project number"}), 400
+            return jsonify(error="Invalid project number"), 400
         project_id = project.id
 
         date_str = payload.get('date_of_report')
         if not date_str:
-            return jsonify({"error": "Missing date_of_report in request"}), 400
+            return jsonify(error="Missing date_of_report in request"), 400
         try:
             date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
-            return jsonify({"error": f"Invalid date format: {date_str}"}), 400
+            return jsonify(error=f"Invalid date format: {date_str}"), 400
 
-        new_records = []
+        upserted = []
+
         for line in usage_lines:
-            usage_type   = line.get('type')
-            entity_id    = line.get('entityId')
-            hours_str    = line.get('hours')
-            activity_str = line.get('activityCode')
+            entry_id      = line.get('entryId')
+            usage_type    = line.get('type')
+            entity_id     = line.get('entityId')
+            hours_str     = line.get('hours')
+            activity_code = line.get('activityCode')
 
-            # support both JS and Python keys
-            payment_item_id = (
-                line.get('payment_item_id')
-                or line.get('paymentId')
-                or None
-            )
-            cwp_code = (
-                line.get('cwp_code')
-                or line.get('cwp')
-                or line.get('cwpCode')
-                or None
-            )
-            manual_name = line.get('manual_name') or line.get('name')
-            is_manual   = line.get('isManual', False)
+            # Optional fields
+            payment_item_id = line.get('payment_item_id') or line.get('paymentId')
+            cwp_code        = line.get('cwp_code') or line.get('cwp') or line.get('cwpCode')
+            manual_name     = line.get('manual_name') or line.get('name')
+            is_manual       = line.get('isManual', False)
 
-            if not (usage_type and hours_str and activity_str):
-                return jsonify({"error": "Missing field in usage line"}), 400
+            if not (usage_type and hours_str and activity_code):
+                return jsonify(error="Missing field in usage line"), 400
             try:
                 hours_val = float(hours_str)
             except ValueError:
-                return jsonify({"error": f"Invalid hours: {hours_str}"}), 400
+                return jsonify(error=f"Invalid hours: {hours_str}"), 400
 
-            activity = ActivityCode.query.filter_by(code=activity_str).first()
+            activity = ActivityCode.query.filter_by(code=activity_code).first()
             if not activity:
-                return jsonify({"error": f"Invalid activity code: {activity_str}"}), 400
+                return jsonify(error=f"Invalid activity code: {activity_code}"), 400
             activity_id = activity.id
 
-            if usage_type.lower() == 'worker':
-                w_id = int(entity_id) if entity_id else None
-                entry = WorkerEntry(
-                    project_id      = project_id,
-                    worker_id       = w_id,
-                    worker_name     = None if w_id else manual_name,
-                    date_of_report  = date_obj,
-                    hours_worked    = hours_val,
-                    activity_id     = activity_id,
-                    payment_item_id = payment_item_id,
-                    cwp             = cwp_code,
-                    status          = 'pending'
-                )
-            elif usage_type.lower() == 'equipment':
-                e_id = int(entity_id) if entity_id else None
-                entry = EquipmentEntry(
-                    project_id      = project_id,
-                    equipment_id    = e_id,
-                    equipment_name  = None if e_id else manual_name,
-                    date_of_report  = date_obj,
-                    hours_used      = hours_val,
-                    activity_id     = activity_id,
-                    payment_item_id = payment_item_id,
-                    cwp             = cwp_code,
-                    status          = 'pending'
-                )
-            else:
-                return jsonify({"error": f"Unsupported type {usage_type}"}), 400
+            # UPDATE existing entry if entryId provided
+            if entry_id:
+                entry = None
+                if usage_type.lower() == 'worker':
+                    entry = WorkerEntry.query.get(int(entry_id))
+                else:
+                    entry = EquipmentEntry.query.get(int(entry_id))
 
-            db.session.add(entry)
-            new_records.append(entry)
+                if not entry:
+                    return jsonify(error=f"Unknown entryId {entry_id}"), 400
+
+                # Common updates
+                if usage_type.lower() == 'worker':
+                    entry.hours_worked    = hours_val
+                else:
+                    entry.hours_used      = hours_val
+
+                entry.activity_id     = activity_id
+                entry.payment_item_id = payment_item_id
+                entry.cwp             = cwp_code
+                if is_manual:
+                    if usage_type.lower() == 'worker':
+                        entry.worker_name = manual_name
+                    else:
+                        entry.equipment_name = manual_name
+
+            # INSERT new entry otherwise
+            else:
+                if usage_type.lower() == 'worker':
+                    w_id = int(entity_id) if entity_id else None
+                    entry = WorkerEntry(
+                        project_id      = project_id,
+                        worker_id       = w_id,
+                        worker_name     = None if w_id else manual_name,
+                        date_of_report  = date_obj,
+                        hours_worked    = hours_val,
+                        activity_id     = activity_id,
+                        payment_item_id = payment_item_id,
+                        cwp             = cwp_code,
+                        status          = 'pending'
+                    )
+                elif usage_type.lower() == 'equipment':
+                    e_id = int(entity_id) if entity_id else None
+                    entry = EquipmentEntry(
+                        project_id      = project_id,
+                        equipment_id    = e_id,
+                        equipment_name  = None if e_id else manual_name,
+                        date_of_report  = date_obj,
+                        hours_used      = hours_val,
+                        activity_id     = activity_id,
+                        payment_item_id = payment_item_id,
+                        cwp             = cwp_code,
+                        status          = 'pending'
+                    )
+                else:
+                    return jsonify(error=f"Unsupported type {usage_type}"), 400
+
+                db.session.add(entry)
+
+            upserted.append(entry)
 
         db.session.commit()
-        return jsonify({
-            "message": f"{len(new_records)} lines saved",
-            "recordsSaved": len(new_records)
-        }), 200
+
+        return jsonify(
+            message=f"{len(upserted)} lines upserted",
+            records=[e.id for e in upserted]
+        ), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify(error=str(e)), 500
 
 @labor_equipment_bp.route('/by-project-date', methods=['GET'])
 def get_pending_labor_equipment():

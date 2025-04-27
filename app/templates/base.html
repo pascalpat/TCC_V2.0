@@ -12,20 +12,28 @@
     <!-- Header Section -->
     <header>
         <div class="header-container">
-            <div class="left-info">
+            <!-- Left: logo + weather -->
+            <div class="left-info" >
                 <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+                <div class="weather-widget" >
+                    <img id="weatherIcon" src="{{ url_for('static', filename='Projestim.png') }}" alt="Weather Icon">
+                    <span id="currentTemperature">--°C</span>
+                </div>
             </div>
+
+
+            <!-- Center: title -->
             <div class="center-info">
                 <h1>Gestion de projet — Module Rapport Journalier</h1>
             </div>
+
+
+            <!-- Right: user greeting + logout -->
             <div class="right-info">
-                <p>Bonjour, {{ user_id }}</p>
+                <!-- Use the username if you have it in session, otherwise fall back to user_id -->
+                <p class="greeting">Bonjour, {{ username or user_id }} !</p>
                 <a href="{{ url_for('auth_bp.logout') }}" id="logoutButton">Log Out</a>
-                <div style="display: flex; align-items: center;">
-                    <img id="weatherIcon" alt="Weather Icon">
-                    <span id="currentTemperature"></span>
                 </div>
-            </div>
         </div>
     </header>
 
@@ -41,7 +49,17 @@
 
     <!-- Additional Scripts -->
     {% block extra_js %}
-        
+    <script type="module">
+        import { getCurrentDate, highlightDates, getTemperature, restoreProgress }
+          from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
+      
+        document.addEventListener('DOMContentLoaded', () => {
+          getCurrentDate();
+          highlightDates();
+          getTemperature();      // ← ensure this runs on load
+          restoreProgress();
+        });
+      </script>
     {% endblock %}
 </body>
 </html>

@@ -198,38 +198,76 @@ function renderPreviewTable() {
 // ----------------------
 async function confirmUsageLines(event) {
   event.preventDefault();
-  if (confirmedUsageData.length === 0) {
+
+  // 1️⃣ Grab all un-confirmed rows from the confirmed table
+  const rows = Array.from(document.querySelectorAll('#workersTable tbody tr'))
+    .filter(tr => !tr.classList.contains('confirmed-row'));
+
+  if (rows.length === 0) {
     alert('Aucune entrée à confirmer.');
     return;
   }
 
-  // Build payload straight from the array
-  const usageArr = confirmedUsageData.map(e => ({
-      type:           e.type,                   // if your back-end reads this as 'type'
-      entity_id:      e.entityId,               // instead of entityId
-      hours:          e.hours,
-      activityCode:   e.activityCode,           // instead of activityCode
-      payment_item_id:e.payment_item_id,
-      cwp:            e.cwp_code,
-      isManual:       e.isManual,               // snake_case
-      manual_name:    e.manual_name
-  }));
+  // 2️⃣ Build the payload from the DOM
+  const usageArr = rows.map(tr => {
+    // entryId comes from the edit-button data attribute
+    const editBtn = tr.querySelector('.edit-btn');
+    const entryId = editBtn ? editBtn.dataset.entryId : null;
 
-  // … then the exact same fetch logic …
+    // cells: [ nameCell, hoursCell, activityCell, bordereauCell, cwpCell, actionsCell ]
+    const [nameCell, hoursCell, activityCell, bordereauCell, cwpCell] =
+      tr.querySelectorAll('td');
+
+    const type        = nameCell.dataset.type;
+    const entityId    = nameCell.dataset.id || null;
+    const name        = nameCell.textContent.trim();
+    const hours       = hoursCell.textContent.trim();
+    const activity    = activityCell.dataset.actval;
+    const paymentItem = bordereauCell.dataset.paymentItemId || null;
+    const cwpCode     = cwpCell.dataset.cwpCode || null;
+
+    const isManual    = !entityId; // true if manually added
+
+    return {
+      entryId,                // existing PK to update; null → insert
+      type,                   // 'worker' or 'equipment'
+      entityId: isManual ? null : entityId,
+      hours,
+      activityCode: activity,
+      payment_item_id: paymentItem,
+      cwp: cwpCode,
+      isManual,
+      manual_name: isManual ? name : null
+    };
+  });
+
+  // 3️⃣ Send every un-confirmed row in one go
   try {
     const projectId  = document.getElementById('projectNumber').value;
     const reportDate = document.getElementById('dateSelector').value;
-    const resp = await fetch('/labor-equipment/confirm-labor-equipment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usage: usageArr, project_id: projectId, date_of_report: reportDate })
-    });
-    if (!resp.ok) throw new Error((await resp.json()).error || 'Erreur de confirmation');
-    alert('Les données ont été confirmées.');
-    // clear local state
-    confirmedUsageData = [];
-    renderPreviewTable();
-    loadPendingEntries(projectId, reportDate);
+
+    const resp = await fetch(
+      '/labor-equipment/confirm-labor-equipment',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usage: usageArr,
+          project_id: projectId,
+          date_of_report: reportDate
+        })
+      }
+    );
+    const result = await resp.json();
+    if (!resp.ok) throw new Error(result.error || 'Erreur inconnue');
+
+    alert(`Les données ont été confirmées (${result.records.length} lignes).`);
+
+    // 4️⃣ Mark them so they won’t be re-sent next time
+    rows.forEach(tr => tr.classList.add('confirmed-row'));
+
+    // 5️⃣ Reload from server to pick up any new IDs/updates
+    await loadPendingEntries(projectId, reportDate);
 
   } catch (err) {
     console.error('Erreur lors de la confirmation :', err);
@@ -271,7 +309,7 @@ function renderConfirmedTableFromServer(workers = [], equipment = []) {
       <td data-type="${type}" data-id="${entityId}">${name}</td>
       <td>${hours}</td>
       <td data-actval="${entry.activity_id}">${activity}</td>
-      <td data-payment-id="${paymentId}">${bordereau}</td>
+      <td data-payment-item-id="${paymentId}">${bordereau}</td>
       <td data-cwp-code="${cwpCode}">${cwpCode}</td>
       <td class="actions">
         <button class="edit-btn"   data-entry-id="${entry.id}" data-type="${type}">✏️</button>

@@ -1,5 +1,5 @@
 # app/routes/main_routes.py
-from flask import Blueprint, render_template, current_app as app, redirect, url_for
+from flask import Blueprint, render_template, current_app, redirect, url_for
 from app.utils.data_loader import load_data
 import requests
 from flask import jsonify, session
@@ -12,6 +12,21 @@ from flask import current_app
 # Create a Blueprint instance for general routes
 main_bp = Blueprint('main_bp', __name__, static_folder='static', template_folder='templates')
 
+@main_bp.route('/weather')
+def weather():
+    api_key = current_app.config.get('WEATHER_API_KEY')
+    if not api_key:
+        return jsonify(error='No API key'), 500
+
+    # You can make city configurable via session or DB
+    city = 'Montreal'
+    url = 'https://api.openweathermap.org/data/2.5/weather'
+    resp = requests.get(url, params={'q': city, 'units': 'metric', 'appid': api_key})
+    data = resp.json()
+    return jsonify(
+      temperature=data['main']['temp'],
+      icon=data['weather'][0]['icon']
+    )
 
 @main_bp.route('/')
 def home():

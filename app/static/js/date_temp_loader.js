@@ -96,47 +96,38 @@ export async function confirmDateSelection(SelectedDate) {
 
 // Fetch the temperature and update the DOM
 export async function getTemperature() {
+    console.log('[Weather] getTemperature() → running');
     try {
-        // Fetch the API key from the backend
-        const keyResponse = await fetch('/api/get-weather-key');
-        const keyData = await keyResponse.json();
-        const apiKey = keyData.apiKey;
+        const resp = await fetch('/weather');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const { temperature, icon } = await resp.json();
 
-        if (!apiKey) {
-            console.error('Weather API key not found!');
-            return;
-        }
+        // Update the DOM
+        const tempEl = document.getElementById('currentTemperature');
+        if (tempEl) tempEl.textContent = `${Math.round(temperature)}°C`;
+        else console.error("'currentTemperature' element not found.");
 
-        // Fetch the weather data
-        const city = 'Montreal';
-        const weatherResponse = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
-        );
-
-        if (!weatherResponse.ok) throw new Error('Failed to fetch weather data.');
-
-        const data = await weatherResponse.json();
-
-        // Update the DOM with weather data
-        const currentTempElement = document.getElementById('currentTemperature');
-        if (currentTempElement) {
-            currentTempElement.textContent = `${data.main.temp}°C in ${city}`;
+        const img = document.getElementById('weatherIcon');
+        if (img) {
+            img.src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+            img.alt = `Weather icon ${icon}`;
         } else {
-            console.error("'currentTemperature' element not found.");
-        }
-
-        const weatherIcon = document.getElementById('weatherIcon');
-        if (weatherIcon) {
-            weatherIcon.src = `http://openweathermap.org/img/w/${data.weather[0].icon}.png`;
-            weatherIcon.alt = data.weather[0].description;
-        } else {
-            console.error("'weatherIcon' element not found.");
+          console.error("'weatherIcon' element not found.");
         }
     } catch (error) {
-        console.error('Error fetching temperature:', error);
+        console.error('[Weather] failed:', error);
     }
 }
+
 window.getTemperature = getTemperature;
+
+// ------------------------------------------------------------------
+// If for any reason the template import doesn’t call getTemperature(),
+// this ensures it always runs on page-load.
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Weather] (fallback) getTemperature() on DOMContentLoaded');
+    getTemperature();
+});
 
 
 export async function markTabComplete(tabName) {
