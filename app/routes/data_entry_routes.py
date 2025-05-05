@@ -1,10 +1,7 @@
 # app/routes/data_entry_routes.py
 from flask import Blueprint, request, session, jsonify, flash, redirect, url_for, render_template, current_app
 from app.models.workforce_models import Worker
-try:
-    from app.models.core_models import ActivityCode, PaymentItem, CWPackage, Project
-except ImportError as e:
-    raise ImportError(f"Error importing models from core_models: {e}")
+from app.models.core_models import ActivityCode, PaymentItem, CWPackage, Project
 import logging
 from datetime import datetime
 import openpyxl
@@ -15,17 +12,31 @@ from app.utils.data_loader import load_data  # Import the load_data function
 
 data_entry_bp = Blueprint('data_entry_bp', __name__, url_prefix='/data_entry')
 
-UPLOAD_FOLDER = "C:\\Users\\patri\\OneDrive\\Bureau\\TCC_V2.0\\uploads"
-EQUIPMENT_FILE = "C:\\Users\\patri\\OneDrive\\Bureau\\TCC_V2.0\\data\\equipment.csv"
-UPLOAD_FOLDER = "C:\\Users\\patri\\OneDrive\\Bureau\\TCC_V2.0\\uploads"
+@data_entry_bp.route('/submit_data_entry', methods=['GET', 'POST'])
+def submit_data_entry():
+    current_app.logger.info("Data_entry function called.")
 
-def validate_date(date_string):
-    """Validate if the date string is in 'YYYY-MM-DD' format."""
-    try:
-        datetime.strptime(date_string, '%Y-%m-%d')
-        return True
-    except ValueError:
-        return False
+    project_number = session.get('project_number')
+    report_date    = session.get('current_reporting_date')
+
+    project = Project.query.filter_by(project_number=project_number).first()
+    if not project:
+        flash("Projet introuvable !", "danger")
+        return redirect(url_for('calendar_bp.calendar_page'))
+
+    activity_codes = ActivityCode.query.filter_by(project_id=project.id).all()
+    payment_items  = PaymentItem.query.filter_by(project_id=project.id).all()
+    cwps           = CWPackage.query.filter_by(project_id=project.id).all()
+
+    return render_template(
+        'data_entry.html',
+        project_id     = project_number,
+        report_date    = report_date,
+        activity_codes = activity_codes,
+        payment_items  = payment_items,
+        cwps           = cwps
+    )
+
     
 @data_entry_bp.route('/initialize-day', methods=['POST'])
 def initialize_day():
@@ -87,31 +98,29 @@ def get_days_status():
             'incompleteDays': []
         }), 500
 
+# ──────────────────────────────────────────────────────────────────────────────
+#   1) Your existing GET for the main data-entry page, with cwps fixed
+# ──────────────────────────────────────────────────────────────────────────────
 @data_entry_bp.route('/submit_data_entry', methods=['GET', 'POST'])
 def submit_data_entry():
-    #"""
-    #Handle data entry for the daily report. Processes data from multiple tabs,
-    #validates it, and stores it in the appropriate format.
-    #"""
-    #try:
     current_app.logger.info("Data_entry function called.")
-
-        
+    
     project_number = session.get('project_number')
     report_date    = session.get('current_reporting_date')
 
-    # 1) resolve numeric PK from the project_number
+    # resolve numeric PK from the project_number
     project = Project.query.filter_by(project_number=project_number).first()
     if project is None:
         flash("Projet introuvable !", "danger")
         return redirect(url_for('calendar_bp.calendar_page'))
 
-    # 2) now query by project.id
-    activity_codes = ActivityCode.  query. filter_by(project_id=project.id).all()
-    payment_items  = PaymentItem.   query. filter_by(project_id=project.id).all()
-    cwps           = CWPackage.     query.filter_by(project_id=project_number).all()
+    # now query by project.id for **all three** lists
+    activity_codes = ActivityCode.query.filter_by(project_id=project.id).all()
+    payment_items  = PaymentItem.   query.filter_by(project_id=project.id).all()
+    cwps           = CWPackage.     query.filter_by(project_id=project_number).all()  # ← fixed:contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
 
-    return render_template('data_entry.html',
+    return render_template(
+        'data_entry.html',
         project_id=project_number,
         report_date=report_date,
         activity_codes=activity_codes,
@@ -119,8 +128,36 @@ def submit_data_entry():
         cwps=cwps
     )
 
+# ──────────────────────────────────────────────────────────────────────────────
+#   2) New JSON endpoint for payments
+# ──────────────────────────────────────────────────────────────────────────────
+@data_entry_bp.route('/payment-items/list', methods=['GET'])
+def list_payment_items():
+    project_number = session.get('project_number')
+    project = Project.query.filter_by(project_number=project_number).first()
+    items = PaymentItem.query.filter_by(project_id=project.id).all()
+    return jsonify({
+        'payment_items': [
+            {'id': i.id, 'payment_code': i.payment_code, 'item_name': i.item_name}
+            for i in items
+        ]
+    })
 
-    
+# ──────────────────────────────────────────────────────────────────────────────
+#   3) New JSON endpoint for CW-packages
+# ──────────────────────────────────────────────────────────────────────────────
+@data_entry_bp.route('/cw-packages/list', methods=['GET'])
+def list_cwps():
+    project_number = session.get('project_number')
+    project = Project.query.filter_by(project_number=project_number).first()
+    cwps = CWPackage.query.filter_by(project_id=project.id).all()
+    return jsonify({
+        'cwps': [
+            {'id': c.id, 'code': c.code, 'name': c.name}
+            for c in cwps
+        ]
+    })
+
 @data_entry_bp.route('/report', methods=['POST'])
 def redirect_to_data_entry():
     """
@@ -229,7 +266,7 @@ def collect_work_orders(max_count, upload_folder):
             work_orders.append(work_order_entry)
     return work_orders
 
-def collect_daily_pictures():
+#def collect_daily_pictures():
     pass
 
     """
@@ -260,7 +297,7 @@ def collect_daily_pictures():
     
 
 
-def save_data_to_excel(workers_data=None, materials_data=None, equipment_data=None, subcontractors_data=None, work_orders_data=None, pictures_of_the_day=None, general_notes=None, project_number=None, timestamp=None):
+#def save_data_to_excel(workers_data=None, materials_data=None, equipment_data=None, subcontractors_data=None, work_orders_data=None, pictures_of_the_day=None, general_notes=None, project_number=None, timestamp=None):
     file_path = f'C:\\Users\\patri\\OneDrive\\Bureau\\TCC_V2.0\\project_data_{project_number}.xlsx'
 
     try:
