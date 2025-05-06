@@ -1,12 +1,12 @@
 # app/routes/main_routes.py
-from flask import Blueprint, render_template, current_app, redirect, url_for
-from app.utils.data_loader import load_data
+from flask                  import Blueprint, render_template, current_app, redirect, url_for
+from app.utils.data_loader  import load_data
 import requests
-from flask import jsonify, session
-from ..utils.data_loader import save_to_csv
+from flask                  import jsonify, session
+from ..utils.data_loader    import save_to_csv
 import pandas as pd
-from flask import send_from_directory
-from flask import current_app
+from flask                  import send_from_directory
+from flask                  import current_app
 
 
 # Create a Blueprint instance for general routes
@@ -16,17 +16,30 @@ main_bp = Blueprint('main_bp', __name__, static_folder='static', template_folder
 def weather():
     api_key = current_app.config.get('WEATHER_API_KEY')
     if not api_key:
-        return jsonify(error='No API key'), 500
+        return jsonify(error='No API key configured'), 500
 
-    # You can make city configurable via session or DB
     city = 'Montreal'
-    url = 'https://api.openweathermap.org/data/2.5/weather'
+    url  = 'https://api.openweathermap.org/data/2.5/weather'
     resp = requests.get(url, params={'q': city, 'units': 'metric', 'appid': api_key})
-    data = resp.json()
+
+    try:
+        data = resp.json()
+    except ValueError:
+        current_app.logger.error(f"Weather API returned non-JSON: {resp.text}")
+        return jsonify(temperature=None, icon=None, error='Bad response from weather API'), 200
+
+    main_block    = data.get('main', {})
+    weather_block = data.get('weather') or []
+
+    # If anything’s missing, log and return nulls
+    if 'temp' not in main_block or not weather_block or 'icon' not in weather_block[0]:
+        current_app.logger.error(f"Unexpected weather payload: {data}")
+        return jsonify(temperature=None, icon=None, error='No temperature data'), 200
+
     return jsonify(
-      temperature=data['main']['temp'],
-      icon=data['weather'][0]['icon']
-    )
+        temperature=main_block['temp'],
+        icon       =weather_block[0]['icon']
+    ), 200
 
 @main_bp.route('/')
 def home():

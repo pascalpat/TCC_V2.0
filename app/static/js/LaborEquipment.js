@@ -2,193 +2,196 @@
 
 import { populateDropdowns } from './populate_drop_downs.js';
 
+// In-memory staging of new (preview) lines
 let confirmedUsageData = [];
 let manualWorkerMode = false;
-let manualEquipMode = false;
+let manualEquipMode  = false;
 
-// ----------------------
-// 1. Main Initialization Function
-// ----------------------
+/**
+ * 1) Initialize the tab:
+ *    • Populate all dropdowns
+ *    • Wire up Add / Confirm / Manual-toggle buttons
+ *    • Load any pending entries for the selected project & date
+ */
 export function initLaborEquipmentTab() {
-  console.log("Initializing Labor & Equipment Tab...");
+  console.log("Initializing Labor & Equipment Tab…");
   populateDropdowns().then(() => {
-    document.getElementById('addEntryBtn')       .addEventListener('click', addUsageLine);
-    document.getElementById('confirmEntriesBtn') .addEventListener('click', confirmUsageLines);
-    document.getElementById('manualEntryToggle').addEventListener('click', () => toggleManualEntry('worker'));
-    document.getElementById('manualEquipToggle').addEventListener('click', () => toggleManualEntry('equipment'));
+    document.getElementById('addEntryBtn')
+      .addEventListener('click', addUsageLine);
+    document.getElementById('confirmEntriesBtn')
+      .addEventListener('click', confirmUsageLines);
+    document.getElementById('manualEntryToggle')
+      .addEventListener('click', () => toggleManualEntry('worker'));
+    document.getElementById('manualEquipToggle')
+      .addEventListener('click', () => toggleManualEntry('equipment'));
 
     const projectId  = document.getElementById('projectNumber')?.value;
     const reportDate = document.getElementById('dateSelector')?.value;
-    if (projectId && reportDate) loadPendingEntries(projectId, reportDate);
+    if (projectId && reportDate) {
+      loadPendingEntries(projectId, reportDate);
+    }
 
+    // Reset to pristine state
     resetFormUI();
   });
 }
 
+/**
+ * 2) Toggle between dropdown-only vs manual entry modes
+ */
 function toggleManualEntry(mode) {
-  const dropdown       = document.getElementById('workerName');
-  const manualWorkerIn = document.getElementById('manualWorkerName');
-  const manualEquipIn  = document.getElementById('manualEquipmentName');
-
   manualWorkerMode = (mode === 'worker')    ? !manualWorkerMode : false;
   manualEquipMode  = (mode === 'equipment') ? !manualEquipMode  : false;
 
-  const anyManual = manualWorkerMode || manualEquipMode;
-  dropdown.disabled = anyManual;
-  dropdown.classList.toggle('hidden', anyManual);
+  const dd = document.getElementById('workerName');
+  const wi = document.getElementById('manualWorkerName');
+  const ei = document.getElementById('manualEquipmentName');
+  const any = manualWorkerMode || manualEquipMode;
 
-  manualWorkerIn.classList.toggle('hidden', !manualWorkerMode);
-  manualWorkerIn.classList.toggle('visible', manualWorkerMode);
-  if (manualWorkerMode) manualWorkerIn.focus();
+  // Disable main dropdown if manual
+  dd.disabled = any;
+  dd.classList.toggle('hidden', any);
 
-  manualEquipIn.classList.toggle('hidden', !manualEquipMode);
-  manualEquipIn.classList.toggle('visible', manualEquipMode);
-  if (manualEquipMode) manualEquipIn.focus();
-
-  console.log(
-    manualWorkerMode ? '✅ Manual Worker Mode ON'
-    : manualEquipMode  ? '✅ Manual Equipment Mode ON'
-    :                     '↩️ Back to dropdown-only mode'
-  );
+  // Show/hide the appropriate manual input
+  wi.classList.toggle('hidden', !manualWorkerMode);
+  ei.classList.toggle('hidden', !manualEquipMode);
 }
 
+/**
+ * 3) Reset all form fields & modes
+ */
 function resetFormUI() {
-  document.getElementById('workerName').disabled = false;
-  document.getElementById('workerName').classList.remove('hidden');
-  document.getElementById('workerName').selectedIndex = 0;
+  const dd = document.getElementById('workerName');
+  dd.disabled = false;
+  dd.classList.remove('hidden');
+  dd.selectedIndex = 0;
 
-  document.getElementById('manualWorkerName').value = '';
-  document.getElementById('manualWorkerName').classList.add('hidden');
-  document.getElementById('manualWorkerName').classList.remove('visible');
-
-  document.getElementById('manualEquipmentName').value = '';
-  document.getElementById('manualEquipmentName').classList.add('hidden');
-  document.getElementById('manualEquipmentName').classList.remove('visible');
+  ['manualWorkerName', 'manualEquipmentName'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.classList.add('hidden');
+  });
 
   document.getElementById('laborHours').value = '';
-  document.getElementById('activityCode').selectedIndex = 0;
-  document.getElementById('payment_item_id').selectedIndex = 0;
-  document.getElementById('cwp_code').selectedIndex = 0;
+  document.getElementById('activityCode').selectedIndex      = 0;
+  document.getElementById('payment_item_id').selectedIndex   = 0;
+  document.getElementById('cwp_code').selectedIndex          = 0;
 
-  manualWorkerMode = false;
-  manualEquipMode  = false;
+  manualWorkerMode = manualEquipMode = false;
 }
 
-// ----------------------
-// 2. Add Entry to Preview
-// ----------------------
+/**
+ * 4) “Add to preview” — stage a line in-memory
+ */
 function addUsageLine(e) {
   e.preventDefault();
 
-  const dropdown       = document.getElementById('workerName');
-  const manualWorkerIn = document.getElementById('manualWorkerName');
-  const manualEquipIn  = document.getElementById('manualEquipmentName');
-  const hoursInput     = document.getElementById('laborHours');
-  const activitySelect = document.getElementById('activityCode');
-  const paymentSelect  = document.getElementById('payment_item_id');
-  const cwpSelect      = document.getElementById('cwp_code');
-
-  const hours        = hoursInput.value.trim();
-  const activityCode = activitySelect.value;
-  const activityText = activitySelect.selectedOptions[0]?.text || '';
-  const paymentId    = paymentSelect.value || null;
-  const paymentText  = paymentSelect.selectedOptions[0]?.text || '';
-  const cwpCode      = cwpSelect.value || null;
-  const cwpText      = cwpSelect.selectedOptions[0]?.text || '';
+  const dd    = document.getElementById('workerName');
+  const wi    = document.getElementById('manualWorkerName');
+  const ei    = document.getElementById('manualEquipmentName');
+  const hrs   = document.getElementById('laborHours').value.trim();
+  const act   = document.getElementById('activityCode');
+  const pay   = document.getElementById('payment_item_id');
+  const cwpEl = document.getElementById('cwp_code');
 
   let type, entityId, name;
-  if (manualWorkerMode && manualWorkerIn.value.trim()) {
-    type     = 'worker';
-    entityId = null;
-    name     = manualWorkerIn.value.trim();
-  } else if (manualEquipMode && manualEquipIn.value.trim()) {
-    type     = 'equipment';
-    entityId = null;
-    name     = manualEquipIn.value.trim();
-  } else if (dropdown.value) {
-    [type, entityId] = dropdown.value.split('|');
-    name = dropdown.selectedOptions[0].text;
-  } else {
-    return alert('Veuillez remplir tous les champs.');
+  // manual‐worker
+  if (manualWorkerMode && wi.value.trim()) {
+    type     = 'worker'; entityId = null; name = wi.value.trim();
+  }
+  // manual‐equipment
+  else if (manualEquipMode && ei.value.trim()) {
+    type     = 'equipment'; entityId = null; name = ei.value.trim();
+  }
+  // dropdown
+  else if (dd.value) {
+    [type, entityId] = dd.value.split('|');
+    name = dd.selectedOptions[0].text;
+  }
+  else {
+    return alert("Veuillez remplir tous les champs.");
   }
 
-  if (!hours || !activityCode) {
-    return alert('Veuillez remplir tous les champs.');
+  // Validate required fields
+  if (!hrs || !act.value) {
+    return alert("Veuillez remplir tous les champs.");
   }
 
+  // Stage it
   confirmedUsageData.push({
     type,
+    entryId:       null,                    // new preview
     entityId,
     name,
-    hours,
-    activityCode,
-    activityText,
-    paymentId,
-    paymentText,
-    cwpCode,
-    cwpText,
-    isManual: !entityId,
-    manual_name: !entityId ? name : null
+    hours:         parseFloat(hrs),
+    activityCode:  act.value,               // code string
+    paymentItemId: pay.value || null,
+    cwpCode:       cwpEl.value || null,
+    manual:        !entityId,
+    manual_name:   entityId ? null : name
   });
 
   renderPreviewTable();
   resetFormUI();
 }
 
+/**
+ * 5) Render the “preview” rows under the form
+ */
 function renderPreviewTable() {
   const tbody = document.querySelector('#workersTable tbody');
+  // clear old
   tbody.querySelectorAll('tr.preview-row').forEach(r => r.remove());
 
-  confirmedUsageData.forEach(entry => {
+  confirmedUsageData.forEach(row => {
     const tr = document.createElement('tr');
     tr.classList.add('preview-row');
     tr.innerHTML = `
-      <td data-type="${entry.type}" data-id="${entry.entityId || ''}">${entry.name}</td>
-      <td>${entry.hours}</td>
-      <td data-actval="${entry.activityCode}">${entry.activityText}</td>
-      <td data-payment-item-id="${entry.paymentId}">${entry.paymentText}</td>
-      <td data-cwp-code="${entry.cwpCode}">${entry.cwpText}</td>
+      <td data-type="${row.type}" data-id="${row.entityId||''}">${row.name}</td>
+      <td>${row.hours}</td>
+      <td data-actcode="${row.activityCode}">${row.activityCode}</td>
+      <td data-payid="${row.paymentItemId||''}">${row.paymentItemId||''}</td>
+      <td data-cwpc="${row.cwpCode||''}">${row.cwpCode||''}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// ----------------------
-// 3. Confirm & Save
-// ----------------------
+/**
+ * 6) Confirm all preview lines in one batch
+ *    POST to /labor-equipment/confirm-labor-equipment
+ */
 async function confirmUsageLines(e) {
   e.preventDefault();
 
+  // Only preview rows (not already-confirmed rows)
   const rows = Array.from(
-    document.querySelectorAll('#workersTable tbody tr')
-  ).filter(tr => !tr.classList.contains('confirmed-row'));
+    document.querySelectorAll('#workersTable tbody tr.preview-row')
+  );
+  if (!rows.length) return alert("Aucune entrée à confirmer.");
 
-  if (!rows.length) {
-    return alert('Aucune entrée à confirmer.');
-  }
-
-  // Build usage array with the exact keys expected by the Flask route
+  // Build payload exactly matching the Flask confirm route
   const usage = rows.map(tr => {
     const [nameCell, hoursCell, actCell, payCell, cwpCell] = tr.children;
-    const type = nameCell.dataset.type;
-    const id   = nameCell.dataset.id || null;
+    const type = nameCell.dataset.type;           // "worker" or "equipment"
+    const id   = nameCell.dataset.id || null;      // string or ""
 
     return {
-      // exactly one of these two
-      employee_id:  type === 'worker'    ? id : null,
-      equipment_id: type === 'equipment' ? id : null,
+      // server expects exactly one of these two
+      employee_id:  type === 'worker'    ? parseInt(id, 10) : null,
+      equipment_id: type === 'equipment' ? parseInt(id, 10) : null,
 
       // required
-      hours:             parseFloat(hoursCell.textContent.trim()),
-      activity_code_id:  actCell.dataset.actval,
+      hours:            parseFloat(hoursCell.textContent.trim()),
+      activity_code_id: parseInt(actCell.dataset.actcode, 10),
 
       // optional
-      payment_item_id:   payCell.dataset.paymentItemId || null,
-      cwp_id:            cwpCell.dataset.cwpCode       || null,
+      payment_item_id:  payCell.dataset.payid || null,
+      cwp_id:           cwpCell.dataset.cwpc || null,
 
-      // manual-entry metadata
-      is_manual:         !id,
-      manual_name:       !id ? nameCell.textContent.trim() : null
+      // manual‐entry metadata
+      is_manual:        !id,
+      manual_name:      !id ? nameCell.textContent.trim() : null
     };
   });
 
@@ -199,71 +202,169 @@ async function confirmUsageLines(e) {
     const resp = await fetch('/labor-equipment/confirm-labor-equipment', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_id: projectId, date_of_report: reportDate, usage })
+      body:    JSON.stringify({
+        project_id:     projectId,
+        date_of_report: reportDate,
+        usage
+      })
     });
-    const result = await resp.json();
-    if (!resp.ok) throw new Error(result.error || 'Erreur serveur');
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Erreur serveur');
 
-    alert(`${result.records.length} lignes confirmées.`);
-    rows.forEach(tr => tr.classList.add('confirmed-row'));
+    alert(`${data.records.length} lignes confirmées.`);
+    confirmedUsageData = [];  // clear your in-memory preview
     await loadPendingEntries(projectId, reportDate);
   } catch (err) {
     console.error('Erreur confirmation :', err);
-    alert('Erreur : ' + err.message);
+    alert("Erreur : " + err.message);
   }
 }
 
-// ----------------------
-// 4. Load & Render from Server
-// ----------------------
-function renderConfirmedTableFromServer(workers = [], equipment = []) {
-  const tbody = document.querySelector('#workersTable tbody');
-  tbody.querySelectorAll('tr.confirmed-row').forEach(r => r.remove());
-
-  [...workers, ...equipment].forEach(entry => {
-    const isWorker = entry.worker_id   !== undefined;
-    const type     = isWorker ? 'worker' : 'equipment';
-    const name     = entry.worker_name  || entry.equipment_name;
-    const hours    = entry.hours;
-    const activity = `${entry.activity_code} – ${entry.activity_description || ''}`;
-    const payment  = entry.payment_item_code
-      ? `${entry.payment_item_code} – ${entry.payment_item_name}`
-      : '';
-    const cwp      = entry.cwp;
-    const row      = document.createElement('tr');
-
-    row.classList.add(entry.is_manual ? 'manual-row' : 'confirmed-row');
-    row.innerHTML = `
-      <td data-type="${type}" data-id="${isWorker ? entry.worker_id : entry.equipment_id}">${name}</td>
-      <td>${hours}</td>
-      <td data-actval="${entry.activity_code}">${activity}</td>
-      <td data-payment-item-id="${entry.payment_item_id}">${payment}</td>
-      <td data-cwp-code="${entry.cwp}">${cwp}</td>
-      <td class="actions">
-        <button class="edit-btn"   data-entry-id="${entry.id}" data-type="${type}">✏️</button>
-        <button class="delete-btn" data-entry-id="${entry.id}" data-type="${type}">🗑️</button>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-
-  tbody.querySelectorAll('.edit-btn')  .forEach(b => b.addEventListener('click', handleEditConfirmedRow));
-  tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', handleDeleteConfirmedRow));
-}
-
+/**
+ * 7) Load pending entries from server
+ *    GET /labor-equipment/by-project-date
+ */
 async function loadPendingEntries(projectId, reportDate) {
   try {
     const resp = await fetch(`/labor-equipment/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}`);
     if (!resp.ok) throw new Error(await resp.text());
     const { workers, equipment } = await resp.json();
-    renderConfirmedTableFromServer(workers, equipment);
-  } catch (err) {
+    renderConfirmedTable(workers, equipment);
+  }
+  catch(err) {
     console.error('Error loading pending entries:', err);
   }
 }
 
-// ... Edit/Delete handlers unchanged ...
+/**
+ * 8) Render confirmed (history) rows + hook edit/delete
+ */
+function renderConfirmedTable(workers = [], equipment = []) {
+  const tbody = document.querySelector('#workersTable tbody');
+  // clear old confirmed
+  tbody.querySelectorAll('tr.confirmed-row').forEach(r => r.remove());
 
-function handleEditConfirmedRow(event) { /* ... */ }
-function handleSaveEditConfirmedRow(event) { /* ... */ }
-function handleDeleteConfirmedRow(event) { /* ... */ }
+  // mix them together
+  const all = [
+    ...workers.map(w => ({...w, _type:'worker'})),
+    ...equipment.map(e => ({...e, _type:'equipment'}))
+  ];
+
+  all.forEach(entry => {
+    const tr = document.createElement('tr');
+    tr.classList.add('confirmed-row');
+    tr.innerHTML = `
+      <td>${entry._type==='worker'? entry.worker_name : entry.equipment_name}</td>
+      <td>${entry.hours}</td>                                         <!-- use entry.hours not hours_worked :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5} -->
+      <td>${entry.activity_code}${entry.activity_description ? ' – '+entry.activity_description : ''}</td>
+      <td>${entry.payment_item_code || ''}</td>
+      <td>${entry.cwp || ''}</td>
+      <td class="actions">
+        <button class="edit-btn"   data-id="${entry.id}" data-type="${entry._type}">✏️</button>
+        <button class="delete-btn" data-id="${entry.id}" data-type="${entry._type}">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // wire up
+  tbody.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', handleEdit));
+  tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', handleDelete));
+}
+
+/**
+ * 9) Inline edit: swap to inputs / selects
+ */
+function handleEdit(evt) {
+  const btn = evt.currentTarget;
+  const tr  = btn.closest('tr');
+  const id  = btn.dataset.id;
+  const type= btn.dataset.type;
+  // cells
+  const hrsCell = tr.children[1];
+  const actCell = tr.children[2];
+  const actions = tr.children[5];
+
+  // hours input
+  const currentHrs = hrsCell.textContent.trim();
+  hrsCell.innerHTML = `<input type="number" step="0.1" value="${currentHrs}" />`;
+
+  // build activity select (value = PK id) to match /update-entry :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+  const actSelect = document.createElement('select');
+  window.activityCodesList.forEach(ac => {
+    const opt = new Option(`${ac.code} – ${ac.description}`, ac.id);
+    // match by code string in cell text
+    if (`${ac.code}` === actCell.textContent.split(' ')[0]) opt.selected = true;
+    actSelect.appendChild(opt);
+  });
+  actCell.innerHTML = '';
+  actCell.appendChild(actSelect);
+
+  // swap action buttons
+  actions.innerHTML = `
+    <button class="save-btn">💾</button>
+    <button class="cancel-btn">❌</button>
+  `;
+  actions.querySelector('.save-btn')
+    .addEventListener('click', () => saveEdit(tr, id, type));
+  actions.querySelector('.cancel-btn')
+    .addEventListener('click', () => {
+      const proj = document.getElementById('projectNumber').value;
+      const date = document.getElementById('dateSelector').value;
+      loadPendingEntries(proj, date);
+    });
+}
+
+/**
+ * 10) Save inline edit via PUT /labor-equipment/update-entry/<type>/<id>
+ *     Expects JSON: { hours: <string>, activity_code_id: <id> }
+ */
+async function saveEdit(tr, entryId, entryType) {
+  try {
+    const hrs  = tr.children[1].querySelector('input').value.trim();
+    const actId= tr.children[2].querySelector('select').value;
+    if (!hrs || !actId) return alert("Veuillez fournir les heures et un code d'activité.");
+
+    const resp = await fetch(`/labor-equipment/update-entry/${entryType}/${entryId}`, {
+      method:  'PUT',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({ hours: hrs, activity_code_id: actId })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error||'Erreur update');
+
+    alert("Entrée mise à jour.");
+    const proj = document.getElementById('projectNumber').value;
+    const date = document.getElementById('dateSelector').value;
+    await loadPendingEntries(proj, date);
+  }
+  catch(err) {
+    console.error("saveEdit()", err);
+    alert("Erreur : " + err.message);
+  }
+}
+
+/**
+ * 11) Delete via DELETE /labor-equipment/delete-entry/<type>/<id>
+ */
+async function handleDelete(evt) {
+  if (!confirm("Supprimer cette entrée ?")) return;
+  const btn = evt.currentTarget;
+  const id  = btn.dataset.id;
+  const type= btn.dataset.type;
+
+  try {
+    const resp = await fetch(`/labor-equipment/delete-entry/${type}/${id}`, { method: 'DELETE' });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error||'Erreur delete');
+
+    alert("Entrée supprimée.");
+    const proj = document.getElementById('projectNumber').value;
+    const date = document.getElementById('dateSelector').value;
+    await loadPendingEntries(proj, date);
+  }
+  catch(err) {
+    console.error("handleDelete()", err);
+    alert("Erreur : " + err.message);
+  }
+}

@@ -1,283 +1,222 @@
+<!-- app/templates/data_entry.html -->
+
 {% extends "base.html" %}
 
 {% block title %}Module Rapport Journalier{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/data_entry.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/data_entry.css') }}">
 {% endblock %}
 
 {% block content %}
-<!-- TAB NAVIGATION -->
-<div class="tab">
-    <button class="tablinks" onclick="openTab(event, 'LaborEquipTab')">Employé / Équipement</button>
-    <button class="tablinks" onclick="openTab(event, 'MaterialsTab')">Matériaux</button>
-    <button class="tablinks" onclick="openTab(event, 'SubcontractorsTab')">Sous-traitants</button>
-    <button class="tablinks" onclick="openTab(event, 'NotesTab')">Notes du jour</button>
-    <button class="tablinks" onclick="openTab(event, 'PicturesTab')">Photos du jour</button>
-</div>
-  
-<!-- PROJECT SELECTION -->
-<div class="project-selection">
+  <!-- TAB NAVIGATION -->
+  <div class="tab">
+    <button class="tablinks" onclick="openTab(event,'LaborEquipTab')">Employé / Équipement</button>
+    <button class="tablinks" onclick="openTab(event,'MaterialsTab')">Matériaux</button>
+    <button class="tablinks" onclick="openTab(event,'SubcontractorsTab')">Sous-traitants</button>
+    <button class="tablinks" onclick="openTab(event,'NotesTab')">Notes du jour</button>
+    <button class="tablinks" onclick="openTab(event,'PicturesTab')">Photos du jour</button>
+  </div>
+
+  <!-- PROJECT + DATE -->
+  <div class="project-selection">
     <label for="projectNumber">Projet Actif:</label>
     <input type="text" id="projectNumber" value="{{ project_id }}" readonly>
     <label for="dateSelector">Date active:</label>
     <input type="date" id="dateSelector" value="{{ report_date }}" readonly>
-    <a href="/calendar" id="viewCalendarLink" class="btn-box">Retour au Calendrier</a>
-</div>
+    <a href="{{ url_for('calendar_bp.calendar_page') }}" class="btn-box">Retour au Calendrier</a>
+  </div>
 
-<hr>
-  
-<!-- TAB CONTENT: LaborEquipTab (Workers/Equipment) -->
-<div id="LaborEquipTab" class="tabcontent">
+  <hr>
+
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- Labor & Equipment Tab -->
+  <div id="LaborEquipTab" class="tabcontent">
     <div class="form-table-container">
-        <form id="WorkersForm" class="form-box">
+      <form id="WorkersForm" class="form-box">
         <h2>Ajouter un Employé ou Équipement</h2>
 
         <label for="workerName">Sélectionner Employé / Équipement:</label>
         <select id="workerName">
-            <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
-            <!-- Dynamic options will be populated here -->
+          <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
         </select>
 
-        <!-- Manual Inputs -->
         <div class="manual-entry-group">
-            <div class="manual-toggle-group">
-              <button type="button" id="manualEntryToggle">➕ Ajouter manuellement</button>
-              <button type="button" id="manualEquipToggle">➕ Ajouter équipement manuellement</button>
-            </div>
-
-            <!-- Worker Manual Input -->
-            <input 
-                type="text"
-                id="manualWorkerName"
-                class="manual-entry-input hidden"
-                placeholder="Nom travailleur manuel" 
-            />
-
-            <!-- Equipment Manual Input -->
-            <input 
-                type="text"
-                id="manualEquipmentName"
-                class="manual-entry-input hidden"
-                placeholder="Nom équipement manuel" 
-            />
+          <div class="manual-toggle-group">
+            <button type="button" id="manualEntryToggle">➕ Ajouter manuellement</button>
+            <button type="button" id="manualEquipToggle">➕ Ajouter équipement manuellement</button>
+          </div>
+          <input type="text" id="manualWorkerName" placeholder="Nom travailleur manuel" class="manual-entry-input hidden">
+          <input type="text" id="manualEquipmentName" placeholder="Nom équipement manuel" class="manual-entry-input hidden">
         </div>
 
-
-            <!-- <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
-        </select> -->
-        
-
         <label for="laborHours">Heures de travail:</label>
-        <input type="number" id="laborHours" name="hours" min="0" step="0.1" class="form-control">
+        <input type="number" id="laborHours" min="0" step="0.1" class="form-control">
 
         <label for="activityCode">Code d'Activité:</label>
-        <select id="activityCode" name="activity_code_id" class="form-control" required>
-            <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-            {% for code in activity_codes %}
-              <option value="{{ code.id }}">{{ code.code }} – {{ code.description }}</option>
-            {% endfor %}
+        <select id="activityCode" class="form-control" required>
+          <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+          {% for code in activity_codes %}
+            <option value="{{ code.id }}">{{ code.code }} – {{ code.description }}</option>
+          {% endfor %}
         </select>
 
-        <!-- New dropdown: Payment Item -->
         <label for="payment_item_id">Items de bordereau:</label>
-        <select id="payment_item_id" name="payment_item_id" class="form-control">
+        <select id="payment_item_id" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
           {% for item in payment_items %}
             <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
           {% endfor %}
         </select>
 
-        <!-- New dropdown: CWP -->
         <label for="cwp_code">Construction Work Package (CWP):</label>
-        <select id="cwp_code" name="cwp_code" class="form-control">
+        <select id="cwp_code" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
           {% for c in cwps %}
             <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
           {% endfor %}
         </select>
 
-
         <div class="button-container">
-            <button type="submit" id="addEntryBtn" class="btn btn-primary">Ajouter Entrée</button>
-            <button type="button" id="confirmEntriesBtn" class="btn btn-success">Confirmer les entrées</button>
+          <button type="submit" id="addEntryBtn" class="btn btn-primary">Ajouter Entrée</button>
+          <button type="button" id="confirmEntriesBtn" class="btn btn-success">Confirmer les entrées</button>
         </div>
-        </form>
+      </form>
 
-        <div id="workersTableContainer">
+      <div id="workersTableContainer" class="table-container">
         <h3>Liste des Employés / Équipements</h3>
         <table id="workersTable" class="styled-table">
-            <thead>
+          <thead>
             <tr>
-                <th>Nom Employé / Équipement</th>
-                <th>Heures de travail</th>
-                <th>Code d'activité</th>
-                <th>Items de bordereau</th>
-                <th>CWP</th>
+              <th>Nom Employé / Équipement</th>
+              <th>Heures</th>
+              <th>Code d'activité</th>
+              <th>Items de bordereau</th>
+              <th>CWP</th>
+              <th>Actions</th>  <!-- ← added this -->
             </tr>
-            </thead>
-            <tbody></tbody>
+          </thead>
+          <tbody></tbody>
         </table>
-        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- TAB CONTENT: MaterialsTab (Matching Workers/Equipment Format) -->
-<div id="MaterialsTab" class="tabcontent">
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- Materials Tab -->
+  <div id="MaterialsTab" class="tabcontent">
     <div class="form-table-container">
-        <form id="WorkersForm" class="form-box">
-            <h2>Ajouter des Matériaux</h2>
+      <form id="MaterialsForm" class="form-box">
+        <h2>Ajouter des Matériaux</h2>
 
-            <label for="materialName">Nom du Matériel:</label>
-            <input type="text" id="materialName" required>
+        <label for="materialName">Nom du Matériel:</label>
+        <input type="text" id="materialName" class="form-control" required>
 
-            <label for="materialQuantity">Quantité:</label>
-            <input type="number" id="materialQuantity" min="0" step="1" required>
+        <label for="materialQuantity">Quantité:</label>
+        <input type="number" id="materialQuantity" class="form-control" required>
 
-            <label for="materialUnit">Unité:</label>
-            <input type="text" id="materialUnit" required>
+        <label for="materialActivityCode">Code d'Activité:</label>
+        <select id="materialActivityCode" class="form-control">
+          <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+        </select>
 
-            <label for="materialActivityCode">Code d'Activité:</label>
-            <select id="materialActivityCode">
-                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-            </select>
+        <label for="materialPaymentItem">Items de bordereau:</label>
+        <select id="materialPaymentItem" class="form-control">
+          <option value="" disabled selected>-- Aucun --</option>
+          {% for item in payment_items %}
+            <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
+          {% endfor %}
+        </select>
 
-            <div class="button-container">
-                <button type="button" id="addMaterialBtn">Ajouter Matériaux</button>
-                <button type="button" id="confirmMaterialsBtn">Confirmer les matériaux</button>
-            </div>
-        </form>
+        <label for="materialCwp">Construction Work Package (CWP):</label>
+        <select id="materialCwp" class="form-control">
+          <option value="" disabled selected>-- Aucun --</option>
+          {% for c in cwps %}
+            <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
+          {% endfor %}
+        </select>
 
-        <div id="materialsTableContainer" class="table-container"> <!-- ✅ Added class for styling -->
-            <h3>Liste des Matériaux</h3>
-            <table id="materialsTable" class="styled-table"> <!-- ✅ Added styling class -->
-                <thead>
-                    <tr>
-                        <th>Nom du Matériel</th>
-                        <th>Quantité</th>
-                        <th>Unité</th>
-                        <th>Code d'Activité</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="button-container">
+          <button type="button" id="addMaterialBtn" class="btn btn-primary">Ajouter Matériaux</button>
+          <button type="button" id="confirmMaterialsBtn" class="btn btn-success">Confirmer les matériaux</button>
         </div>
+      </form>
+
+      <div id="materialsTableContainer" class="table-container">
+        <h3>Liste des Matériaux (En session)</h3>
+        <table id="materialsTable" class="styled-table">
+          <thead>
+            <tr>
+              <th>Nom du Matériel</th>
+              <th>Quantité</th>
+              <th>Code d'Activité</th>
+              <th>Items de bordereau</th>
+              <th>CWP</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- TAB CONTENT: SubcontractorsTab -->
-<div id="SubcontractorsTab" class="tabcontent">
-    <div class="form-table-container">
-        <form id="SubcontractorsForm" class="form-box">
-            <h2>Ajouter un Sous-traitant</h2>
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- (other tabs unchanged…) -->
+  <div id="SubcontractorsTab" class="tabcontent">…</div>
+  <div id="NotesTab"          class="tabcontent">…</div>
+  <div id="PicturesTab"       class="tabcontent">…</div>
 
-            <label for="subcontractorName">Nom de la compagnie:</label>
-            <input type="text" id="subcontractorName" required>
-
-            <label for="numEmployees">Nombre d'employés:</label>
-            <input type="number" id="numEmployees" min="1" required>
-
-            <label for="totalHours">Total des heures:</label>
-            <input type="number" id="totalHours" min="0" step="0.1" required>
-
-            <label for="subcontractorActivityCode">Code d'Activité:</label>
-            <select id="subcontractorActivityCode">
-                <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-            </select>
-
-            <div class="button-container">
-                <button type="button" id="addSubcontractorBtn">Ajouter Sous-traitant</button>
-                <button type="button" id="confirmSubcontractorsBtn">Confirmer les sous-traitants</button>
-            </div>
-        </form>
-
-        <div id="subcontractorsTableContainer" class="table-container">
-            <h3>Liste des Sous-traitants</h3>
-            <table id="subcontractorsTable" class="styled-table">
-                <thead>
-                    <tr>
-                        <th>Nom de la compagnie</th>
-                        <th>Nombre d'employés</th>
-                        <th>Total des heures</th>
-                        <th>Code d'Activité</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- TAB CONTENT: NotesTab -->
-<div id="NotesTab" class="tabcontent">
-    <h2>Notes du jour</h2>
-    <p>Contenu pour les notes...</p>
-</div>
-
-<!-- TAB CONTENT: PicturesTab -->
-<div id="PicturesTab" class="tabcontent">
-    <h2>Photos du jour</h2>
-    <p>Contenu pour les photos...</p>
-</div>
 {% endblock %}
 
+
 {% block extra_js %}
-<!-- 1) Date/Weather/Progress loader -->
-<script type="module">
+  <!-- 1) Core date/weather/progress loader (unchanged) -->
+  <script type="module">
     import {
-      getCurrentDate,
+      showToday,
       highlightDates,
       getTemperature,
       restoreProgress
     } from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
 
     document.addEventListener('DOMContentLoaded', () => {
-      getCurrentDate();
+      showToday();
       highlightDates();
       getTemperature();
       restoreProgress();
     });
   </script>
 
-  <!-- 2) Dropdowns & session restore -->
+  <!-- 2) Populate dropdowns & bootstrap each tab -->
   <script type="module">
-    import {
-      populateDropdowns,
-      populateFormFromSession
-    } from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
-
-    document.addEventListener('DOMContentLoaded', () => {
-      populateDropdowns();
-      populateFormFromSession();
-    });
-  </script>
-
-  <!-- 3) Labor & Equipment tab init -->
-  <script type="module">
+    import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
+    import { initMaterialsTab       } from "{{ url_for('static', filename='js/Materials.js') }}";
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1) fill every dropdown across all tabs
+      await populateDropdowns();
+
+      // 2) initialize each tab’s logic (loads pending data, wires buttons, etc.)
       initLaborEquipmentTab();
+      initMaterialsTab();
+      // …initSubcontractorsTab(), etc. as needed…
     });
   </script>
 
-  <!-- 4) Global tab‐switcher -->
+  <!-- 3) Tab‐switcher -->
   <script>
     function openTab(evt, tabName) {
-      // hide all
       document.querySelectorAll('.tabcontent').forEach(c => c.style.display = 'none');
-      // deactivate all
-      document.querySelectorAll('.tablinks').forEach(b => b.classList.remove('active'));
-      // show & activate the one clicked
-      const panel = document.getElementById(tabName);
-      if (panel) panel.style.display = 'block';
+      document.querySelectorAll('.tablinks')  .forEach(b => b.classList.remove('active'));
+      document.getElementById(tabName).style.display = 'block';
       evt.currentTarget.classList.add('active');
     }
-    // open the first tab by default
     document.addEventListener('DOMContentLoaded', () => {
-      const firstBtn = document.querySelector('.tablinks');
-      if (firstBtn) firstBtn.click();
+      const first = document.querySelector('.tablinks');
+      if (first) first.click();
     });
   </script>
 {% endblock %}

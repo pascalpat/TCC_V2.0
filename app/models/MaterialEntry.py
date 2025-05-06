@@ -8,15 +8,17 @@ class MaterialEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     # Foreign Keys
-    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=False)
+    material_id = db.Column(db.Integer, db.ForeignKey('materials.id'), nullable=True)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     purchase_order_id = db.Column(db.Integer, db.ForeignKey('purchase_orders.id'), nullable=True)
     activity_code_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     task_id = db.Column(db.Integer, db.ForeignKey('project_tasks.id'), nullable=True)
+    date_of_report = db.Column(db.Date, nullable=False)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
     payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
+    
 
     ############################## Additional Fields ########################
     material_name = db.Column(db.String(255), nullable=True)

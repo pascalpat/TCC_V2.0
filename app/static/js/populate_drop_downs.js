@@ -1,8 +1,8 @@
 // static/js/populate_drop_downs.js
 
-// ────────────────────────────────────────────────────
-// 1) workers/equipment dropdown
-// ────────────────────────────────────────────────────
+/**
+ * 1) Populate Workers & Equipment dropdown
+ */
 export async function populateWorkersAndEquipmentDropdown() {
   console.log("[populateWorkersAndEquipmentDropdown] fetching workers & equipment...");
   try {
@@ -17,21 +17,20 @@ export async function populateWorkersAndEquipmentDropdown() {
     const dd = document.getElementById("workerName");
     if (!dd) return;
 
+    // reset options
     dd.innerHTML = `<option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>`;
 
     const wgroup = document.createElement("optgroup");
     wgroup.label = "👤 Employés";
     workers.forEach(w => {
-      const o = new Option(`👤 ${w.name}`, `worker|${w.id}`);
-      wgroup.appendChild(o);
+      wgroup.appendChild(new Option(`👤 ${w.name}`, `worker|${w.id}`));
     });
     dd.appendChild(wgroup);
 
     const egroup = document.createElement("optgroup");
     egroup.label = "🛠️ Équipements";
     equipment.forEach(e => {
-      const o = new Option(`🛠️ ${e.name}`, `equipment|${e.id}`);
-      egroup.appendChild(o);
+      egroup.appendChild(new Option(`🛠️ ${e.name}`, `equipment|${e.id}`));
     });
     dd.appendChild(egroup);
 
@@ -41,10 +40,9 @@ export async function populateWorkersAndEquipmentDropdown() {
   }
 }
 
-
-// ────────────────────────────────────────────────────
-// 2) activity‐codes dropdown for EVERY tab
-// ────────────────────────────────────────────────────
+/**
+ * 2) Populate Activity Codes dropdown for all tabs
+ */
 export async function populateActivityDropdown() {
   console.log("[populateActivityDropdown] fetching codes...");
   try {
@@ -52,29 +50,37 @@ export async function populateActivityDropdown() {
     if (!resp.ok) throw new Error("Fetch failed");
 
     const { activity_codes } = await resp.json();
-    ["activityCode", "materialActivityCode", "subcontractorActivityCode"]
-      .forEach(id => {
-        const dd = document.getElementById(id);
-        if (!dd) return;
-        dd.innerHTML = `<option value="" disabled selected>-- Sélectionner Code d’Activité --</option>`;
-        activity_codes.forEach(ac => {
-          if (!ac.code.trim()) return;
-          dd.appendChild(new Option(
-            `${ac.code} – ${ac.description}`,
-            ac.code
-          ));
-        });
-      })
+    // store for later use in confirm
+    window.activityCodesList = activity_codes;
+
+    const ids = [
+      "activityCode",
+      "materialActivityCode",
+      "subcontractorActivityCode"
+    ];
+    ids.forEach(id => {
+      const dd = document.getElementById(id);
+      if (!dd) return;
+      // reset options
+      dd.innerHTML = `<option value="" disabled selected>-- Sélectionner Code d’Activité --</option>`;
+      activity_codes.forEach(ac => {
+        if (!ac.code.trim()) return;
+        dd.appendChild(new Option(
+          `${ac.code} – ${ac.description}`,
+          ac.id
+        ));
+      });
+    });
+
     console.log("[populateActivityDropdown] done.");
   } catch (err) {
     console.error("[populateActivityDropdown] error:", err);
   }
 }
 
-
-// ────────────────────────────────────────────────────
-// 3) payment‐items dropdown
-// ────────────────────────────────────────────────────
+/**
+ * 3) Populate Payment Items dropdown
+ */
 export async function populatePaymentItemDropdown() {
   console.log("[populatePaymentItemDropdown] fetching payment items...");
   try {
@@ -84,35 +90,40 @@ export async function populatePaymentItemDropdown() {
     const dd = document.getElementById("payment_item_id");
     if (!dd) return;
 
+    // reset options
     dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
     items.forEach(pi => {
-      dd.add(new Option(
-        pi.payment_code
-          ? `${pi.payment_code} – ${pi.item_name}`
-          : pi.item_name,
-        pi.id
-      ));
+      const text = pi.payment_code
+        ? `${pi.payment_code} – ${pi.item_name}`
+        : pi.item_name;
+      dd.appendChild(new Option(text, pi.id));
     });
+
     console.log("[populatePaymentItemDropdown] done.");
   } catch (err) {
     console.error("[populatePaymentItemDropdown] failed to fetch:", err);
   }
 }
 
-
-// ────────────────────────────────────────────────────
-// 4) CWP dropdown
-// ────────────────────────────────────────────────────
+/**
+ * 4) Populate CWP dropdown
+ */
 export async function populateCwpDropdown() {
   console.log("[populateCwpDropdown] fetching CWPs...");
   try {
-    const resp = await fetch("/data-entry/cw-packages/list");
+    const resp = await fetch("/data_entry/cw-packages/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     const { cwps } = await resp.json();
-    const dd = document.getElementById("cwp_code");
-    if (!dd) return;
 
+    const dd = document.getElementById("cwp_code");
+    if (!dd) {
+      console.warn("populateCwpDropdown(): #cwp_code not found");
+      return;
+    }
+
+    // reset to a clean default
     dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
+
     cwps.forEach(c => {
       dd.add(new Option(`${c.code} – ${c.name}`, c.code));
     });
@@ -122,10 +133,9 @@ export async function populateCwpDropdown() {
   }
 }
 
-
-// ────────────────────────────────────────────────────
-// 5) “master” helper: wire up **all** dropdowns
-// ────────────────────────────────────────────────────
+/**
+ * 5) Master helper: wire up all dropdowns
+ */
 export async function populateDropdowns() {
   console.log("[populateDropdowns] start");
   await populateWorkersAndEquipmentDropdown();

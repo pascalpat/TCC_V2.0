@@ -146,11 +146,11 @@
     
     {% block extra_js %}
     <script type="module">
-        import { populateDropdowns, populateFormFromSession } from "/static/js/populate_drop_downs.js";
+        import { populateDropdowns, } from "/static/js/populate_drop_downs.js";
         document.addEventListener('DOMContentLoaded', function () {
             console.log("✅ Initializing dropdowns and session data...");
             populateDropdowns();
-            populateFormFromSession();
+            //populateFormFromSession();
 
             // Materials Tab: Add Material Entry
             const addMaterialBtn = document.getElementById('addMaterialBtn');
