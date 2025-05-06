@@ -1,152 +1,160 @@
-/* Layout for form and table */
-.form-table-container {
+/* ────────────────────────────────────────────────────
+   Consolidated CSS for Data Entry Tabs
+   (keep EVERYTHING here)
+   ────────────────────────────────────────────────────*/
+
+/* Confirmed entries styling */
+.confirmed-row {
+    background-color: #e7f7e7;   /* pale green */
+    font-style: italic;
+    opacity: 0.9;
+    transition: background-color 0.3s ease;
+  }
+  .confirmed-row:hover {
+    background-color: #d0f0d0;   /* slightly darker on hover */
+  }
+  
+  /* Manual-entry rows */
+  .manual-row {
+    background-color: #fff8e1;   /* light yellow */
+    font-style: normal;
+  }
+  
+  /* Container wrapping form and tables */
+  .form-table-container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     gap: 20px;
+    align-items: flex-start;
     margin-top: 20px;
-}
-
-/* Styling the form box */
-.form-box {
-    width: 40%;
-    border: 2px solid #ccc;
-    border-radius: 10px;
+  }
+  
+  /* Shared form styling */
+  .form-box {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
     padding: 20px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif; /* Ensuring same font */
-}
-
-.form-box h2 {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* font settings will be overridden below */
+  }
+  
+  .form-box h2 {
     font-size: 22px;
     color: #333;
     font-weight: bold;
     margin-bottom: 15px;
-}
-
-/* Styling the inputs and selects in the form */
-.form-box label {
+  }
+  
+  .form-box label {
     font-size: 16px;
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
-}
-
-.form-box input,
-.form-box select {
+  }
+  
+  .form-box input,
+  .form-box select {
     width: 100%;
     padding: 8px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 14px;
-    height: 55px;
-}
-
-/* Buttons */
-.button-container {
+    height: auto;
+  }
+  
+  .button-container {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 5px;
+    gap: 8px;
     margin-top: 10px;
-}
-
-button {
+  }
+  
+  button {
     background-color: #007bff;
     color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 5px;
-    font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-family: Arial, sans-serif;
-}
-
-button:hover {
+  }
+  button:hover {
     background-color: #0056b3;
-}
-
-/* Table Containers */
-#workersTableContainer, #materialsTableContainer {
-    width: 55%;
-}
-
-/* Generic styled-table for uniform look */
-.styled-table {
+  }
+  
+  /* Table containers share width */
+  .table-container {
+    flex: 1 1 auto;
+  }
+  
+  .styled-table {
     width: 100%;
     border-collapse: collapse;
     border: 1px solid #ddd;
-    font-family: Arial, sans-serif;
     font-size: 16px;
-}
-
-.styled-table thead {
-    background-color: #007bff;
+  }
+  .styled-table thead {
+    background-color: #0052cc;
     color: white;
     font-weight: bold;
-}
-
-.styled-table th, .styled-table td {
-    padding: 6px 8px;
-    border: 1px solid #ddd;
-}
-
-.styled-table tr {
-    height: auto;
-}
-
-/* ───────────────────────────────────────────────────────────── */
- /* Force the edit/delete buttons side-by-side and compact     */
- /* ───────────────────────────────────────────────────────────── */
- .styled-table td.actions {
-    white-space: nowrap;    /* keep buttons on one line */
- }
-.styled-table td.actions button {
-    display: inline-block;
-    margin: 0 4px;        /* small space between buttons */
-    padding: 4px 6px;     /* smaller padding for buttons */
-    font-size: 0.85em;      /* smaller font size for buttons */
-    line-height: 1;     /* smaller line height for buttons */
-}
-
-/* Manual entry inputs */
-.manual-entry-input {
-    display: none;
-    width: 100%;
+  }
+  .styled-table th,
+  .styled-table td {
     padding: 8px;
-    margin-top: 8px;
-    font-size: 14px;
-}
-
-.manual-entry-input.visible {
-    display: inline-block !important;
-}
-
-.manual-toggle-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Confirmed entries styling */
-.confirmed-row {
-  background-color: #e7f7e7;
-  font-style: italic;
-  opacity: 0.9;
-  transition: background-color 0.3s ease;
-}
-
-.confirmed-row td {
-  border-top: 1px solid #ccc;
-}
-
-.confirmed-row:hover {
-  background-color: #d0f0d0;
-}
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  .styled-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  .styled-table td.actions {
+    white-space: nowrap;
+  }
+  .styled-table td.actions button {
+    display: inline-block;
+    margin: 0 4px;
+    padding: 4px 6px;
+    font-size: 0.85em;
+    line-height: 1;
+  }
+  
+  .error-msg {
+    color: #c00;
+    margin: 8px 0;
+  }
+  
+  /* ────────────────────────────────────────────────────
+     GLOBAL FORM-BOX WIDTH (applies to every tab)
+     ──────────────────────────────────────────────────── */
+  .form-table-container .form-box {
+    /* make the form occupy ~25% of the row */
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+  .form-table-container .table-container {
+    /* table gets the remaining space */
+    flex: 1 1 70%;
+    max-width: 70%;
+  }
+  
+  /* ────────────────────────────────────────────────────
+     FONT CONSISTENCY OVERRIDES
+     ──────────────────────────────────────────────────── */
+  
+  /*
+    Force every form element & table cell in *either*
+    the Labor/Equipment or Materials tab to use the
+    exact same 16px Arial font that you like.
+    We add !important and tab-scoped selectors to
+    beat Bootstrap or any other library.
+  */
+  #LaborEquipTab .form-box *,
+  #MaterialsTab  .form-box *,
+  #LaborEquipTab .styled-table th,
+  #MaterialsTab  .styled-table th,
+  #LaborEquipTab .styled-table td,
+  #MaterialsTab  .styled-table td {
+    font-family: Arial, sans-serif !important;
+    font-size:   24px              !important;
+    line-height: 1.4               !important;
+  }
+  

@@ -33,7 +33,7 @@ def register_blueprints(app):
         from .dailynotes_routes import dailynotes_bp
         app.register_blueprint(dailynotes_bp, url_prefix='/dailynotes')
         from .materials_routes import materials_bp
-        app.register_blueprint(materials_bp, url_prefix='/materials')
+        app.register_blueprint(materials_bp, url_prefix='/materials')           
         from .pictures_routes import pictures_bp
         app.register_blueprint(pictures_bp, url_prefix='/pictures')
         from .subcontractors_routes import subcontractors_bp

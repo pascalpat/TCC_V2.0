@@ -15,10 +15,17 @@
             <!-- Left: logo + weather -->
             <div class="left-info" >
                 <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+
+                <!-- real‐today display -->
+                <span id="todayDate" class="today‐label"></span>
+                
+                <!-- weather widget -->
                 <div class="weather-widget" >
-                    <img id="weatherIcon" src="{{ url_for('static', filename='Projestim.png') }}" alt="Weather Icon">
+                    <img id="weatherIcon" src="" alt="Weather Icon">
                     <span id="currentTemperature">--°C</span>
                 </div>
+                
+                <span id="todayDate"></span>
             </div>
 
 
@@ -54,7 +61,7 @@
           from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
       
         document.addEventListener('DOMContentLoaded', () => {
-          getCurrentDate();
+          showToday();      // ← ensure this runs on load
           highlightDates();
           getTemperature();      // ← ensure this runs on load
           restoreProgress();

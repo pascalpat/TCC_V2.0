@@ -10,32 +10,7 @@ import pandas as pd
 from werkzeug.utils import secure_filename
 from app.utils.data_loader import load_data  # Import the load_data function
 
-data_entry_bp = Blueprint('data_entry_bp', __name__, url_prefix='/data_entry')
-
-@data_entry_bp.route('/submit_data_entry', methods=['GET', 'POST'])
-def submit_data_entry():
-    current_app.logger.info("Data_entry function called.")
-
-    project_number = session.get('project_number')
-    report_date    = session.get('current_reporting_date')
-
-    project = Project.query.filter_by(project_number=project_number).first()
-    if not project:
-        flash("Projet introuvable !", "danger")
-        return redirect(url_for('calendar_bp.calendar_page'))
-
-    activity_codes = ActivityCode.query.filter_by(project_id=project.id).all()
-    payment_items  = PaymentItem.query.filter_by(project_id=project.id).all()
-    cwps           = CWPackage.query.filter_by(project_id=project.id).all()
-
-    return render_template(
-        'data_entry.html',
-        project_id     = project_number,
-        report_date    = report_date,
-        activity_codes = activity_codes,
-        payment_items  = payment_items,
-        cwps           = cwps
-    )
+data_entry_bp = Blueprint('data_entry_bp', __name__, url_prefix='/data-entry')
 
     
 @data_entry_bp.route('/initialize-day', methods=['POST'])
