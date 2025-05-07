@@ -3,6 +3,7 @@
 import { populateDropdowns } from './populate_drop_downs.js';
 
 // In-memory staging of new (preview) lines
+let staging = [];
 let confirmedUsageData = [];
 let manualWorkerMode = false;
 let manualEquipMode  = false;
@@ -15,25 +16,36 @@ let manualEquipMode  = false;
  */
 export function initLaborEquipmentTab() {
   console.log("Initializing Labor & Equipment Tab…");
-  populateDropdowns().then(() => {
-    document.getElementById('addEntryBtn')
+
+  
+    // 1) “Add” button → addUsageLine()
+    document
+      .getElementById('addEntryBtn')
       .addEventListener('click', addUsageLine);
-    document.getElementById('confirmEntriesBtn')
+
+    // 2) “Confirm” button → confirmUsageLines()
+    document
+      .getElementById('confirmEntriesBtn')
       .addEventListener('click', confirmUsageLines);
-    document.getElementById('manualEntryToggle')
+
+    // 3) Manual toggles → toggleManualEntry()
+    document
+      .getElementById('manualEntryToggle')
       .addEventListener('click', () => toggleManualEntry('worker'));
-    document.getElementById('manualEquipToggle')
+    document
+      .getElementById('manualEquipToggle')
       .addEventListener('click', () => toggleManualEntry('equipment'));
 
-    const projectId  = document.getElementById('projectNumber')?.value;
-    const reportDate = document.getElementById('dateSelector')?.value;
+    // 4) Load any existing pending entries
+    const projectId  = document.getElementById('projectNumber').value;
+    const reportDate = document.getElementById('dateSelector').value;
     if (projectId && reportDate) {
       loadPendingEntries(projectId, reportDate);
     }
 
-    // Reset to pristine state
+    // 5) Finally, clear the form UI
     resetFormUI();
-  });
+  ;
 }
 
 /**
@@ -213,7 +225,8 @@ async function confirmUsageLines(e) {
 
     alert(`${data.records.length} lignes confirmées.`);
     confirmedUsageData = [];  // clear your in-memory preview
-    await loadPendingEntries(projectId, reportDate);
+    renderPreviewTable();     // clear the UI preview table
+    await loadPendingEntries(projectId, reportDate); // reload the pending entries
   } catch (err) {
     console.error('Erreur confirmation :', err);
     alert("Erreur : " + err.message);

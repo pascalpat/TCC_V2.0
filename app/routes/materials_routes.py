@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models.material_models import Material
 from app.models.MaterialEntry import MaterialEntry
-from app.models.core_models import ActivityCode, Project
+from app.models.core_models import ActivityCode, Project, PaymentItem
 from datetime import datetime
 
 materials_bp = Blueprint('materials_bp', __name__)
@@ -31,7 +31,6 @@ def confirm_materials():
     project_number = data.get('project_id')
     date_str       = data.get('date_of_report', data.get('date'))
 
-    # Validate payload
     if not usage_lines or not project_number or not date_str:
         return jsonify(error="Missing project_id, date_of_report, or usage"), 400
 
@@ -39,31 +38,31 @@ def confirm_materials():
     if not project:
         return jsonify(error="Invalid project number"), 400
 
-    # Parse date
     try:
         date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return jsonify(error="Invalid date format, expected YYYY-MM-DD"), 400
 
+    created = []
     upserted = []
     for line in usage_lines:
-        # Required fields
-        material_id      = line.get('entityId')
-        quantity         = line.get('quantity')
-        act_id           = line.get('activity_code_id')
-        is_manual        = line.get('is_manual', False)
-        manual_name      = line.get('manual_name') if is_manual else None
+        entity_id   = line.get('entityId')
+        manual_name = line.get('manual_name')
+        quantity    = line.get('quantity')
+        act_id      = line.get('activity_code_id')
+        # require either a catalog id OR a manual name, plus quantity & activity
+        if (entity_id is None and not manual_name) or quantity is None or act_id is None:
+            return jsonify(
+                error="Each entry requires entityId (or manual_name), quantity, and activity_code_id"
+            ), 400
 
-        if material_id is None or quantity is None or act_id is None:
-            return jsonify(error="Each entry requires material_id, quantity, and activity_code_id"), 400
-
-        # Validate quantity
+        # parse & validate quantity
         try:
             qty_val = float(quantity)
         except (TypeError, ValueError):
             return jsonify(error=f"Invalid quantity: {quantity}"), 400
 
-        # Lookup activity by PK
+        # lookup activity by PK
         try:
             act_id_int = int(act_id)
         except (TypeError, ValueError):
@@ -72,11 +71,11 @@ def confirm_materials():
         if not activity:
             return jsonify(error=f"Activity not found for id: {act_id}"), 400
 
-        # Create entry
+        # build the entry, only int() the ID if present
         entry = MaterialEntry(
             project_id         = project.id,
-            material_id        = int(material_id),
-            material_name      = manual_name,
+            material_id        = int(entity_id) if entity_id else None,
+            material_name      = manual_name if not entity_id else None,
             quantity_used      = qty_val,
             activity_code_id   = activity.id,
             date_of_report     = date_obj,
@@ -84,13 +83,10 @@ def confirm_materials():
             created_at         = datetime.utcnow()
         )
         db.session.add(entry)
-        upserted.append(entry)
+        created.append(entry)
 
     db.session.commit()
-    return jsonify(
-        message=f"{len(upserted)} materials saved",
-        records=[e.id for e in upserted]
-    ), 200
+    return jsonify(records=[e.id for e in created]), 200
 
 @materials_bp.route('/by-project-date', methods=['GET'])
 def get_pending_materials():
@@ -117,13 +113,20 @@ def get_pending_materials():
 
     result = []
     for e in entries:
+        pi = None
+        if e.payment_item_id:
+            pi = PaymentItem.query.get(e.payment_item_id)
         result.append({
-            "id": e.id,
-            "material_id": e.material_id,
-            "material_name": e.material.name if e.material else e.material_name,
-            "quantity": e.quantity_used,
-            "activity_code": e.activity_code.code if e.activity_code else None,
-            "activity_description": e.activity_code.description if e.activity_code else None
+            "id":                   e.id,
+            "material_id":          e.material_id,
+            "material_name":        e.material.name if e.material else e.material_name,
+            "quantity":             e.quantity_used,
+            "activity_code":        e.activity_code.code if e.activity_code else None,
+            "activity_description": e.activity_code.description if e.activity_code else None,
+            "payment_item_id":      e.payment_item_id,
+            "payment_item_code":    pi.payment_code if pi else None,
+            "payment_item_name":    pi.item_name    if pi else None,
+            "cwp":                  e.cwp
         })
     return jsonify(materials=result), 200
 
@@ -141,11 +144,11 @@ def delete_material_entry(entry_id):
 
 @materials_bp.route('/update-entry/<int:entry_id>', methods=['PUT'])
 def update_material_entry(entry_id):
-    data = request.get_json() or {}
-    new_qty = data.get('quantity')
-    act_id = data.get('activity_code_id')
+    data  = request.get_json() or {}
+    qty   = data.get('quantity')
+    actid = data.get('activity_code_id')
 
-    if new_qty is None or act_id is None:
+    if qty is None or actid is None:
         return jsonify(error="Missing quantity or activity_code_id"), 400
 
     entry = MaterialEntry.query.get(entry_id)
@@ -155,8 +158,8 @@ def update_material_entry(entry_id):
         return jsonify(error="Only pending entries can be updated"), 403
 
     try:
-        entry.quantity_used = float(new_qty)
-        entry.activity_code_id = int(act_id)
+        entry.quantity_used      = float(qty)
+        entry.activity_code_id   = int(actid)
         db.session.commit()
         return jsonify(message="Material entry updated"), 200
     except Exception as e:

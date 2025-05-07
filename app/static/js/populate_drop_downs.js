@@ -1,4 +1,4 @@
-// static/js/populate_drop_downs.js
+// File: static/js/populate_drop_downs.js
 
 /**
  * 1) Populate Workers & Equipment dropdown
@@ -17,7 +17,6 @@ export async function populateWorkersAndEquipmentDropdown() {
     const dd = document.getElementById("workerName");
     if (!dd) return;
 
-    // reset options
     dd.innerHTML = `<option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>`;
 
     const wgroup = document.createElement("optgroup");
@@ -50,8 +49,7 @@ export async function populateActivityDropdown() {
     if (!resp.ok) throw new Error("Fetch failed");
 
     const { activity_codes } = await resp.json();
-    // store for later use in confirm
-    window.activityCodesList = activity_codes;
+    window.activityCodesList = activity_codes;  // store for inline editing
 
     const ids = [
       "activityCode",
@@ -61,7 +59,6 @@ export async function populateActivityDropdown() {
     ids.forEach(id => {
       const dd = document.getElementById(id);
       if (!dd) return;
-      // reset options
       dd.innerHTML = `<option value="" disabled selected>-- Sélectionner Code d’Activité --</option>`;
       activity_codes.forEach(ac => {
         if (!ac.code.trim()) return;
@@ -87,10 +84,10 @@ export async function populatePaymentItemDropdown() {
     const resp = await fetch("/data-entry/payment-items/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     const { payment_items: items } = await resp.json();
+    window.paymentItemsList = items;     // store for inline editing
+
     const dd = document.getElementById("payment_item_id");
     if (!dd) return;
-
-    // reset options
     dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
     items.forEach(pi => {
       const text = pi.payment_code
@@ -110,27 +107,34 @@ export async function populatePaymentItemDropdown() {
  */
 export async function populateCwpDropdown() {
   console.log("[populateCwpDropdown] fetching CWPs...");
+  let cwps;
   try {
-    const resp = await fetch("/data_entry/cw-packages/list");
+    const resp = await fetch("/data-entry/cw-packages/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
-    const { cwps } = await resp.json();
-
-    const dd = document.getElementById("cwp_code");
-    if (!dd) {
-      console.warn("populateCwpDropdown(): #cwp_code not found");
-      return;
-    }
-
-    // reset to a clean default
-    dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
-
-    cwps.forEach(c => {
-      dd.add(new Option(`${c.code} – ${c.name}`, c.code));
-    });
-    console.log("[populateCwpDropdown] done.");
+    ({ cwps } = await resp.json());
+    window.cwpList = cwps;  // store for inline editing
   } catch (err) {
     console.error("[populateCwpDropdown] failed to fetch:", err);
+    return;
   }
+
+  // target both selects by ID
+  const selectIds = ["cwp_code", "materialCwp"];
+  selectIds.forEach(selectId => {
+    const dd = document.getElementById(selectId);
+    if (!dd) {
+      console.warn(`[populateCwpDropdown] no <select id="${id}"> found`);
+      return;
+    }
+    // reset to only the default option
+    dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
+    // append every CWP
+    cwps.forEach(c => {
+      dd.appendChild(new Option(`${c.code} – ${c.name}`, c.code));
+    });
+  });
+
+  console.log("[populateCwpDropdown] done.");
 }
 
 /**
