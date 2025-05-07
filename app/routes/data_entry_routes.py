@@ -121,11 +121,11 @@ def list_payment_items():
 # ──────────────────────────────────────────────────────────────────────────────
 #   3) New JSON endpoint for CW-packages
 # ──────────────────────────────────────────────────────────────────────────────
-@data_entry_bp.route('/cw-packages/list', methods=['GET'])
+@data_entry_bp.route('/data-entry/cw-packages/list', methods=['GET'])
 def list_cwps():
     project_number = session.get('project_number')
-    project = Project.query.filter_by(project_number=project_number).first()
-    cwps = CWPackage.query.filter_by(project_id=project.id).all()
+    #project = Project.query.filter_by(project_number=project_number).first()
+    cwps = CWPackage.query.filter_by(project_id=project_number).all()
     return jsonify({
         'cwps': [
             {'id': c.id, 'code': c.code, 'name': c.name}
