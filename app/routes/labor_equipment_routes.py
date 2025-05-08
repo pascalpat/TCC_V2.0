@@ -45,11 +45,18 @@ def confirm_labor_equipment():
 
     created_entries = []
     for line in usage:
-        w_id = line.get('employee_id')
-        e_id = line.get('equipment_id')
-        if w_id is None and e_id is None:
-            return jsonify(error="Missing employee_id or equipment_id"), 400
+        w_id        = line.get('employee_id')
+        e_id        = line.get('equipment_id')
+        is_manual   = line.get('is_manual', False)
+        manual_nm   = line.get('manual_name') if is_manual else None
+        manual_type = line.get('manual_type') if is_manual else None
 
+        # allow true manual entries even if both IDs are None
+        if w_id is None and e_id is None:
+            if not (is_manual and manual_nm and manual_type in ('worker','equipment')):
+                return jsonify(error="Missing employee_id or equipment_id"), 400
+
+        # required fields
         hours = line.get('hours')
         act_id = line.get('activity_code_id')
         if hours is None or act_id is None:
@@ -59,16 +66,16 @@ def confirm_labor_equipment():
         if not activity:
             return jsonify(error=f"Invalid activity_code_id: {act_id}"), 400
 
-        pi_id     = line.get('payment_item_id')
-        cwp_code  = line.get('cwp_id')
-        is_manual = line.get('is_manual', False)
-        manual_nm = line.get('manual_name') if is_manual else None
+        pi_id    = line.get('payment_item_id')
+        cwp_code = line.get('cwp_id')
 
-        if w_id is not None:
+        # decide entry type
+        if w_id is not None or (is_manual and manual_type=='worker'):
+            # Worker entry (manual or by ID)
             entry = WorkerEntry(
                 project_id      = proj.id,
-                worker_id       = int(w_id),
-                worker_name     = manual_nm,
+                worker_id       = int(w_id) if w_id is not None else None,
+                worker_name     = manual_nm if is_manual and manual_type=='worker' else None,
                 date_of_report  = date_obj,
                 hours_worked    = float(hours),
                 activity_id     = activity.id,
@@ -76,11 +83,13 @@ def confirm_labor_equipment():
                 cwp             = cwp_code,
                 status          = 'pending'
             )
+
         else:
+            # Equipment entry (manual or by ID)
             entry = EquipmentEntry(
                 project_id       = proj.id,
-                equipment_id     = int(e_id),
-                equipment_name   = manual_nm,
+                equipment_id     = int(e_id) if e_id is not None else None,
+                equipment_name   = manual_nm if is_manual and manual_type=='equipment' else None,
                 date_of_report   = date_obj,
                 hours_used       = float(hours),
                 activity_id      = activity.id,
@@ -94,7 +103,6 @@ def confirm_labor_equipment():
 
     db.session.commit()
     return jsonify(records=[e.id for e in created_entries]), 200
-
 
 # ------------------------------------------------
 # 2) Fetch all the “pending” lines for the UI table

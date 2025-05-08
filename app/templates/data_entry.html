@@ -137,7 +137,7 @@
             <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
           {% endfor %}
         </select>
-
+        
         <div class="button-container">
           <button type="button" id="addMaterialBtn" class="btn btn-primary">Ajouter Matériaux</button>
           <button type="button" id="confirmMaterialsBtn" class="btn btn-success">Confirmer les matériaux</button>
@@ -174,6 +174,9 @@
 
 {% block extra_js %}
   <!-- 1) Core date/weather/progress loader (unchanged) -->
+  <script> 
+    window.CWP_LIST_URL = "{{ url_for('data_entry_bp.list_cwps') }}";
+  </script>
   <script type="module">
     import {
       showToday,
