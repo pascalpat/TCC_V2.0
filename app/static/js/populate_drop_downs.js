@@ -81,7 +81,7 @@ export async function populateActivityDropdown() {
 export async function populatePaymentItemDropdown() {
   console.log("[populatePaymentItemDropdown] fetching payment items...");
   try {
-    const resp = await fetch("/data-entry/payment-items/list");
+    const resp = await fetch("payment-items/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     const { payment_items: items } = await resp.json();
     window.paymentItemsList = items;     // store for inline editing
@@ -106,7 +106,6 @@ export async function populatePaymentItemDropdown() {
  * 4) Populate CWP dropdown
  */
 export async function populateCwpDropdown() {
-  console.log("[populateCwpDropdown] fetching CWPs...");
   let cwps;
   try {
     const resp = await fetch("/data-entry/cw-packages/list");
@@ -114,7 +113,6 @@ export async function populateCwpDropdown() {
     ({ cwps } = await resp.json());
     window.cwpList = cwps;  // store for inline editing
   } catch (err) {
-    console.error("[populateCwpDropdown] failed to fetch:", err);
     return;
   }
 
@@ -123,7 +121,6 @@ export async function populateCwpDropdown() {
   selectIds.forEach(selectId => {
     const dd = document.getElementById(selectId);
     if (!dd) {
-      console.warn(`[populateCwpDropdown] no <select id="${id}"> found`);
       return;
     }
     // reset to only the default option

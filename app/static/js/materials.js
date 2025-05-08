@@ -9,25 +9,39 @@ let stagedMaterials = [];
 
 // ────────────────────────────────────────────────────
 // 1) Initialize Materials Tab
+//    *    • Populate all dropdowns (activity, payment, CWP)
+//    *    • Wire Add/Confirm buttons
+//    *    • Fetch & render pending rows
 // ────────────────────────────────────────────────────
-export function initMaterialsTab() {
+export async function initMaterialsTab() {
   console.log("Initializing Materials Tab...");
 
+  // 1a) Load & wire every dropdown across the page
+  await populateDropdowns();                                           
+
+  // 1b) Mirror payment-item list into materialPaymentItem select
+  const srcPay = document.getElementById('payment_item_id');
+  const dstPay = document.getElementById('materialPaymentItem');
+  if (srcPay && dstPay) {
+    dstPay.innerHTML = srcPay.innerHTML;
+  }
   
-    document.getElementById('addMaterialBtn')
-      .addEventListener('click', addMaterialLine);
-    document.getElementById('confirmMaterialsBtn')
-      .addEventListener('click', confirmMaterialLines);
+  // 1c) Wire up Add & Confirm
+  document.getElementById('addMaterialBtn')
+    .addEventListener('click', addMaterialLine);
+  document.getElementById('confirmMaterialsBtn')
+    .addEventListener('click', confirmMaterialLines);
 
-    // load any existing pending entries
-    const projectId  = document.getElementById('projectNumber').value;
-    const reportDate = document.getElementById('dateSelector').value;
-    if (projectId && reportDate) {
-      loadPendingMaterials(projectId, reportDate);
-    }
 
-    resetMaterialsForm();
-  ;
+  // 1d) Fetch & render any already-pending materials
+  const projectId  = document.getElementById('projectNumber').value;
+  const reportDate = document.getElementById('dateSelector').value;
+  if (projectId && reportDate) {
+    loadPendingMaterials(projectId, reportDate);
+  }
+
+  resetMaterialsForm();
+  
 }
 
 // ────────────────────────────────────────────────────
@@ -174,80 +188,97 @@ async function loadPendingMaterials(projectId, reportDate) {
 // ────────────────────────────────────────────────────
 function renderConfirmedTable(materials = []) {
   const tbody = document.querySelector('#materialsTable tbody');
+  // Clear out any old rows
   tbody.querySelectorAll('tr.confirmed-row').forEach(r => r.remove());
 
-  materials.forEach(entry => {
+  materials.forEach(m => {
     const tr = document.createElement('tr');
     tr.classList.add('confirmed-row');
+
     tr.innerHTML = `
-      <td data-material-id="${entry.material_id}" data-manual-name="${entry.material_name}">
-        ${entry.material_name}
+       <td 
+        data-material-id="${m.material_id}" 
+        data-manual-name="${m.material_name}"
+      >${m.material_name}</td>
+      <td>${m.quantity}</td>
+      <td data-activity-id="${m.activity_id}">
+        ${m.activity_code}${m.activity_description ? ' – ' + m.activity_description : ''}
       </td>
-      <td>${entry.quantity}</td>
-      <td data-activity-id="${entry.activity_code_id}">
-        ${entry.activity_code}${entry.activity_description ? ' – '+entry.activity_description : ''}
+      <td data-payment-id="${m.payment_item_id || ''}">
+        ${m.payment_item_id
+          ? `${m.payment_item_code} – ${m.payment_item_name}`
+          : ''
+        }
       </td>
-      <td data-payment-id="${entry.payment_item_id||''}">
-        ${entry.payment_item_code ? entry.payment_item_code+' – '+entry.payment_item_name : ''}
-      </td>
-      <td data-cwp="${entry.cwp||''}">${entry.cwp||''}</td>
+      <td data-cwp="${m.cwp || ''}">${m.cwp || ''}</td>
       <td class="actions">
-        <button class="edit-btn"   data-entry-id="${entry.id}">✏️</button>
-        <button class="delete-btn" data-entry-id="${entry.id}">🗑️</button>
+        <button class="edit-btn"   data-entry-id="${m.id}">✏️</button>
+        <button class="delete-btn" data-entry-id="${m.id}">🗑️</button>
       </td>
     `;
+
     tbody.appendChild(tr);
   });
 
+  // Re-attach handlers to the new buttons
   tbody.querySelectorAll('.edit-btn')
-    .forEach(b => b.addEventListener('click', handleEditConfirmedRow));
+       .forEach(btn => btn.addEventListener('click', handleEditConfirmedRow));
   tbody.querySelectorAll('.delete-btn')
-    .forEach(b => b.addEventListener('click', handleDeleteConfirmedRow));
+       .forEach(btn => btn.addEventListener('click', handleDeleteConfirmedRow));
 }
 
 // ────────────────────────────────────────────────────
 // 8) Inline edit a confirmed row
 // ────────────────────────────────────────────────────
 function handleEditConfirmedRow(event) {
+  event.preventDefault();
+
+  // Which button and row fired this edit?
   const btn     = event.currentTarget;
   const tr      = btn.closest('tr');
   const entryId = btn.dataset.entryId;
 
+  // Cells: 0=name, 1=qty, 2=activity, 3=payment, 4=cwp, 5=actions
   const qtyCell = tr.children[1];
   const actCell = tr.children[2];
   const payCell = tr.children[3];
   const cwpCell = tr.children[4];
   const actions = tr.children[5];
 
-  // turn quantity into an <input>
+  // 1) Quantity → <input>
   const curQty = qtyCell.textContent.trim();
-  qtyCell.innerHTML = `<input type="number" step="0.01" value="${curQty}"/>`;
+  qtyCell.innerHTML = `<input
+    type="number" step="0.01"
+    class="edit-qty"
+    value="${curQty}"
+  >`;
 
-  // rebuild activity <select>
+  // 2) Activity Code → <select>
   const actSelect = document.createElement('select');
-  (window.activityCodesList||[]).forEach(ac => {
+  actSelect.appendChild(new Option('-- Sélectionner Code d’Activité --',''));
+  (window.activityCodesList || []).forEach(ac => {
     const opt = new Option(`${ac.code} – ${ac.description}`, ac.id);
-    if (ac.id.toString() === actCell.dataset.activityId) opt.selected = true;
+    if (String(ac.id) === actCell.dataset.activityId) opt.selected = true;
     actSelect.appendChild(opt);
   });
   actCell.innerHTML = '';
   actCell.appendChild(actSelect);
 
-  // rebuild payment-item <select>
+  // 3) Payment-Item → <select>
   const paySelect = document.createElement('select');
   paySelect.appendChild(new Option('-- Aucun --',''));
-  (window.paymentItemsList||[]).forEach(pi => {
+  (window.paymentItemsList || []).forEach(pi => {
     const opt = new Option(`${pi.payment_code} – ${pi.item_name}`, pi.id);
-    if (pi.id.toString() === payCell.dataset.paymentId) opt.selected = true;
+    if (String(pi.id) === payCell.dataset.paymentId) opt.selected = true;
     paySelect.appendChild(opt);
   });
   payCell.innerHTML = '';
   payCell.appendChild(paySelect);
 
-  // rebuild CWP <select>
+  // 4) CWP → <select>
   const cwpSelect = document.createElement('select');
   cwpSelect.appendChild(new Option('-- Aucun --',''));
-  (window.cwpList||[]).forEach(c => {
+  (window.cwpList || []).forEach(c => {
     const opt = new Option(`${c.code} – ${c.name}`, c.code);
     if (c.code === cwpCell.dataset.cwp) opt.selected = true;
     cwpSelect.appendChild(opt);
@@ -255,55 +286,82 @@ function handleEditConfirmedRow(event) {
   cwpCell.innerHTML = '';
   cwpCell.appendChild(cwpSelect);
 
-  // swap “edit” buttons for save/cancel
+  // 5) Swap Edit → Save & Cancel
   actions.innerHTML = `
-    <button class="save-edit-btn"   data-entry-id="${entryId}">💾</button>
+    <button class="save-edit-btn" data-entry-id="${entryId}">💾</button>
     <button class="cancel-edit-btn">❌</button>
   `;
+
+  // Wire Save to the handler (reads event.currentTarget)
   actions.querySelector('.save-edit-btn')
-    .addEventListener('click', handleSaveEditConfirmedRow);
+         .addEventListener('click', handleSaveEditConfirmedRow);
+
+  // Wire Cancel to simply reload the confirmed list
   actions.querySelector('.cancel-edit-btn')
-    .addEventListener('click', () => {
-      // reload to cancel
-      const pid = document.getElementById('projectNumber').value;
-      const dt  = document.getElementById('dateSelector').value;
-      loadPendingMaterials(pid, dt);
-    });
+         .addEventListener('click', () => {
+           const pid = document.getElementById('projectNumber').value;
+           const dt  = document.getElementById('dateSelector').value;
+           loadPendingMaterials(pid, dt);
+         });
 }
 
 // ────────────────────────────────────────────────────
 // 9) Save an edited row back to server
 // ────────────────────────────────────────────────────
 async function handleSaveEditConfirmedRow(event) {
+  event.preventDefault();
+
+  // 1) Identify which row/button fired this
   const btn     = event.currentTarget;
   const entryId = btn.dataset.entryId;
   const tr      = btn.closest('tr');
 
-  const newQty = tr.children[1].querySelector('input').value.trim();
-  const newAct = tr.children[2].querySelector('select').value;
+  // 2) Pull edited values out of that row
+  const newQty = tr.children[1]
+                   .querySelector('input')
+                   .value
+                   .trim();
+  const newAct = tr.children[2]
+                   .querySelector('select')
+                   .value;
+  const newPay = tr.children[3]
+                   .querySelector('select')
+                   .value || null;
+  const newCwp = tr.children[4]
+                   .querySelector('select')
+                   .value || null;
 
+  // 3) Validate required fields
   if (!newQty || !newAct) {
-    return alert('Quantité et code d’activité requis');
+    return alert('Veuillez fournir quantité et code d’activité.');
   }
 
   try {
-    const resp = await fetch(`/materials/update-entry/${entryId}`, {
-      method:  'PUT',
-      headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify({
-        quantity:          newQty,
-        activity_code_id:  newAct
-      })
-    });
+    // 4) Send update to server
+    const resp = await fetch(
+      `/materials/update-entry/${entryId}`,
+      {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quantity:          Number(newQty),
+          activity_code_id:  Number(newAct),
+          payment_item_id:   newPay !== '' ? Number(newPay) : null,
+          cwp:               newCwp || null
+        })
+      }
+    );
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Erreur mise à jour');
 
-    alert('Entrée mise à jour.');
-    const pid = document.getElementById('projectNumber').value;
-    const dt  = document.getElementById('dateSelector').value;
-    loadPendingMaterials(pid, dt);
+    // 5) Refresh the table so edits show up
+    const proj = document.getElementById('projectNumber').value;
+    const dt   = document.getElementById('dateSelector').value;
+    await loadPendingMaterials(proj, dt);
 
-  } catch (err) {
+    alert('Entrée mise à jour.');
+  }
+  catch (err) {
     console.error('Erreur mise à jour matériaux:', err);
     alert('Erreur : ' + err.message);
   }

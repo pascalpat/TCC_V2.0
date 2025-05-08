@@ -93,6 +93,7 @@ def get_pending_materials():
     project_number = request.args.get('project_id')
     date_str       = request.args.get('date')
 
+    # 1) Validate inputs
     if not project_number or not date_str:
         return jsonify(error="Missing project_id or date"), 400
 
@@ -105,30 +106,36 @@ def get_pending_materials():
     except ValueError:
         return jsonify(error="Invalid date format, expected YYYY-MM-DD"), 400
 
+    # 2) Fetch only “pending” materials for that project & date
     entries = MaterialEntry.query.filter_by(
-        project_id=project.id,
-        date_of_report=date_obj,
-        status='pending'
+        project_id      = project.id,
+        date_of_report  = date_obj,
+        status          = 'pending'
     ).all()
 
-    result = []
+    # 3) Build the JSON result
+    materials = []
     for e in entries:
+        # Look up payment item if set
         pi = None
-        if e.payment_item_id:
+        if e.payment_item_id is not None:
             pi = PaymentItem.query.get(e.payment_item_id)
-        result.append({
-            "id":                   e.id,
-            "material_id":          e.material_id,
-            "material_name":        e.material.name if e.material else e.material_name,
-            "quantity":             e.quantity_used,
-            "activity_code":        e.activity_code.code if e.activity_code else None,
-            "activity_description": e.activity_code.description if e.activity_code else None,
-            "payment_item_id":      e.payment_item_id,
-            "payment_item_code":    pi.payment_code if pi else None,
-            "payment_item_name":    pi.item_name    if pi else None,
-            "cwp":                  e.cwp
+
+        materials.append({
+            "id":                    e.id,
+            "material_id":           e.material_id,
+            "material_name":         e.material.name if e.material else e.material_name,
+            "quantity":              e.quantity_used,
+            "activity_id":           e.activity_code_id,
+            "activity_code":         e.activity_code.code if e.activity_code else None,
+            "activity_description":  e.activity_code.description if e.activity_code else None,
+            "payment_item_id":       e.payment_item_id,
+            "payment_item_code":     pi.payment_code if pi else None,
+            "payment_item_name":     pi.item_name    if pi else None,
+            "cwp":                   e.cwp
         })
-    return jsonify(materials=result), 200
+
+    return jsonify(materials=materials), 200 
 
 @materials_bp.route('/delete-entry/<int:entry_id>', methods=['DELETE'])
 def delete_material_entry(entry_id):

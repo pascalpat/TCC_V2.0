@@ -187,6 +187,8 @@ async function confirmUsageLines(e) {
     const [nameCell, hoursCell, actCell, payCell, cwpCell] = tr.children;
     const type = nameCell.dataset.type;           // "worker" or "equipment"
     const id   = nameCell.dataset.id || null;      // string or ""
+    const isManual = !id;
+    const name     = nameCell.textContent.trim();
 
     return {
       // server expects exactly one of these two
@@ -202,6 +204,7 @@ async function confirmUsageLines(e) {
       cwp_id:           cwpCell.dataset.cwpc || null,
 
       // manual‐entry metadata
+      manual_type:   type,                   // ← "worker" or "equipment"
       is_manual:        !id,
       manual_name:      !id ? nameCell.textContent.trim() : null
     };
@@ -268,10 +271,17 @@ function renderConfirmedTable(workers = [], equipment = []) {
     tr.classList.add('confirmed-row');
     tr.innerHTML = `
       <td>${entry._type==='worker'? entry.worker_name : entry.equipment_name}</td>
-      <td>${entry.hours}</td>                                         <!-- use entry.hours not hours_worked :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5} -->
-      <td>${entry.activity_code}${entry.activity_description ? ' – '+entry.activity_description : ''}</td>
-      <td>${entry.payment_item_code || ''}</td>
-      <td>${entry.cwp || ''}</td>
+      <td data-hours="${entry.hours}">${entry.hours}</td>
+      <td data-activity-id="${entry.activity_id}">
+            ${entry.activity_code} – ${entry.activity_description || ''}
+      </td>
+      <td data-payment-id="${entry.payment_item_id || ''}">
+            ${entry.payment_item_code || ''}
+      </td>
+      <td data-cwp="${entry.cwp || ''}">
+            ${entry.cwp || ''}
+      </td>
+
       <td class="actions">
         <button class="edit-btn"   data-id="${entry.id}" data-type="${entry._type}">✏️</button>
         <button class="delete-btn" data-id="${entry.id}" data-type="${entry._type}">🗑️</button>
@@ -289,37 +299,64 @@ function renderConfirmedTable(workers = [], equipment = []) {
  * 9) Inline edit: swap to inputs / selects
  */
 function handleEdit(evt) {
+  evt.preventDefault();
+
   const btn = evt.currentTarget;
   const tr  = btn.closest('tr');
-  const id  = btn.dataset.id;
-  const type= btn.dataset.type;
-  // cells
+  const entryId  = btn.dataset.id;
+  const entryType= btn.dataset.type;
+
+  // Cells: 0=name, 1=hours, 2=activity, 3=payment, 4=cwp, 5=actions
   const hrsCell = tr.children[1];
   const actCell = tr.children[2];
+  const payCell = tr.children[3];
+  const cwpCell = tr.children[4];
   const actions = tr.children[5];
 
-  // hours input
-  const currentHrs = hrsCell.textContent.trim();
-  hrsCell.innerHTML = `<input type="number" step="0.1" value="${currentHrs}" />`;
+  // 1) hours input
+  const curHrs = hrsCell.dataset.hours;
+  hrsCell.innerHTML = `<input type="number" step="0.1" class="edit-hours" value="${curHrs}">`;
 
-  // build activity select (value = PK id) to match /update-entry :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+  // 2) build activity select (value = PK id) to match /update-entry :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
   const actSelect = document.createElement('select');
-  window.activityCodesList.forEach(ac => {
+  actSelect.appendChild(new Option('-- Sélectionner Code d’Activité --',''));
+  (window.activityCodesList||[]).forEach(ac => {
     const opt = new Option(`${ac.code} – ${ac.description}`, ac.id);
-    // match by code string in cell text
-    if (`${ac.code}` === actCell.textContent.split(' ')[0]) opt.selected = true;
+    if (String(ac.id) === Number(actCell.dataset.activityId)) opt.selected = true;
     actSelect.appendChild(opt);
-  });
+  });  
   actCell.innerHTML = '';
   actCell.appendChild(actSelect);
 
-  // swap action buttons
+  // 3) Payment Item → <select>
+  const paySelect = document.createElement('select');
+  paySelect.appendChild(new Option('-- Aucun --',''));
+  (window.paymentItemsList||[]).forEach(pi => {
+    const opt = new Option(`${pi.payment_code} – ${pi.item_name}`, pi.id);
+    if (String(pi.id) === Number(payCell.dataset.paymentId)) opt.selected = true;
+    paySelect.appendChild(opt);
+  });
+  payCell.innerHTML = '';
+  payCell.appendChild(paySelect);
+
+  // 4) CWP → <select>
+  const cwpSelect = document.createElement('select');
+  cwpSelect.appendChild(new Option('-- Aucun --',''));
+  (window.cwpList||[]).forEach(c => {
+    const opt = new Option(`${c.code} – ${c.name}`, c.code);
+    if (c.code === cwpCell.dataset.cwp) opt.selected = true;
+    cwpSelect.appendChild(opt);
+  });
+  cwpCell.innerHTML = '';
+  cwpCell.appendChild(cwpSelect);
+
+  // 5) swap action buttons
   actions.innerHTML = `
-    <button class="save-btn">💾</button>
+    <button class="save-btn"   data-id="${entryId}" data-type="${entryType}">💾</button>
     <button class="cancel-btn">❌</button>
   `;
   actions.querySelector('.save-btn')
-    .addEventListener('click', () => saveEdit(tr, id, type));
+    .addEventListener('click', saveEdit);
   actions.querySelector('.cancel-btn')
     .addEventListener('click', () => {
       const proj = document.getElementById('projectNumber').value;
@@ -332,28 +369,53 @@ function handleEdit(evt) {
  * 10) Save inline edit via PUT /labor-equipment/update-entry/<type>/<id>
  *     Expects JSON: { hours: <string>, activity_code_id: <id> }
  */
-async function saveEdit(tr, entryId, entryType) {
+async function saveEdit(evt) {
+  evt.preventDefault();
+
+  // 1) Find which button and row fired this
+  const btn       = evt.currentTarget;
+  const entryId   = btn.dataset.id;
+  const entryType = btn.dataset.type;
+  const tr        = btn.closest('tr');
+
+  // 2) Grab updated values from that row
+  const newHrs = tr.children[1].querySelector('input').value.trim();
+  const newAct = tr.children[2].querySelector('select').value;
+  const newPay = tr.children[3].querySelector('select').value || null;
+  const newCwp = tr.children[4].querySelector('select').value || null;
+
+  if (!newHrs || !newAct) {
+    return alert('Veuillez fournir heures et code d’activité.');
+  }
+
   try {
-    const hrs  = tr.children[1].querySelector('input').value.trim();
-    const actId= tr.children[2].querySelector('select').value;
-    if (!hrs || !actId) return alert("Veuillez fournir les heures et un code d'activité.");
-
-    const resp = await fetch(`/labor-equipment/update-entry/${entryType}/${entryId}`, {
-      method:  'PUT',
-      headers: {'Content-Type':'application/json'},
-      body:    JSON.stringify({ hours: hrs, activity_code_id: actId })
-    });
+    // 3) PUT the update, including payment_item_id & cwp
+    const resp = await fetch(
+      `/labor-equipment/update-entry/${entryType}/${entryId}`,
+      {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hours:             Number(newHrs),
+          activity_code_id:  Number(newAct),
+          payment_item_id:   newPay,
+          cwp:               newCwp
+        })
+      }
+    );
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error||'Erreur update');
+    if (!resp.ok) throw new Error(data.error || 'Erreur mise à jour');
 
-    alert("Entrée mise à jour.");
+    // 4) Refresh the table exactly as before
     const proj = document.getElementById('projectNumber').value;
     const date = document.getElementById('dateSelector').value;
     await loadPendingEntries(proj, date);
+
+    alert('Entrée mise à jour.');
   }
-  catch(err) {
-    console.error("saveEdit()", err);
-    alert("Erreur : " + err.message);
+  catch (err) {
+    console.error('saveEdit()', err);
+    alert('Erreur : ' + err.message);
   }
 }
 
