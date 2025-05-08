@@ -70,9 +70,8 @@
           {% endfor %}
         </select>
 
-        
         <label for="cwp_code">Construction Work Package (CWP):</label>
-        <select id="cwp_code" class="form-control">
+        <select id="cwp_code" class="form-control" data-cwp-source>
           <option value="" disabled selected>-- Aucun --</option>
           {% for c in cwps %}
             <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
@@ -95,7 +94,7 @@
               <th>Code d'activité</th>
               <th>Items de bordereau</th>
               <th>CWP</th>
-              <th>Actions</th>  <!-- ← added this -->
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -131,7 +130,7 @@
         </select>
 
         <label for="materialCwp">Construction Work Package (CWP):</label>
-        <select id="materialCwp" class="form-control">
+        <select id="materialCwp" class="form-control" data-cwp-source>
           <option value="" disabled selected>-- Aucun --</option>
           {% for c in cwps %}
             <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
@@ -171,46 +170,28 @@
 
 {% endblock %}
 
-
 {% block extra_js %}
-  <!-- 1) Core date/weather/progress loader (unchanged) -->
-  <script> 
+  <!-- date/weather loader (unchanged) -->
+  <script>
     window.CWP_LIST_URL = "{{ url_for('data_entry_bp.list_cwps') }}";
   </script>
-  <script type="module">
-    import {
-      showToday,
-      highlightDates,
-      getTemperature,
-      restoreProgress
-    } from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
+  <script type="module" src="{{ url_for('static', filename='js/date_temp_loader.js') }}"></script>
 
-    document.addEventListener('DOMContentLoaded', () => {
-      showToday();
-      highlightDates();
-      getTemperature();
-      restoreProgress();
-    });
-  </script>
-
-  <!-- 2) Populate dropdowns & bootstrap each tab -->
+  <!-- Populate dropdowns & init tabs -->
   <script type="module">
-    import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
+    import { populateDropdowns }    from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
     import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1) fill every dropdown across all tabs
       await populateDropdowns();
-
-      // 2) initialize each tab’s logic (loads pending data, wires buttons, etc.)
       initLaborEquipmentTab();
       initMaterialsTab();
-      // …initSubcontractorsTab(), etc. as needed…
+      // …initSubcontractorsTab(), etc…
     });
   </script>
 
-  <!-- 3) Tab‐switcher -->
+  <!-- Tab-switcher (unchanged) -->
   <script>
     function openTab(evt, tabName) {
       document.querySelectorAll('.tabcontent').forEach(c => c.style.display = 'none');
