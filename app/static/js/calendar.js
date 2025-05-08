@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function fetchCalendarData(year, month) {
     try {
-        const response = await fetch(`calendar/calendar-data?year=${year}&month=${month}`);
+        const response = await fetch(`calendar-data?year=${year}&month=${month}`);
         if (!response.ok) throw new Error('Failed to fetch calendar data.');
         const data = await response.json();
 
