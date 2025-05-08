@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 import os
 from dotenv import load_dotenv
-from app.routes.workers_routes        import workers_bp
-from app.routes.equipment_routes      import equipment_bp
-from app.routes.activity_codes_routes import activity_codes_bp
 
 # Blueprints registration will be done after app creation
 
@@ -39,9 +36,6 @@ logger.info("Flask app created.")
 logger.info("Flask app created.")
 
     # Register blueprints after app creation
-app.register_blueprint(workers_bp,        url_prefix="/workers")
-app.register_blueprint(equipment_bp,      url_prefix="/equipment")
-app.register_blueprint(activity_codes_bp, url_prefix="/activity-codes")
 env = os.getenv("FLASK_ENV", "development")
 debug = (env == "development")
 logger.info(f"Starting Flask in {env!r} mode (debug={debug})")
