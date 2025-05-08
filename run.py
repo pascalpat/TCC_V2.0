@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 import os
 from dotenv import load_dotenv
+from app.routes.workers_routes        import workers_bp
+from app.routes.equipment_routes      import equipment_bp
+from app.routes.activity_codes_routes import activity_codes_bp
+
+# Blueprints registration will be done after app creation
 
 # ────────────────────────────────────────────────────
 # 1) Load .env immediately, before any imports that read getenv()
@@ -31,12 +36,17 @@ logger.info("Creating Flask app...")
 app = create_app()
 logger.info("Flask app created.")
 
-if __name__ == "__main__":
-    env = os.getenv("FLASK_ENV", "development")
-    debug = (env == "development")
-    logger.info(f"Starting Flask in {env!r} mode (debug={debug})")
-    logger.info(f"Using DB URI: {Config.SQLALCHEMY_DATABASE_URI!r}")
-    # Log whether the weather key was picked up
-    logger.info("WEATHER_API_KEY present? %s", bool(os.getenv("WEATHER_API_KEY")))
+logger.info("Flask app created.")
 
-    app.run(debug=debug)
+    # Register blueprints after app creation
+app.register_blueprint(workers_bp,        url_prefix="/workers")
+app.register_blueprint(equipment_bp,      url_prefix="/equipment")
+app.register_blueprint(activity_codes_bp, url_prefix="/activity-codes")
+env = os.getenv("FLASK_ENV", "development")
+debug = (env == "development")
+logger.info(f"Starting Flask in {env!r} mode (debug={debug})")
+logger.info(f"Using DB URI: {Config.SQLALCHEMY_DATABASE_URI!r}")
+# Log whether the weather key was picked up
+logger.info("WEATHER_API_KEY present? %s", bool(os.getenv("WEATHER_API_KEY")))
+
+app.run(debug=debug)
