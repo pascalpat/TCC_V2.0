@@ -1,5 +1,5 @@
 export async function fetchAndRenderWorkOrders() {
-    const response = await fetch('/work-orders/list');
+    const response = await fetch('data-entry/work-orders/list');
     const data = await response.json();
 
     const workOrdersContainer = document.getElementById('workOrdersContainer');

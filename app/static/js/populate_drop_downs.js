@@ -7,8 +7,8 @@ export async function populateWorkersAndEquipmentDropdown() {
   console.log("[populateWorkersAndEquipmentDropdown] fetching workers & equipment...");
   try {
     const [wkResp, eqResp] = await Promise.all([
-      fetch("/workers/list"),
-      fetch("/equipment/list")
+      fetch("workers/list"),
+      fetch("equipment/list")
     ]);
     if (!wkResp.ok || !eqResp.ok) throw new Error("Fetch failed");
 
@@ -45,7 +45,7 @@ export async function populateWorkersAndEquipmentDropdown() {
 export async function populateActivityDropdown() {
   console.log("[populateActivityDropdown] fetching codes...");
   try {
-    const resp = await fetch("/activity-codes/get_activity_codes");
+    const resp = await fetch("activity-codes/get_activity_codes");
     if (!resp.ok) throw new Error("Fetch failed");
 
     const { activity_codes } = await resp.json();
@@ -108,7 +108,7 @@ export async function populatePaymentItemDropdown() {
 export async function populateCwpDropdown() {
   let cwps;
   try {
-    const resp = await fetch("/data-entry/cw-packages/list");
+    const resp = await fetch("data-entry/cw-packages/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     ({ cwps } = await resp.json());
     window.cwpList = cwps;  // store for inline editing

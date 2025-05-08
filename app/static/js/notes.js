@@ -1,5 +1,5 @@
 export async function fetchAndRenderDailyNotes() {
-    const response = await fetch('/notes/list');
+    const response = await fetch('data-entry/notes/list');
     const data = await response.json();
 
     const dailynotesContainer = document.getElementById('dailyNotesContainer');

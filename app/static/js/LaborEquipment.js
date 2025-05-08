@@ -214,7 +214,7 @@ async function confirmUsageLines(e) {
   const reportDate = document.getElementById('dateSelector').value;
 
   try {
-    const resp = await fetch('/labor-equipment/confirm-labor-equipment', {
+    const resp = await fetch('labor-equipment/confirm-labor-equipment', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

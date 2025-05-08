@@ -62,7 +62,7 @@ export async function validateFormSubmission(workerName, laborHours, activityCod
 
     // Optional: Send to backend for additional validation (if implemented)
     try {
-        const response = await fetch('/validation/validate_worker', {
+        const response = await fetch('data-entry/validation/validate_worker', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

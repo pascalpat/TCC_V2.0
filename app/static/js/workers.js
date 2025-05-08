@@ -5,7 +5,7 @@ export async function fetchAndRenderWorkers() {
     try {
         // Fetch workers from session
         console.log("Fetching workers...workers.js line 7");
-        const response = await fetch('/workers/session-list');
+        const response = await fetch('data-entry/workers/session-list');
         if (!response.ok) {
             throw new Error(`Failed to fetch workers: ${response.statusText}`);
         }
@@ -89,7 +89,7 @@ export async function addWorker() {
         const payload = { workerName, laborHours, activityCode };
         console.log("Payload sent to server:workers.js line 90", payload);
 
-        const response = await fetch('/workers/add-worker', {
+        const response = await /workers/add-worker', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ export async function confirmWorkers() {
 
         console.log("Payload to be sent to the server:", { workers });
 
-        const response = await fetch('/workers/confirm-workers', {
+        const response = await fetch('data-entry/workers/confirm-workers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ workers }) // Ensure valid JSON payload

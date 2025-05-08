@@ -17,7 +17,7 @@ export function showToday() {
   // ────────────────────────────────────────────────────
   export async function highlightDates() {
     try {
-      const resp = await fetch('/data-entry/days-status');
+      const resp = await fetch('data-entry/days-status');
       if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
       const { completedDays = [], incompleteDays = [] } = await resp.json();
       const dateEl = document.getElementById('dateSelector');
@@ -37,7 +37,7 @@ export function showToday() {
   // ────────────────────────────────────────────────────
   export async function confirmDateSelection(selectedDate) {
     try {
-      const resp = await fetch('/data-entry/initialize-day', {
+      const resp = await fetch('data-entry/initialize-day', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ dateStamp: selectedDate })

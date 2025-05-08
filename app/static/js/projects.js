@@ -2,7 +2,7 @@
 export async function fetchProjectNumbers() {
     try {
         // Fetch project numbers from the backend
-        const response = await fetch('/projects/list');
+        const response = await fetch('data-entry/projects/list');
         if (!response.ok) {
             throw new Error(`Failed to fetch project numbers: ${response.statusText}`);
         }

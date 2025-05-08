@@ -1,5 +1,5 @@
 export async function fetchAndRenderPictures() {
-    const response = await fetch('/pictures/list');
+    const response = await fetch('data-entry/pictures/list');
     const data = await response.json();
 
     const picturesContainer = document.getElementById('picturesContainer');

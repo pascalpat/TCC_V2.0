@@ -146,7 +146,7 @@ async function confirmMaterialLines(e) {
   const reportDate = document.getElementById('dateSelector').value;
 
   try {
-    const resp = await fetch('/materials/confirm-materials', {
+    const resp = await fetch('materials/confirm-materials', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ usage, project_id: projectId, date_of_report: reportDate })
