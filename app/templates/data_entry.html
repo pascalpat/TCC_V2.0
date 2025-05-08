@@ -137,7 +137,7 @@
             <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
           {% endfor %}
         </select>
-        
+
         <div class="button-container">
           <button type="button" id="addMaterialBtn" class="btn btn-primary">Ajouter Matériaux</button>
           <button type="button" id="confirmMaterialsBtn" class="btn btn-success">Confirmer les matériaux</button>
@@ -197,7 +197,7 @@
   <script type="module">
     import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
-    import { initMaterialsTab       } from "{{ url_for('static', filename='js/Materials.js') }}";
+    import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
 
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) fill every dropdown across all tabs
