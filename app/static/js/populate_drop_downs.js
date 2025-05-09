@@ -1,14 +1,37 @@
-// File: static/js/populate_drop_downs.js
+// static/js/populate_drop_downs.js
+
+// Pull in our Blueprint URLs (falling back to empty strings if not present)
+const {
+  listWorkers        = '',
+  listEquipment      = '',
+  getActivityCodes   = '',
+  listPaymentItems   = '',
+  listCwpPackages    = ''
+} = window.API || {};
+
+function assertEndpoint(name, url) {
+  if (!url) {
+    console.warn(`[populate] ${name} endpoint not defined, skipping.`);
+    return false;
+  }
+  return true;
+}
 
 /**
  * 1) Populate Workers & Equipment dropdown
  */
 export async function populateWorkersAndEquipmentDropdown() {
-  console.log("[populateWorkersAndEquipmentDropdown] fetching workers & equipment...");
+  console.log("[populateWorkersAndEquipmentDropdown] fetching workers & equipment…");
+
+  if (!assertEndpoint('listWorkers', listWorkers) ||
+      !assertEndpoint('listEquipment', listEquipment)) {
+    return;
+  }
+
   try {
     const [wkResp, eqResp] = await Promise.all([
-      fetch("workers/list"),
-      fetch("equipment/list")
+      fetch(listWorkers),
+      fetch(listEquipment)
     ]);
     if (!wkResp.ok || !eqResp.ok) throw new Error("Fetch failed");
 
@@ -43,9 +66,11 @@ export async function populateWorkersAndEquipmentDropdown() {
  * 2) Populate Activity Codes dropdown for all tabs
  */
 export async function populateActivityDropdown() {
-  console.log("[populateActivityDropdown] fetching codes...");
+  console.log("[populateActivityDropdown] fetching codes…");
+  if (!assertEndpoint('getActivityCodes', getActivityCodes)) return;
+
   try {
-    const resp = await fetch("activity-codes/get_activity_codes");
+    const resp = await fetch(getActivityCodes);
     if (!resp.ok) throw new Error("Fetch failed");
 
     const { activity_codes } = await resp.json();
@@ -56,6 +81,7 @@ export async function populateActivityDropdown() {
       "materialActivityCode",
       "subcontractorActivityCode"
     ];
+
     ids.forEach(id => {
       const dd = document.getElementById(id);
       if (!dd) return;
@@ -79,12 +105,15 @@ export async function populateActivityDropdown() {
  * 3) Populate Payment Items dropdown
  */
 export async function populatePaymentItemDropdown() {
-  console.log("[populatePaymentItemDropdown] fetching payment items...");
+  console.log("[populatePaymentItemDropdown] fetching payment items…");
+  if (!assertEndpoint('listPaymentItems', listPaymentItems)) return;
+
   try {
-    const resp = await fetch("payment-items/list");
+    const resp = await fetch(listPaymentItems);
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
+
     const { payment_items: items } = await resp.json();
-    window.paymentItemsList = items;     // store for inline editing
+    window.paymentItemsList = items;  // store for inline editing
 
     const dd = document.getElementById("payment_item_id");
     if (!dd) return;
@@ -106,26 +135,24 @@ export async function populatePaymentItemDropdown() {
  * 4) Populate CWP dropdown
  */
 export async function populateCwpDropdown() {
-  let cwps;
+  console.log("[populateCwpDropdown] fetching CWPs…");
+  if (!assertEndpoint('listCwpPackages', listCwpPackages)) return;
+
+  let cwps = [];
   try {
-    const resp = await fetch("data-entry/cw-packages/list");
+    const resp = await fetch(listCwpPackages);
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     ({ cwps } = await resp.json());
     window.cwpList = cwps;  // store for inline editing
   } catch (err) {
+    console.warn("[populateCwpDropdown] no CWPs available, skipping:", err);
     return;
   }
 
-  // target both selects by ID
-  const selectIds = ["cwp_code", "materialCwp"];
-  selectIds.forEach(selectId => {
+  ["cwp_code", "materialCwp"].forEach(selectId => {
     const dd = document.getElementById(selectId);
-    if (!dd) {
-      return;
-    }
-    // reset to only the default option
+    if (!dd) return;
     dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
-    // append every CWP
     cwps.forEach(c => {
       dd.appendChild(new Option(`${c.code} – ${c.name}`, c.code));
     });

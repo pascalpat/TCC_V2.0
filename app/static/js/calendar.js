@@ -1,165 +1,177 @@
+// File: static/js/calendar.js
 // JavaScript for rendering a dynamic project calendar with month navigation
 
-// Global variables for tracking the selected month and year
-let selectedYear = new Date().getFullYear();
-let selectedMonth = new Date().getMonth() + 1; // Months are 1-based
-let selectedDate = null;
+// Global state
+let selectedYear  = new Date().getFullYear();
+let selectedMonth = new Date().getMonth() + 1; // 1-based
+let selectedDate  = null;
 let selectedProject = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    updateCalendar();
+  // wire up month nav buttons
+  const prevBtn = document.getElementById("prevMonthBtn");
+  const nextBtn = document.getElementById("nextMonthBtn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      selectedMonth--;
+      if (selectedMonth < 1) {
+        selectedMonth = 12;
+        selectedYear--;
+      }
+      updateCalendar();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      selectedMonth++;
+      if (selectedMonth > 12) {
+        selectedMonth = 1;
+        selectedYear++;
+      }
+      updateCalendar();
+    });
+  }
+
+  // initial render
+  updateCalendar();
 });
 
 async function fetchCalendarData(year, month) {
-    try {
-        const response = await fetch(`calendar-data?year=${year}&month=${month}`);
-        if (!response.ok) throw new Error('Failed to fetch calendar data.');
-        const data = await response.json();
+  try {
+    // use the absolute, blueprint-correct URL injected via template
+    const url = `${window.API.calendarData}?year=${year}&month=${month}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        if (!data.calendar) throw new Error('No calendar data available.');
-        if (!data.projects) throw new Error('No project data available.');
+    const data = await response.json();
+    if (!data.calendar)  throw new Error("No calendar data available.");
+    if (!data.projects)  throw new Error("No project data available.");
 
-        const calendar = generateFullCalendar(year, month);
-        renderCalendar(calendar, data.calendar);
-    } catch (error) {
-        alert('Failed to load calendar data. Please try again.');
-        console.error('Error fetching calendar data:', error);
-    }
+    const calendar = generateFullCalendar(year, month);
+    renderCalendar(calendar, data.calendar);
+  } catch (err) {
+    alert("Failed to load calendar data. Please try again.");
+    console.error("Error fetching calendar data:", err);
+  }
 }
 
 function generateFullCalendar(year, month) {
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay  = new Date(year, month, 0);
+  const daysInMonth = [];
+  let cursor = new Date(firstDay);
 
-    const daysInMonth = [];
-    let day = new Date(firstDay);
-
-    // Add empty days for the first row
-    for (let i = 0; i < firstDay.getDay(); i++) {
-        daysInMonth.push(null);
-    }
-
-    // Add all days of the month
-    while (day <= lastDay) {
-        daysInMonth.push(new Date(day));
-        day.setDate(day.getDate() + 1);
-    }
-
-    // Add empty days for the last row
-    for (let i = lastDay.getDay() + 1; i < 7; i++) {
-        daysInMonth.push(null);
-    }
-
-    return daysInMonth;
+  // leading blanks
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    daysInMonth.push(null);
+  }
+  // actual days
+  while (cursor <= lastDay) {
+    daysInMonth.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  // trailing blanks
+  for (let i = lastDay.getDay() + 1; i < 7; i++) {
+    daysInMonth.push(null);
+  }
+  return daysInMonth;
 }
 
 function renderCalendar(days, calendarData) {
-    const calendarGrid = document.getElementById('calendar-grid');
-    if (!calendarGrid) {
-        console.error("Element with ID 'calendar-grid' not found.");
-        return;
-    }
-    calendarGrid.innerHTML = ''; // Clear existing content
+  const grid = document.getElementById("calendar-grid");
+  if (!grid) {
+    console.error("Element #calendar-grid not found");
+    return;
+  }
+  grid.innerHTML = "";
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize time to midnight for comparison
+  days.forEach(date => {
+    const cell = document.createElement("div");
+    cell.className = "calendar-date";
 
-    days.forEach(date => {
-        const dateDiv = document.createElement('div');
-        dateDiv.className = 'calendar-date';
+    if (date) {
+      const iso = date.toISOString().slice(0, 10);
+      cell.innerHTML = `<strong>${date.getDate()}</strong>`;
 
-        if (date) {
-            const dateString = date.toISOString().split('T')[0];
-            dateDiv.innerHTML = `<strong>${date.getDate()}</strong>`;
+      const dayData = calendarData[iso];
+      if (dayData) {
+        applyStatusClasses(cell, dayData);
 
-            if (calendarData[dateString]) {
-                applyStatusClasses(dateDiv, calendarData[dateString]);
+        const list = document.createElement("div");
+        list.className = "project-list";
 
-                const projectList = document.createElement('div');
-                projectList.className = 'project-list';
-                Object.entries(calendarData[dateString]).forEach(([projectId, status]) => {
-                    const projectButton = document.createElement('button');
-                    projectButton.textContent = `Project ${projectId} (${status})`;
-                    projectButton.className = `status ${status.replace('_', '-')}`;
-                    projectButton.dataset.projectId = projectId;
-                    projectButton.dataset.date = dateString;
+        Object.entries(dayData).forEach(([projId, status]) => {
+          const btn = document.createElement("button");
+          btn.textContent = `Project ${projId} (${status})`;
+          btn.className = `status ${status.replace("_", "-")}`;
+          btn.dataset.projectId = projId;
+          btn.dataset.date      = iso;
 
-                    // Ensure project selection is updated
-                    projectButton.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        selectedProject = projectId;
-                        selectedDate = dateString;
+          btn.addEventListener("click", e => {
+            e.preventDefault();
+            selectedProject = projId;
+            selectedDate    = iso;
+            document.getElementById("selected_date").value    = iso;
+            document.getElementById("selected_project").value = projId;
+            highlightSelection(cell, btn);
+          });
 
-                        document.getElementById('selected_date').value = selectedDate;
-                        document.getElementById('selected_project').value = selectedProject;
+          list.appendChild(btn);
+        });
 
-                        highlightSelection(dateDiv, projectButton);
-                    });
+        cell.appendChild(list);
+      }
 
-                    projectList.appendChild(projectButton);
-                });
-                dateDiv.appendChild(projectList);
-            }
+      // clicking date alone just picks date (for form)
+      cell.addEventListener("click", () => {
+        selectedDate = iso;
+        document.getElementById("selected_date").value = iso;
+      });
 
-            dateDiv.addEventListener('click', () => {
-                selectedDate = dateString;
-                document.getElementById('selected_date').value = selectedDate;
-            });
-        } else {
-            dateDiv.classList.add('empty');
-        }
-
-        calendarGrid.appendChild(dateDiv);
-    });
-
-    document.getElementById('calendarForm').addEventListener('submit', (event) => {
-        if (!selectedDate || !selectedProject) {
-            event.preventDefault();
-            alert('Please select both a date and a project.');
-        }
-    });
-}
-
-
-function applyStatusClasses(dateDiv, projects) {
-    const statuses = Object.values(projects);
-    if (statuses.every(status => status === 'completed')) {
-        dateDiv.classList.add('completed');
-    } else if (statuses.some(status => status === 'in_progress')) {
-        dateDiv.classList.add('in-progress');
     } else {
-        dateDiv.classList.add('not-started');
+      cell.classList.add("empty");
     }
+
+    grid.appendChild(cell);
+  });
+
+  // prevent form‐submit unless date+project are chosen
+  const form = document.getElementById("calendarForm");
+  if (form) {
+    form.addEventListener("submit", e => {
+      if (!selectedDate || !selectedProject) {
+        e.preventDefault();
+        alert("Please select both a date and a project.");
+      }
+    });
+  }
 }
 
-function highlightSelection(dateDiv, projectButton) {
-    document.querySelectorAll('.calendar-date').forEach(div => div.classList.remove('selected'));
-    document.querySelectorAll('.project-list button').forEach(button => button.classList.remove('selected-project'));
-    dateDiv.classList.add('selected');
-    projectButton.classList.add('selected-project');
+function applyStatusClasses(cell, projects) {
+  const statuses = Object.values(projects);
+  if (statuses.every(s => s === "completed")) {
+    cell.classList.add("completed");
+  } else if (statuses.some(s => s === "in_progress")) {
+    cell.classList.add("in-progress");
+  } else {
+    cell.classList.add("not-started");
+  }
 }
 
-// Navigation buttons for changing months
-document.getElementById("prevMonthBtn").addEventListener("click", () => {
-    selectedMonth--;
-    if (selectedMonth < 1) {
-        selectedMonth = 12;
-        selectedYear--;
-    }
-    updateCalendar();
-});
+function highlightSelection(cell, btn) {
+  document.querySelectorAll(".calendar-date").forEach(d => d.classList.remove("selected"));
+  document.querySelectorAll(".project-list button")
+          .forEach(b => b.classList.remove("selected-project"));
 
-document.getElementById("nextMonthBtn").addEventListener("click", () => {
-    selectedMonth++;
-    if (selectedMonth > 12) {
-        selectedMonth = 1;
-        selectedYear++;
-    }
-    updateCalendar();
-});
+  cell.classList.add("selected");
+  btn.classList.add("selected-project");
+}
 
 function updateCalendar() {
-    document.getElementById("currentMonth").textContent = 
-        new Date(selectedYear, selectedMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    fetchCalendarData(selectedYear, selectedMonth);
+  const label = document.getElementById("currentMonth");
+  if (label) {
+    label.textContent = new Date(selectedYear, selectedMonth - 1)
+      .toLocaleString("en-US",{ month:"long",year:"numeric" });
+  }
+  fetchCalendarData(selectedYear, selectedMonth);
 }

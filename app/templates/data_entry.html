@@ -1,5 +1,4 @@
-<!-- app/templates/data_entry.html -->
-
+{# app/templates/data_entry.html #}
 {% extends "base.html" %}
 
 {% block title %}Module Rapport Journalier{% endblock %}
@@ -15,7 +14,7 @@
     <button class="tablinks" onclick="openTab(event,'LaborEquipTab')">Employé / Équipement</button>
     <button class="tablinks" onclick="openTab(event,'MaterialsTab')">Matériaux</button>
     <button class="tablinks" onclick="openTab(event,'SubcontractorsTab')">Sous-traitants</button>
-    <button class="tablinks" onclick="openTab(event,'NotesTab')">Notes_extras_Memos</button>
+    <button class="tablinks" onclick="openTab(event,'NotesTab')">Notes du jour</button>
     <button class="tablinks" onclick="openTab(event,'PicturesTab')">Photos du jour</button>
   </div>
 
@@ -27,7 +26,6 @@
     <input type="date" id="dateSelector" value="{{ report_date }}" readonly>
     <a href="{{ url_for('calendar_bp.calendar_page') }}" class="btn-box">Retour au Calendrier</a>
   </div>
-
   <hr>
 
   <!-- ──────────────────────────────────────────────────── -->
@@ -38,14 +36,14 @@
         <h2>Ajouter un Employé ou Équipement</h2>
 
         <label for="workerName">Sélectionner Employé / Équipement:</label>
-        <select id="workerName">
+        <select id="workerName" data-api-source="listWorkers">
           <option value="" disabled selected>-- Sélectionner Employé ou Équipement --</option>
         </select>
 
         <div class="manual-entry-group">
           <div class="manual-toggle-group">
-            <button type="button" id="manualEntryToggle">➕ Ajouter manuellement</button>
-            <button type="button" id="manualEquipToggle">➕ Ajouter équipement manuellement</button>
+            <button type="button" id="manualEntryToggle">➕ Ajouter travailleur manuel</button>
+            <button type="button" id="manualEquipToggle">➕ Ajouter équipement manuel</button>
           </div>
           <input type="text" id="manualWorkerName" placeholder="Nom travailleur manuel" class="manual-entry-input hidden">
           <input type="text" id="manualEquipmentName" placeholder="Nom équipement manuel" class="manual-entry-input hidden">
@@ -55,27 +53,18 @@
         <input type="number" id="laborHours" min="0" step="0.1" class="form-control">
 
         <label for="activityCode">Code d'Activité:</label>
-        <select id="activityCode" class="form-control" required>
+        <select id="activityCode" data-api-source="getActivityCodes" class="form-control" required>
           <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-          {% for code in activity_codes %}
-            <option value="{{ code.id }}">{{ code.code }} – {{ code.description }}</option>
-          {% endfor %}
         </select>
 
         <label for="payment_item_id">Items de bordereau:</label>
-        <select id="payment_item_id" class="form-control">
+        <select id="payment_item_id" data-api-source="listPaymentItems" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
-          {% for item in payment_items %}
-            <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
-          {% endfor %}
         </select>
 
         <label for="cwp_code">Construction Work Package (CWP):</label>
-        <select id="cwp_code" class="form-control" data-cwp-source>
+        <select id="cwp_code" data-api-source="listCwpPackages" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
-          {% for c in cwps %}
-            <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
-          {% endfor %}
         </select>
 
         <div class="button-container">
@@ -117,24 +106,18 @@
         <input type="number" id="materialQuantity" class="form-control" required>
 
         <label for="materialActivityCode">Code d'Activité:</label>
-        <select id="materialActivityCode" class="form-control">
+        <select id="materialActivityCode" data-api-source="getActivityCodes" class="form-control">
           <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
         </select>
 
         <label for="materialPaymentItem">Items de bordereau:</label>
-        <select id="materialPaymentItem" class="form-control">
+        <select id="materialPaymentItem" data-api-source="listPaymentItems" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
-          {% for item in payment_items %}
-            <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
-          {% endfor %}
         </select>
 
         <label for="materialCwp">Construction Work Package (CWP):</label>
-        <select id="materialCwp" class="form-control" data-cwp-source>
+        <select id="materialCwp" data-api-source="listCwpPackages" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
-          {% for c in cwps %}
-            <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
-          {% endfor %}
         </select>
 
         <div class="button-container">
@@ -163,35 +146,35 @@
   </div>
 
   <!-- ──────────────────────────────────────────────────── -->
-  <!-- (other tabs unchanged…) -->
+  <!-- Other tabs… -->
   <div id="SubcontractorsTab" class="tabcontent">…</div>
   <div id="NotesTab"          class="tabcontent">…</div>
   <div id="PicturesTab"       class="tabcontent">…</div>
 
 {% endblock %}
 
+
 {% block extra_js %}
-  <!-- date/weather loader (unchanged) -->
+  <!-- expose all our Blueprint endpoints for JS -->
   <script>
-    window.CWP_LIST_URL = "{{ url_for('data_entry_bp.list_cwps') }}";
+    window.API = {
+      listWorkers:         "{{ url_for('data_entry_bp.list_workers') }}",
+      listEquipment:       "{{ url_for('data_entry_bp.list_equipment') }}",
+      getActivityCodes:    "{{ url_for('data_entry_bp.get_activity_codes') }}",
+      listPaymentItems:    "{{ url_for('data_entry_bp.list_payment_items') }}",
+      listCwpPackages:     "{{ url_for('data_entry_bp.list_cwps') }}"
+    };
   </script>
+
+  <!-- core date/weather loader -->
   <script type="module" src="{{ url_for('static', filename='js/date_temp_loader.js') }}"></script>
 
-  <!-- Populate dropdowns & init tabs -->
-  <script type="module">
-    import { populateDropdowns }    from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
-    import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
-    import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
+  <!-- populate dropdowns & init each tab -->
+  <script type="module" src="{{ url_for('static', filename='js/populate_drop_downs.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='js/LaborEquipment.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='js/materials.js') }}"></script>
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await populateDropdowns();
-      initLaborEquipmentTab();
-      initMaterialsTab();
-      // …initSubcontractorsTab(), etc…
-    });
-  </script>
-
-  <!-- Tab-switcher (unchanged) -->
+  <!-- Tab‐switcher (unchanged) -->
   <script>
     function openTab(evt, tabName) {
       document.querySelectorAll('.tabcontent').forEach(c => c.style.display = 'none');

@@ -1,174 +1,165 @@
-// workers.js
-// Helper function to fetch and render workers
+// static/js/workers.js
+
+// ────────────────────────────────────────────────────
+// 0) Pull our three worker-related URLs from window.API
+//    (with fallbacks to your current routes)
+// ────────────────────────────────────────────────────
+const {
+  listSessionWorkers   = 'data-entry/workers/session-list',
+  addWorker: addWorkerUrl   = 'data-entry/workers/add-worker',
+  confirmWorkers: confirmWorkersUrl = 'data-entry/workers/confirm-workers'
+} = window.API || {};
+
+/**
+ * 1) Fetch & render the “session” workers into #workersTable
+ */
 export async function fetchAndRenderWorkers() {
-    console.log("Fetching workers from session...");
-    try {
-        // Fetch workers from session
-        console.log("Fetching workers...workers.js line 7");
-        const response = await fetch('data-entry/workers/session-list');
-        if (!response.ok) {
-            throw new Error(`Failed to fetch workers: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log("Session workers fetched:workers.js line 14", data);
-
-        
-        // Render the workers in the table
-        const workersTable = document.getElementById('workersTable');
-        if (!workersTable) {
-            console.error("Table with ID 'workersTable' not found in DOM.workers,js line 20");
-            return;
-        }
-
-        workersTable.innerHTML = ''; // Clear the table
-
-        data.workers.forEach(worker => {
-            if (worker.workerName || worker.laborHours || worker.activityCode) {
-                const row = workersTable.insertRow();
-                row.innerHTML = `
-                    <td>${worker.workerName || 'N/A'}</td>
-                    <td>${worker.laborHours || 'N/A'}</td>
-                    <td>${worker.activityCode || 'N/A'}</td>
-                `;
-            }
-        });
-    } catch (error) {
-        console.error("Error fetching workers:", error);
-        alert("Unable to load workers. Please try again later.");
+  console.log("[workers] fetching session workers…");
+  try {
+    const response = await fetch(listSessionWorkers);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch workers: ${response.statusText}`);
     }
+    const data = await response.json();
+    console.log("[workers] session workers fetched:", data);
+
+    // Locate the <table> (or <tbody>) and clear it
+    const table = document.getElementById('workersTable');
+    if (!table) {
+      console.error("[workers] #workersTable not found in DOM");
+      return;
+    }
+    // if it's a <table>, clear all rows:
+    table.innerHTML = '';
+
+    // Render each worker row
+    data.workers.forEach(worker => {
+      if (worker.workerName || worker.laborHours || worker.activityCode) {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${worker.workerName   || 'N/A'}</td>
+          <td>${worker.laborHours    || 'N/A'}</td>
+          <td>${worker.activityCode  || 'N/A'}</td>
+        `;
+      }
+    });
+  } catch (error) {
+    console.error("[workers] error fetching session workers:", error);
+    alert("Unable to load workers. Please try again later.");
+  }
 }
 
+/**
+ * 2) Add one worker → POST → session, then re-fetch
+ */
 export async function addWorker() {
-    console.log("Add Worker button clicked...workers.js line 43");
+  console.log("[workers] Add Worker clicked…");
+  const btn            = document.getElementById('addWorkerBtn');
+  const workerDropdown = document.getElementById('workerName');
+  const hoursInput     = document.getElementById('laborHours');
+  const codeInput      = document.getElementById('activityCode');
 
-    // Fetch DOM elements
-    const addWorkerBtn = document.getElementById('addWorkerBtn');
-    const workerDropdown = document.getElementById('workerName');
-    const laborHoursInput = document.getElementById('laborHours');
-    const activityCodeInput = document.getElementById('activityCode');
+  const workerName   = workerDropdown?.value;
+  const laborHours   = hoursInput?.value;
+  const activityCode = codeInput?.value || 'N/A';
 
-    // Get input values
-    const workerName = workerDropdown?.value;
-    const laborHours = laborHoursInput?.value;
-    const activityCode = activityCodeInput?.value || 'N/A'; // Default to 'N/A' if not provided
+  // Client‐side validation
+  if (!workerName || !laborHours) {
+    alert("Please fill in all required worker details (Name and Hours).");
+    return;
+  }
+  if (isNaN(laborHours) || Number(laborHours) <= 0) {
+    alert("Please enter a valid number for hours worked.");
+    return;
+  }
 
-    // Input validation
-    if (!workerName || !laborHours) {
-        alert("Please fill in all required worker details (Name and Hours).");
-        return;
+  // Disable & show loading
+  if (btn) {
+    btn.disabled    = true;
+    btn.textContent = 'Adding…';
+  }
+
+  try {
+    const payload = { workerName, laborHours, activityCode };
+    console.log("[workers] payload:", payload);
+
+    const response = await fetch(addWorkerUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => null);
+      throw new Error(err?.message || response.statusText);
     }
 
-    if (isNaN(laborHours) || laborHours <= 0) {
-        alert("Please enter a valid number for hours worked.");
-        return;
+    const result = await response.json();
+    console.log("[workers] added successfully:", result);
+    alert('Worker added successfully!');
+
+    // re-load the table from session
+    await fetchAndRenderWorkers();
+
+    // clear the form
+    if (workerDropdown) workerDropdown.selectedIndex = 0;
+    if (hoursInput)     hoursInput.value = '';
+  } catch (error) {
+    console.error("[workers] error adding worker:", error);
+    alert(`Error adding worker: ${error.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled    = false;
+      btn.textContent = 'Add Worker';
     }
-
-    if (typeof workerName !== 'string' || typeof laborHours !== 'string' || isNaN(Number(laborHours))) {
-        alert("Invalid data format. Please check your input.");
-        return;
-    }
-    
-    // Check for duplicates in the table
-    //const existingWorkers = Array.from(
-        //document.querySelectorAll('#workersTable tbody tr td:first-child')
-    //).map(cell => cell.textContent.trim());
-
-    //if (existingWorkers.includes(workerName)) {
-        //alert('This worker is already added.');
-        //return;
-    //}
-
-    // Disable the button and show a loading state
-    addWorkerBtn.disabled = true;
-    addWorkerBtn.textContent = 'Adding...workers.js line 84';
-
-    // Submit worker data to the server
-    try {
-        // Log the payload being sent for debugging
-        const payload = { workerName, laborHours, activityCode };
-        console.log("Payload sent to server:workers.js line 90", payload);
-
-        const response = await /workers/add-worker', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        // Handle server response
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Failed to add worker: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log("Worker added successfully. Server response:workers.js line 107", data);
-
-        // Re-render the workers table with the updated list from the session
-        await fetchAndRenderWorkers();
-
-        // Reset form inputs after successful submission
-        workerDropdown.selectedIndex = 0; // Reset dropdown to placeholder
-        laborHoursInput.value = ''; // Clear input field
-        alert('Worker added successfully! workers.js line 115');
-    } catch (error) {
-        console.error("Error adding worker:", error);
-        alert(`Error adding worker: ${error.message}`);
-    } finally {
-        // Re-enable the button and reset its text
-        addWorkerBtn.disabled = false;
-        addWorkerBtn.textContent = 'Add Worker';
-    }
-
-    
+  }
 }
 
-
+/**
+ * 3) Confirm all staged workers → POST → server → update progress bar
+ */
 export async function confirmWorkers() {
-    console.log("Confirming workers...workers.js line 130");
-    try {
-        // Fetch worker data from the table
-        const workersTableRows = Array.from(document.querySelectorAll('#workersTable tbody tr'));
-        const workers = workersTableRows.map(row => {
-            const cells = row.querySelectorAll('td');
-            return {
-                workerName: cells[0].textContent.trim(),
-                laborHours: cells[1].textContent.trim(),
-                activityCode: cells[2].textContent.trim()
-            };
-        });
+  console.log("[workers] confirming workers…");
+  try {
+    // gather the table rows
+    const rows = Array.from(document.querySelectorAll('#workersTable tbody tr'));
+    const workers = rows.map(row => {
+      const [nameCell, hoursCell, codeCell] = row.cells;
+      return {
+        workerName:   nameCell.textContent.trim(),
+        laborHours:   hoursCell.textContent.trim(),
+        activityCode: codeCell.textContent.trim()
+      };
+    });
 
-        if (workers.length === 0) {
-            alert("No workers to confirm.");
-            return;
-        }
+    if (!workers.length) {
+      alert("No workers to confirm.");
+      return;
+    }
+    console.log("[workers] payload:", { workers });
 
-        console.log("Payload to be sent to the server:", { workers });
+    const response = await fetch(confirmWorkersUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ workers })
+    });
 
-        const response = await fetch('data-entry/workers/confirm-workers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ workers }) // Ensure valid JSON payload
-        });
-
-        if (!response.ok) throw new Error('Failed to confirm workers');
-
-        const data = await response.json();
-        console.log("Workers confirmed successfully:", data);
-        alert('Workers confirmed successfully!');
-
-        // Update progress bar
-        const progressBar = document.getElementById('progress-bar');
-        if (progressBar && data.progressPercentage !== undefined) {
-            progressBar.style.width = `${data.progressPercentage}%`;
-            console.log(`Progress updated: ${data.progressPercentage}%`);
-        }
-    } catch (error) {
-        console.error('Error confirming workers:', error);
-        alert('Failed to confirm workers. Please try again.');
+    if (!response.ok) {
+      throw new Error(`Failed to confirm workers (${response.status})`);
     }
 
+    const data = await response.json();
+    console.log("[workers] confirmed successfully:", data);
+    alert('Workers confirmed successfully!');
 
+    // update a progress bar if your endpoint returns one
+    const bar = document.getElementById('progress-bar');
+    if (bar && data.progressPercentage != null) {
+      bar.style.width = `${data.progressPercentage}%`;
+      console.log(`[workers] progress updated to ${data.progressPercentage}%`);
+    }
+  } catch (error) {
+    console.error("[workers] error confirming workers:", error);
+    alert("Failed to confirm workers. Please try again.");
+  }
 }

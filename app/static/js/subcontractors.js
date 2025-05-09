@@ -1,84 +1,97 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const addSubcontractorBtn = document.getElementById('addSubcontractorBtn');
-    const confirmSubcontractorsBtn = document.getElementById('confirmSubcontractorsBtn');
+// static/js/subcontractors.js
 
-    if (addSubcontractorBtn) {
-        addSubcontractorBtn.addEventListener('click', function (e) {
-            e.preventDefault();
+// ────────────────────────────────────────────────────
+// Pull in our “save subcontractors draft” endpoint
+// ────────────────────────────────────────────────────
+const { saveSubcontractorsDraft = '' } = window.API || {};
 
-            const name = document.getElementById('subcontractorName').value.trim();
-            const numEmployees = document.getElementById('numEmployees').value.trim();
-            const totalHours = document.getElementById('totalHours').value.trim();
-            const activitySelect = document.getElementById('subcontractorActivityCode');
+document.addEventListener('DOMContentLoaded', () => {
+  const addBtn     = document.getElementById('addSubcontractorBtn');
+  const confirmBtn = document.getElementById('confirmSubcontractorsBtn');
 
-            if (!activitySelect) {
-                console.error("Subcontractor activity code dropdown not found.");
-                return;
-            }
+  // 1) Add one row to the table
+  if (addBtn) {
+    addBtn.addEventListener('click', e => {
+      e.preventDefault();
+      const nameInput    = document.getElementById('subcontractorName');
+      const empInput     = document.getElementById('numEmployees');
+      const hoursInput   = document.getElementById('totalHours');
+      const activitySelect = document.getElementById('subcontractorActivityCode');
 
-            const activityText = activitySelect.options[activitySelect.selectedIndex]?.text || "";
+      const name    = nameInput?.value.trim();
+      const numEmp  = empInput?.value.trim();
+      const hours   = hoursInput?.value.trim();
+      const actText = activitySelect?.options[activitySelect.selectedIndex]?.text || '';
+      const actVal  = activitySelect?.value;
 
-            if (!name || !numEmployees || !totalHours || !activitySelect.value) {
-                alert("Veuillez remplir tous les champs (y compris le code activité).");
-                return;
-            }
+      if (!name || !numEmp || !hours || !actVal) {
+        alert("Veuillez remplir tous les champs (y compris le code d’activité).");
+        return;
+      }
 
-            const tableBody = document.getElementById('subcontractorsTable').querySelector("tbody");
-            if (!tableBody) {
-                console.error("Subcontractors table tbody not found.");
-                return;
-            }
+      const tbody = document.querySelector('#subcontractorsTable tbody');
+      if (!tbody) {
+        console.error("[subcontractors] table body not found.");
+        return;
+      }
 
-            let row = tableBody.insertRow();
-            row.innerHTML = `
-                <td>${name}</td>
-                <td>${numEmployees}</td>
-                <td>${totalHours}</td>
-                <td>${activityText}</td>
-            `;
+      const row = tbody.insertRow();
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${numEmp}</td>
+        <td>${hours}</td>
+        <td>${actText}</td>
+      `;
+      console.log("[subcontractors] row added:", { name, numEmp, hours, activity: actText });
 
-            console.log("Subcontractor row added:", { name, numEmployees, totalHours, activityCode: activityText });
+      // clear inputs
+      nameInput.value = '';
+      empInput.value  = '';
+      hoursInput.value= '';
+      activitySelect.selectedIndex = 0;
+    });
+  }
 
-            // Clear inputs after adding
-            document.getElementById('subcontractorName').value = "";
-            document.getElementById('numEmployees').value = "";
-            document.getElementById('totalHours').value = "";
-            activitySelect.selectedIndex = 0;
+  // 2) Collect all rows and POST to server
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async e => {
+      e.preventDefault();
+
+      if (!saveSubcontractorsDraft) {
+        console.warn("[subcontractors] saveSubcontractorsDraft endpoint not configured, skipping.");
+        alert("Impossible de sauvegarder : endpoint introuvable.");
+        return;
+      }
+
+      const tbody = document.querySelector('#subcontractorsTable tbody');
+      if (!tbody) {
+        console.error("[subcontractors] table body not found.");
+        return;
+      }
+
+      // gather entries
+      const entries = Array.from(tbody.rows).map(row => ({
+        companyName:  row.cells[0]?.innerText || '',
+        numEmployees: row.cells[1]?.innerText || '',
+        totalHours:   row.cells[2]?.innerText || '',
+        activityCode: row.cells[3]?.innerText || ''
+      }));
+
+      try {
+        const resp = await fetch(saveSubcontractorsDraft, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ entries, tab: 'subcontractors' })
         });
-    }
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Save failed');
 
-    if (confirmSubcontractorsBtn) {
-        confirmSubcontractorsBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const tbody = document.getElementById('subcontractorsTable').querySelector('tbody');
-            let subcontractorEntries = [];
-            for (let row of tbody.rows) {
-                let subName = row.cells[0].innerText;
-                let subEmployees = row.cells[1].innerText;
-                let subHours = row.cells[2].innerText;
-                let subActivity = row.cells[3]?.innerText || "";
-                subcontractorEntries.push({
-                    companyName: subName,
-                    numEmployees: subEmployees,
-                    totalHours: subHours,
-                    activityCode: subActivity
-                });
-            }
-            fetch("/data_entry/save_draft", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entries: subcontractorEntries, tab: "subcontractors" })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Subcontractors draft saved successfully:", data);
-                alert("Les sous-traitants ont été sauvegardés en tant que brouillon.");
-            })
-            .catch(error => {
-                console.error("Error saving subcontractors draft:", error);
-                alert("Erreur lors de la sauvegarde des brouillons des sous-traitants.");
-            });
-        });
-    }
+        console.log("[subcontractors] draft saved:", data);
+        alert("Les sous-traitants ont été sauvegardés en tant que brouillon.");
+      } catch (err) {
+        console.error("[subcontractors] error saving draft:", err);
+        alert("Erreur lors de la sauvegarde des sous-traitants.");
+      }
+    });
+  }
 });
-
