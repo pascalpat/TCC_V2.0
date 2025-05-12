@@ -31,7 +31,7 @@ def register_blueprints(app):
         from .validation_routes import validation_bp
         app.register_blueprint(validation_bp, url_prefix='/validation')
         from .dailynotes_routes import dailynotes_bp
-        app.register_blueprint(dailynotes_bp, url_prefix='/dailynotes')
+        app.register_blueprint(dailynotes_bp)
         from .materials_routes import materials_bp
         app.register_blueprint(materials_bp, url_prefix='/materials')           
         from .pictures_routes import pictures_bp
@@ -47,5 +47,5 @@ def register_blueprints(app):
         from .auth_routes import auth_bp
         app.register_blueprint(auth_bp, url_prefix='/auth')
         from .labor_equipment_routes import labor_equipment_bp
-        app.register_blueprint(labor_equipment_bp, url_prefix="/labor-equipment")
+        app.register_blueprint(labor_equipment_bp, url_prefix='/labor-equipment')
       

@@ -2,20 +2,23 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Set up logging
+# ─── Logging ───────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# Load environment variables from .env file
+# ─── Load .env ─────────────────────────────────────────────────────────────────
 load_dotenv()
 
+# ─── Base directory ────────────────────────────────────────────────────────────
+# Path of this file (app/config.py)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# ─── Validate critical env vars ─────────────────────────────────────────────────
 def validate_config():
     required_env_vars = ['FLASK_SECRET_KEY', 'DATABASE_URL']
     for var in required_env_vars:
         if not os.getenv(var):
-            if os.getenv("FLASK_ENV") == "production":
+            if os.getenv('FLASK_ENV') == 'production':
                 raise RuntimeError(f"Critical Error: {var} is not set in Production!")
             logger.warning(f"Warning: Environment variable '{var}' is not set. Using default values.")
 
@@ -30,18 +33,24 @@ class Config:
     SPEECH_API_KEY = os.getenv('SPEECH_API_KEY', 'default_speechkey')
     SPEECH_REGION = os.getenv('SPEECH_REGION', 'default_region')
     
-    # Database Configuration - Ensures the correct SQLite path is always used
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f'sqlite:///{os.path.join(BASE_DIR, "../database/TCC.db")}')
+    # Database Configuration
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        f"sqlite:///{os.path.join(BASE_DIR, '../database/TCC.db')}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Flask-Session Configuration
-    SESSION_TYPE = 'filesystem'  # Use filesystem-based sessions
+    SESSION_TYPE = 'filesystem'
 
     # File Paths
     PROJECT_FILE = os.path.join(BASE_DIR, '../data/project.csv')
     WORKERS_FILE = os.path.join(BASE_DIR, '../data/workers.csv')
     EQUIPMENT_FILE = os.path.join(BASE_DIR, '../data/equipment.csv')
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, '../uploads')
+    UPLOAD_FOLDER = os.getenv(
+        'UPLOAD_FOLDER',
+        os.path.join(BASE_DIR, '../uploads')
+    )
     ACTIVITY_CODES_FILE = os.path.join(BASE_DIR, '../data/activity_codes.csv')
     MATERIALS_FILE = os.path.join(BASE_DIR, '../data/materials.csv')
     PICTURES_FILE = os.path.join(BASE_DIR, '../data/pictures.csv')
@@ -51,17 +60,19 @@ class Config:
 class DevelopmentConfig(Config):
     """Configuration for development environment."""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///../database/TCC.db'  # Ensures the correct DB is used
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///../database/TCC.db'
 
 class TestingConfig(Config):
     """Configuration for running unit tests."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'  # Uses an in-memory DB for tests
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 class ProductionConfig(Config):
     """Configuration for production environment."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///../database/TCC.db')  # Ensures the correct DB is used
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        'sqlite:///../database/TCC.db'
+    )
 
-# Print or log the database path to verify it's correct
 logger.info(f"Config loaded. Using database: {Config.SQLALCHEMY_DATABASE_URI}")

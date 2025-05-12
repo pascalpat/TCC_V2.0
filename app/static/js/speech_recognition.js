@@ -1,97 +1,95 @@
- // Start Dictation function (Speech Recognition)
- async function startDictation(targetInputId) {
-    try {
-        // Step 1: Fetch Speech API configuration from the backend
-        const configResponse = await fetch('/api/get-speech-config');
-        const configData = await configResponse.json();
+// static/js/speech_recognition.js
 
-        const subscriptionKey = configData.apiKey;
-        const serviceRegion = configData.region;
+// ——————————————————————————————————————————————————————————————
+// Speech Recognition + Text-to-Speech (TTS) via Azure Speech SDK
+// Expects window.API.getSpeechConfig to be injected in base.html:
+//   window.API = { getSpeechConfig: "{{ url_for('api.get_speech_config') }}", … }
+// ——————————————————————————————————————————————————————————————
 
-        // Step 2: Ensure the keys exist
-        if (!subscriptionKey || !serviceRegion) {
-            console.error("Speech API key or region is missing.");
-            alert("Speech API key or region is missing. Please check the console for details.");
-            return;
-        }
+/**
+ * Start one-shot speech recognition and write result into the given input.
+ * @param {string} targetInputId  DOM id of the <input> to receive the transcript
+ */
+export async function startDictation(targetInputId) {
+  try {
+    // Fetch subscription info
+    const resp = await fetch(window.API.getSpeechConfig);
+    const { apiKey: subscriptionKey, region: serviceRegion } = await resp.json();
 
-        // Step 3: Configure speech recognition
-        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-        speechConfig.speechRecognitionLanguage = "fr-CA";
-
-        var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        var recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-
-        // Log that recognition is starting
-        
-        alert("Starting speech recognition...");
-
-        recognizer.recognizeOnceAsync(function (result) {
-            alert("Speech recognition completed.");
-
-            if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-                
-                document.getElementById(targetInputId).value = result.text;
-
-                // Optionally speak the text back to the user
-                speakText(result.text);
-
-            } else {
-                console.error("Speech Recognition failed: " + result.errorDetails);
-                alert("Speech recognition failed. Check the console for details.");
-            }
-
-        },
-            function (err) {
-                console.error("Error recognizing speech: " + err);
-                alert("Error recognizing speech. Check the console for details.");
-            });
-    } catch (error) {
-        console.error("Error starting speech recognition: ", error);
-        alert("Error starting speech recognition. Check the console for details.");
+    if (!subscriptionKey || !serviceRegion) {
+      console.error("Speech API key or region is missing.");
+      alert("Speech API key or region is missing. See console for details.");
+      return;
     }
+
+    // Configure recognizer
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+    speechConfig.speechRecognitionLanguage = "fr-CA";
+    const audioConfig  = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    const recognizer   = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+    alert("Démarrage de la reconnaissance vocale…");
+
+    recognizer.recognizeOnceAsync(
+      result => {
+        alert("Reconnaissance terminée.");
+
+        if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+          const el = document.getElementById(targetInputId);
+          if (el) el.value = result.text;
+          speakText(result.text);
+        } else {
+          console.error("Échec reconnaissance :", result.errorDetails);
+          alert("Échec de la reconnaissance. Voir console.");
+        }
+      },
+      err => {
+        console.error("Erreur de reconnaissance :", err);
+        alert("Erreur durant la reconnaissance. Voir console.");
+      }
+    );
+  } catch (err) {
+    console.error("Impossible de démarrer la reconnaissance :", err);
+    alert("Erreur de démarrage. Voir console.");
+  }
 }
 
+/**
+ * Speak a text string via Azure TTS.
+ * @param {string} text  The text to voice out
+ */
+export async function speakText(text) {
+  try {
+    // Fetch subscription info
+    const resp = await fetch(window.API.getSpeechConfig);
+    const { apiKey: subscriptionKey, region: serviceRegion } = await resp.json();
 
- // Text-to-Speech function
- async function speakText(text) {
-    try {
-        // Step 1: Fetch Speech API configuration from the backend
-        const configResponse = await fetch('/api/get-speech-config');
-        const configData = await configResponse.json();
-
-        const subscriptionKey = configData.apiKey;
-        const serviceRegion = configData.region;
-
-        // Step 2: Ensure the keys exist
-        if (!subscriptionKey || !serviceRegion) {
-            console.error("Speech API key or region is missing.");
-            alert("Speech API key or region is missing. Please check the console for details.");
-            return;
-        }
-
-        // Step 3: Configure text-to-speech
-        var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-        speechConfig.speechSynthesisLanguage = "fr-CA";
-        var audioConfig = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
-        var synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
-
-        synthesizer.speakTextAsync(text,
-            function (result) {
-                if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
-                    
-                } else {
-                    console.error("Speech synthesis failed: " + result.errorDetails);
-                }
-                synthesizer.close();
-            },
-            function (err) {
-                console.error("Error during speech synthesis: " + err);
-                synthesizer.close();
-            }
-        );
-    } catch (error) {
-        console.error("Error during speech synthesis: ", error);
-        alert("Error during speech synthesis. Check the console for details.");
+    if (!subscriptionKey || !serviceRegion) {
+      console.error("Speech API key or region is missing.");
+      alert("Speech API key or region is missing. See console for details.");
+      return;
     }
+
+    // Configure synthesizer
+    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+    speechConfig.speechSynthesisLanguage = "fr-CA";
+    const audioConfig   = SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+    const synthesizer  = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+
+    synthesizer.speakTextAsync(
+      result => {
+        if (result.reason !== SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
+          console.error("Synthèse vocale échouée :", result.errorDetails);
+        }
+        synthesizer.close();
+      },
+      err => {
+        console.error("Erreur synthèse vocale :", err);
+        synthesizer.close();
+      }
+    );
+  } catch (err) {
+    console.error("Erreur durant la synthèse :", err);
+    alert("Erreur de synthèse. Voir console.");
+  }
 }

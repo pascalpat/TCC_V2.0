@@ -6,14 +6,17 @@
 export async function populateWorkersAndEquipmentDropdown() {
   console.log("[populateWorkersAndEquipmentDropdown] fetching workers & equipment...");
   try {
+    // FETCH: two separate endpoints (workers + equipment) should both point
+    // at the same URL that returns { workers, equipment }
     const [wkResp, eqResp] = await Promise.all([
-      fetch("/workers/list"),
-      fetch("/equipment/list")
-    ]);
-    if (!wkResp.ok || !eqResp.ok) throw new Error("Fetch failed");
+        fetch(`${window.API_BASE}${window.API.listWorkers}`),
+        fetch(`${window.API_BASE}${window.API.listEquipment}`)
+      ]);
+      if (!wkResp.ok || !eqResp.ok) {
+        throw new Error(`Fetch failed: ${wkResp.status} / ${eqResp.status}`);
+      }
 
-    const { workers }   = await wkResp.json();
-    const { equipment } = await eqResp.json();
+    const { workers, equipment } = await resp.json();
     const dd = document.getElementById("workerName");
     if (!dd) return;
 
@@ -45,7 +48,7 @@ export async function populateWorkersAndEquipmentDropdown() {
 export async function populateActivityDropdown() {
   console.log("[populateActivityDropdown] fetching codes...");
   try {
-    const resp = await fetch("/activity-codes/get_activity_codes");
+    const resp = await fetch(`${window.API_BASE}${window.API.listActivityCodes}`);
     if (!resp.ok) throw new Error("Fetch failed");
 
     const { activity_codes } = await resp.json();
@@ -81,7 +84,7 @@ export async function populateActivityDropdown() {
 export async function populatePaymentItemDropdown() {
   console.log("[populatePaymentItemDropdown] fetching payment items...");
   try {
-    const resp = await fetch("payment-items/list");
+    const resp = await fetch(`${window.API_BASE}${window.API.listPaymentItems}`);
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     const { payment_items: items } = await resp.json();
     window.paymentItemsList = items;     // store for inline editing
@@ -108,17 +111,16 @@ export async function populatePaymentItemDropdown() {
 export async function populateCwpDropdown() {
   let cwps;
   try {
-    const resp = await fetch("/data-entry/cw-packages/list");
+    const resp = await fetch(`${window.API_BASE}${window.API.listCwps}`);
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
-    ({ cwps } = await resp.json());
+    const { cwps } = await resp.json();
     window.cwpList = cwps;  // store for inline editing
   } catch (err) {
     return;
   }
 
   // target both selects by ID
-  const selectIds = ["cwp_code", "materialCwp"];
-  selectIds.forEach(selectId => {
+  ["cwp_code", "materialCwp"].forEach(selectId => {
     const dd = document.getElementById(selectId);
     if (!dd) {
       return;

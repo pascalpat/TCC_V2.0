@@ -11,7 +11,7 @@ from ..models.daily_report_status import DailyReportStatus  # your DailyReportSt
 from .. import db
 import logging
 
-calendar_bp = Blueprint('calendar_bp', __name__)
+calendar_bp = Blueprint('calendar_bp', __name__, url_prefix='/calendar')
 
 @calendar_bp.route('/', methods=['GET', 'POST'])
 def calendar_page():

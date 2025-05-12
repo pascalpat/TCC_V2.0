@@ -166,17 +166,175 @@
   <!-- ──────────────────────────────────────────────────── -->
   <!-- (other tabs unchanged…) -->
   <div id="SubcontractorsTab" class="tabcontent">…</div>
-  <div id="NotesTab"          class="tabcontent">…</div>
+
+     
+<!-- ──────────────────────────────────────────────────── -->
+  <!-- nates tab -->
+<div id="NotesTab" class="tabcontent" style="display:none;">
+    <div class="form-table-container">
+
+      <form id="notesDuJourForm" class="form-box" enctype="multipart/form-data">
+        <h2>Notes du jour</h2>
+
+        <!-- 1) Note content + dictation -->
+        <div class="form-group">
+          <label for="noteContent">Votre note :</label>
+          <textarea
+            id="noteContent"
+            name="content"
+            rows="4"
+            class="form-control"
+            placeholder="Entrez vos notes du jour…"
+            required
+          ></textarea>
+          <button
+            type="button"
+            id="startDictation"
+            class="btn btn-icon"
+            title="Dicter"
+          >🎤</button>
+        </div>
+
+        <!-- 2) Category -->
+        <div class="form-group">
+          <label for="noteCategory">Catégorie :</label>
+          <select id="noteCategory" name="category" class="form-control">
+            <option value="Progress">Avancement</option>
+            <option value="Issues">Problème</option>
+            <option value="Note">Note générale</option>
+          </select>
+        </div>
+
+        <!-- 3) Priority -->
+        <div class="form-group">
+          <label for="notePriority">Priorité :</label>
+          <select id="notePriority" name="priority" class="form-control">
+            <option value="low">Basse</option>
+            <option value="medium">Moyenne</option>
+            <option value="high">Haute</option>
+          </select>
+        </div>
+
+        <!-- 4) Linked activity code -->
+        <div class="form-group">
+          <label for="noteActivityCode">Code d’activité :</label>
+          <select id="noteActivityCode" name="activity_code_id" class="form-control">
+            <option value="">— Aucun —</option>
+            {% for ac in activity_codes %}
+              <option value="{{ ac.id }}">{{ ac.code }} – {{ ac.description }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- 5) Linked Work Order -->
+        <div class="form-group">
+          <label for="noteWorkOrder">Associer WO :</label>
+          <select id="noteWorkOrder" name="work_order_id" class="form-control">
+            <option value="">— Aucun —</option>
+            {% for wo in work_orders %}
+              <option value="{{ wo.id }}">WO {{ wo.id }} – {{ wo.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- 6) Attachment -->
+        <div class="form-group">
+          <label for="noteAttachment">Pièce jointe (optionnelle) :</label>
+          <input
+            type="file"
+            id="noteAttachment"
+            name="attachment"
+            accept=".pdf,.jpg,.jpeg,.png"
+            class="form-control"
+          >
+        </div>
+
+        <!-- 7) Submit -->
+        <div class="button-container">
+          <button
+            type="submit"
+            id="addNoteBtn"
+            class="btn btn-primary"
+          >
+            Ajouter la note
+          </button>
+        </div>
+      </form>
+
+      <!-- List of persisted notes -->
+      <div id="notesTableContainer" class="table-container">
+        <h3>Historique des notes</h3>
+        <table id="notesTable" class="styled-table">
+          <thead>
+            <tr>
+              <th>Date/Heure</th>
+              <th>Note</th>
+              <th>Catégorie</th>
+              <th>Priorité</th>
+              <th>Act.</th>
+              <th>WO</th>
+              <th>Fichier</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+
+
   <div id="PicturesTab"       class="tabcontent">…</div>
 
 {% endblock %}
 
-
 {% block extra_js %}
-  <!-- 1) Core date/weather/progress loader (unchanged) -->
-  <script> 
-    window.CWP_LIST_URL = "{{ url_for('data_entry_bp.list_cwps') }}";
+  <!-- ──────────────────────────────────────────── -->
+  <!-- 0) Centralize all endpoints for static modules -->
+  <script>
+    window.API_BASE = "{{ request.script_root }}";
   </script>
+  <script>
+    window.API = {
+      // Labor & Equipment
+      listWorkersAndEquipment: "{{ url_for('labor_equipment_bp.get_pending_labor_equipment') }}",
+      confirmLaborEquipment:  "{{ url_for('labor_equipment_bp.confirm_labor_equipment') }}",
+      deleteLaborEntry:       type => (id) =>
+        `{{ url_for('labor_equipment_bp.delete_entry', entry_type='__TYPE__', entry_id=0) }}`
+          .replace('__TYPE__', type)
+          .replace('0', id),
+
+      // Materials
+      listMaterials:          "{{ url_for('materials_bp.get_pending_materials') }}",
+      confirmMaterials:       "{{ url_for('materials_bp.confirm_materials') }}",
+      deleteMaterialEntry:    id =>
+        `{{ url_for('materials_bp.delete_material_entry', entry_id=0) }}`.replace('0', id),
+      updateMaterialEntry:    id =>
+        `{{ url_for('materials_bp.update_material_entry', entry_id=0) }}`.replace('0', id),
+
+      // CWPs
+      listCwps:               "{{ url_for('labor_equipment_bp.list_cw_packages') }}",
+
+      // Activity codes & payment items
+      // ↓↓↓ here’s the corrected line ↓↓↓
+      listActivityCodes:      "{{ url_for('activity_codes.get_activity_codes') }}",
+      listPaymentItems:       "{{ url_for('data_entry_bp.list_payment_items') }}",
+
+      // Daily Notes
+      listNotes:   "{{ url_for('dailynotes.list_notes') }}",
+      addNote:     "{{ url_for('dailynotes.add_note') }}",
+      deleteNote:  id =>
+        `{{ url_for('dailynotes.delete_note', note_id=0) }}`.replace('0', id),
+      commitNotes: "{{ url_for('dailynotes.commit_notes') }}",
+    };
+
+    // legacy alias for the CWP loader
+    window.CWP_LIST_URL = window.API.listCwps;
+  </script>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- 1) Date / Weather / Progress loader -->
   <script type="module">
     import {
       showToday,
@@ -193,28 +351,30 @@
     });
   </script>
 
+  <!-- ──────────────────────────────────────────── -->
   <!-- 2) Populate dropdowns & bootstrap each tab -->
   <script type="module">
-    import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
+    import { populateDropdowns }    from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
     import { initMaterialsTab       } from "{{ url_for('static', filename='js/Materials.js') }}";
+    import { initDailyNotes         } from "{{ url_for('static', filename='js/notes.js') }}";
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1) fill every dropdown across all tabs
-      await populateDropdowns();
-
-      // 2) initialize each tab’s logic (loads pending data, wires buttons, etc.)
-      initLaborEquipmentTab();
-      initMaterialsTab();
-      // …initSubcontractorsTab(), etc. as needed…
+      await populateDropdowns(window.API);
+      initLaborEquipmentTab(window.API);
+      initMaterialsTab(window.API);
+      initDailyNotes(window.API);
     });
   </script>
 
-  <!-- 3) Tab‐switcher -->
+  <!-- ──────────────────────────────────────────── -->
+  <!-- 3) Tab‐switcher (unchanged) -->
   <script>
     function openTab(evt, tabName) {
-      document.querySelectorAll('.tabcontent').forEach(c => c.style.display = 'none');
-      document.querySelectorAll('.tablinks')  .forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tabcontent')
+              .forEach(c => c.style.display = 'none');
+      document.querySelectorAll('.tablinks')
+              .forEach(b => b.classList.remove('active'));
       document.getElementById(tabName).style.display = 'block';
       evt.currentTarget.classList.add('active');
     }

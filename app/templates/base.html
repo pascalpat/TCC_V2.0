@@ -1,72 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Gestion de projet — TCC App{% endblock %}</title>
-    <!-- Base styles for header, footer, and general layout -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    {% block extra_css %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Gestion de projet — TCC App{% endblock %}</title>
+
+  <!-- Base styles for header, footer, and general layout -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  {% block extra_css %}{% endblock %}
 </head>
+
 <body>
-    <!-- Header Section -->
-    <header>
-        <div class="header-container">
-            <!-- Left: logo + weather -->
-            <div class="left-info" >
-                <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+  <!-- ——————————————————————————————————————————————————————
+       0) Global API endpoints (no more hard-coded URLs)
+  —————————————————————————————————————————————————————— -->
+  <script>
+    window.API = {
+        // Notes & Speech recognition
+        getSpeechConfig:      "{{ url_for('dailynotes.get_speech_config') }}",
+        listNotes:            "{{ url_for('dailynotes.list_notes') }}",
+        addNote:              "{{ url_for('dailynotes.add_note') }}",
+        commitNotes:          "{{ url_for('dailynotes.commit_notes') }}",
+        deleteNoteBase:       "{{ url_for('dailynotes.delete_note', note_id=0) }}",
 
-                <!-- real‐today display -->
-                <span id="todayDate" class="today‐label"></span>
-                
-                <!-- weather widget -->
-                <div class="weather-widget" >
-                    <img id="weatherIcon" src="" alt="Weather Icon">
-                    <span id="currentTemperature">--°C</span>
-                </div>
-                
-                <span id="todayDate"></span>
-            </div>
+        // Weather
+        getWeather:           "{{ url_for('main_bp.weather') }}",
 
+        // Day initialization & data-entry
+        initializeDay:        "{{ url_for('data_entry_bp.initialize_day') }}",
+        getDayStatus:         "{{ url_for('data_entry_bp.get_days_status') }}", 
+        submitDataEntry:      "{{ url_for('data_entry_bp.submit_data_entry') }}",
 
-            <!-- Center: title -->
-            <div class="center-info">
-                <h1>Gestion de projet — Module Rapport Journalier</h1>
-            </div>
+        // Progress tracking
+        updateProgress:       "{{ url_for('update_progress.update_progress') }}",
+        getProgress:          "{{ url_for('update_progress.get_progress') }}",
 
+        // Dropdowns & lists
+        listWorkersAndEquipment: "{{ url_for('workers_bp.get_workers_list') }}",
+        listActivityCodes:       "{{ url_for('activity_codes.get_activity_codes') }}",
+        listPaymentItems:        "{{ url_for('data_entry_bp.list_payment_items') }}",
+        listCwPackages:          "{{ url_for('labor_equipment_bp.list_cw_packages') }}"
 
-            <!-- Right: user greeting + logout -->
-            <div class="right-info">
-                <!-- Use the username if you have it in session, otherwise fall back to user_id -->
-                <p class="greeting">Bonjour, {{ username or user_id }} !</p>
-                <a href="{{ url_for('auth_bp.logout') }}" id="logoutButton">Log Out</a>
-                </div>
+      // Materials (add if/when needed)
+    };
+  </script>
+
+  <!-- Header Section -->
+  <header>
+    <div class="header-container">
+      <div class="left-info">
+        <img src="{{ url_for('static', filename='Projestim.png') }}" alt="Logo" class="logo">
+
+        <!-- Today’s date -->
+        <span id="todayDate" class="today-label"></span>
+
+        <!-- Weather widget -->
+        <div class="weather-widget">
+          <img id="weatherIcon" src="" alt="Weather Icon">
+          <span id="currentTemperature">--°C</span>
         </div>
-    </header>
+      </div>
 
-    <!-- Main Section -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+      <div class="center-info">
+        <h1>Gestion de projet — Module Rapport Journalier</h1>
+      </div>
 
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2025 MyCompany — Tous droits réservés.</p>
-    </footer>
+      <div class="right-info">
+        <p class="greeting">Bonjour, {{ username or user_id }} !</p>
+        <a href="{{ url_for('auth_bp.logout') }}" id="logoutButton">Log Out</a>
+      </div>
+    </div>
+  </header>
 
-    <!-- Additional Scripts -->
-    {% block extra_js %}
+  <!-- Main content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 MyCompany — Tous droits réservés.</p>
+  </footer>
+
+  <!-- Module scripts -->
+  {% block extra_js %}
     <script type="module">
-        import { getCurrentDate, highlightDates, getTemperature, restoreProgress }
-          from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
-      
-        document.addEventListener('DOMContentLoaded', () => {
-          showToday();      // ← ensure this runs on load
-          highlightDates();
-          getTemperature();      // ← ensure this runs on load
-          restoreProgress();
-        });
-      </script>
-    {% endblock %}
+      import {
+        getCurrentDate,
+        highlightDates,
+        getTemperature,
+        restoreProgress
+      } from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
+
+      document.addEventListener('DOMContentLoaded', () => {
+        getCurrentDate();
+        highlightDates();
+        getTemperature();
+        restoreProgress();
+      });
+    </script>
+  {% endblock %}
 </body>
 </html>
