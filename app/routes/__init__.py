@@ -1,7 +1,5 @@
 # app/routes/__init__.py
 from .main_routes import main_bp
-from .workers_routes import workers_bp
-from .activity_codes_routes import activity_codes_bp
 from flask import Blueprint, session, jsonify
 
 debug_bp = Blueprint("debug", __name__)
@@ -17,8 +15,10 @@ def register_blueprints(app):
         # Register Blueprints (deferred to avoid circular imports)
         
         app.register_blueprint(debug_bp)
-        app.register_blueprint(main_bp)
+        app.register_blueprint(main_bp, url_prefix='/main')
+        from .workers_routes import workers_bp
         app.register_blueprint(workers_bp, url_prefix='/workers')
+        from .activity_codes_routes import activity_codes_bp
         app.register_blueprint(activity_codes_bp, url_prefix='/activity-codes')
         from .equipment_routes import equipment_bp
         app.register_blueprint(equipment_bp, url_prefix='/equipment')

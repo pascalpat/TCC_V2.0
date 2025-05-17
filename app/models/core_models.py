@@ -1,6 +1,6 @@
 from datetime import datetime
 from .. import db
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Float, Date, DateTime
 from sqlalchemy.orm import relationship, validates
 
 
@@ -71,22 +71,20 @@ class Project(db.Model):
         if longitude is not None and (longitude < -180 or longitude > 180):
             raise ValueError("Longitude must be between -180 and 180.")
     ################################# Relationships ##################################
-    tasks = db.relationship('ProjectTask', back_populates='project', lazy=True)
-    payment_items = db.relationship('PaymentItem', back_populates='project', lazy=True)
-    associated_worker_entries = db.relationship('WorkerEntry', back_populates='related_project', lazy=True) #for future use to mange managers between projects
-    #daily_summaries = db.relationship('DailySummary', back_populates='related_project', lazy=True)  # One-to-Many: Project to DailySummary
-    daily_statuses = db.relationship('DailyReportStatus', back_populates='project', lazy=True)
-    work_orders = db.relationship('WorkOrder', back_populates='project', lazy=True)
-    activity_codes = db.relationship('ActivityCode', back_populates='project', cascade="all, delete-orphan", lazy=True)
-    worker_entries = db.relationship('WorkerEntry', back_populates='project')
-    equipment = db.relationship("Equipment", back_populates="project", lazy=True)
-    equipment_entries = db.relationship('EquipmentEntry', back_populates='project', lazy=True)  # New relationship
-    workers = db.relationship("Worker", back_populates="project")
-    subcontractors = db.relationship("Subcontractor", back_populates="project")
-    subcontractor_entries = db.relationship("SubcontractorEntry", back_populates="project")
-    materials = relationship('Material', back_populates='project', lazy=True)
-    material_entries = db.relationship("MaterialEntry", back_populates="project", lazy=True)
-    purchase_orders = db.relationship('PurchaseOrder', back_populates='project', lazy=True)
+    tasks                   = db.relationship('ProjectTask',        back_populates='project', lazy=True)
+    payment_items           = db.relationship('PaymentItem',        back_populates='project', lazy=True)
+    daily_statuses          = db.relationship('DailyReportStatus',  back_populates='project', lazy=True)
+    work_orders             = db.relationship('WorkOrder',          back_populates='project', lazy=True)
+    activity_codes          = db.relationship('ActivityCode',       back_populates='project', cascade="all, delete-orphan", lazy=True)
+    worker_entries          = db.relationship('WorkerEntry',        back_populates='project', lazy=True)
+    equipment               = db.relationship("Equipment",          back_populates="project", lazy=True)
+    equipment_entries       = db.relationship('EquipmentEntry',     back_populates='project', lazy=True)  # New relationship
+    workers                 = db.relationship("Worker",             back_populates="project")
+    subcontractors          = db.relationship("Subcontractor",      back_populates="project")
+    subcontractor_entries   = db.relationship("SubcontractorEntry", back_populates="project")
+    materials               = relationship('Material',              back_populates='project', lazy=True)
+    material_entries        = db.relationship("MaterialEntry",      back_populates="project", lazy=True)
+    purchase_orders         = db.relationship('PurchaseOrder',      back_populates='project', lazy=True)
 
     def __repr__(self):
         return f"<Project id={self.id} name={self.name}>"
@@ -105,20 +103,20 @@ class ActivityCode(db.Model):
 
     # ------------------- RELATIONSHIPS -------------------
     # Ties to a ProjectTask
-    project_tasks = db.relationship('ProjectTask', back_populates='activity_code', lazy='select')
+    project_tasks       = db.relationship('ProjectTask',        back_populates='activity_code', lazy='select')
     # Ties to PaymentItem (one FK: activity_code_id)
-    payment_items = db.relationship('PaymentItem', back_populates='activity_code', lazy=True)
+    payment_items       = db.relationship('PaymentItem',        back_populates='activity_code', lazy=True)
     # Worker / Equipment / Material references
-    entries = db.relationship('WorkerEntry', back_populates='activity')
-    equipment_entries = db.relationship('EquipmentEntry', back_populates='activity')
-    material_entries = db.relationship('MaterialEntry', back_populates='activity_code')
+    entries             = db.relationship('WorkerEntry',        back_populates='activity')
+    equipment_entries   = db.relationship('EquipmentEntry',     back_populates='activity')
+    material_entries    = db.relationship('MaterialEntry',      back_populates='activity_code')
     # Subcontractor references
     subcontractor_entries = db.relationship('SubcontractorEntry', back_populates='activity_code', lazy=True)
     # Parent project
-    project = db.relationship('Project', back_populates='activity_codes', lazy=True)
-    # Additional worker / order logs
-    worker_entries = db.relationship('WorkerEntry', back_populates='activity')
-    work_order_entries = db.relationship('WorkOrderEntry', back_populates='activity_code')
+    project             = db.relationship('Project',            back_populates='activity_codes', lazy=True)
+        # Additional worker / order logs
+    worker_entries      = db.relationship('WorkerEntry',        back_populates='activity')
+    work_order_entries  = db.relationship('WorkOrderEntry',     back_populates='activity_code')
 
 
 class ProjectTask(db.Model):
@@ -161,10 +159,10 @@ class ProjectTask(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Relationships
-    project = db.relationship('Project', back_populates='tasks', lazy=True)
-    payment_items = db.relationship("PaymentItem", back_populates='project_task', lazy=True)
-    activity_code = db.relationship('ActivityCode', back_populates='project_tasks')
-    work_order_entries = db.relationship("WorkOrderEntry", back_populates="task")
+    project             = db.relationship('Project',        back_populates='tasks', lazy=True)
+    payment_items       = db.relationship("PaymentItem",    back_populates='project_task', lazy=True)
+    activity_code       = db.relationship('ActivityCode',   back_populates='project_tasks')
+    work_order_entries  = db.relationship("WorkOrderEntry", back_populates="task")
 
 class PaymentItem(db.Model):
     __tablename__ = 'payment_items'
@@ -180,10 +178,12 @@ class PaymentItem(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # ------------------- RELATIONSHIPS -------------------
-    activity_code = db.relationship("ActivityCode", back_populates="payment_items", lazy=True)
-    project_task = db.relationship('ProjectTask', back_populates='payment_items', lazy=True)
-    project = db.relationship('Project', back_populates='payment_items', lazy=True)
-
+    activity_code       = db.relationship("ActivityCode",   back_populates="payment_items", lazy=True)
+    project_task        = db.relationship('ProjectTask',    back_populates='payment_items', lazy=True)
+    project             = db.relationship('Project',        back_populates='payment_items', lazy=True)
+    worker_entries      = db.relationship('WorkerEntry',    back_populates='payment_item', foreign_keys='WorkerEntry.payment_item_id',lazy=True)
+    equipment_entries   = db.relationship('EquipmentEntry', back_populates='payment_item', foreign_keys='EquipmentEntry.payment_item_id', lazy=True)
+    
     @validates('rate_per_unit')
     def validate_rate(self, key, value):
         if value is not None and value < 0:

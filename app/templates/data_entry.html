@@ -291,60 +291,79 @@
 
 {% block extra_js %}
   <!-- ──────────────────────────────────────────── -->
-  <!-- 0) Centralize all endpoints for static modules -->
+  <!-- 0) Core API_BASE (so fetches can pick up the script root) -->
   <script>
+    // if you ever need to prefix with SCRIPT_ROOT:
     window.API_BASE = "{{ request.script_root }}";
+    // make sure window.API (from base.html) still exists
+    window.API = window.API || {};
   </script>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- 1) Merge in this page’s labor / materials / notes endpoints -->
   <script>
-    window.API = {
-      // Labor & Equipment
+    Object.assign(window.API, {
+      // ── Labor & Equipment ──────────────────────────────────────
+      listWorkers:           "{{ url_for('workers_bp.get_workers_list') }}",
+      listEquipment:         "{{ url_for('equipment_bp.get_equipment_list') }}",
       listWorkersAndEquipment: "{{ url_for('labor_equipment_bp.get_pending_labor_equipment') }}",
-      confirmLaborEquipment:  "{{ url_for('labor_equipment_bp.confirm_labor_equipment') }}",
-      deleteLaborEntry:       type => (id) =>
-        `{{ url_for('labor_equipment_bp.delete_entry', entry_type='__TYPE__', entry_id=0) }}`
-          .replace('__TYPE__', type)
-          .replace('0', id),
+      confirmLaborEquipment:   "{{ url_for('labor_equipment_bp.confirm_labor_equipment') }}",
+      deleteLaborEntry:        type => {
+          "{{ url_for('labor_equipment_bp.delete_entry', entry_type='__TYPE__', entry_id=0) }}"
+            .replace('__TYPE__', type)
+            .replace('0', id)
+         },
 
-      // Materials
-      listMaterials:          "{{ url_for('materials_bp.get_pending_materials') }}",
-      confirmMaterials:       "{{ url_for('materials_bp.confirm_materials') }}",
-      deleteMaterialEntry:    id =>
-        `{{ url_for('materials_bp.delete_material_entry', entry_id=0) }}`.replace('0', id),
-      updateMaterialEntry:    id =>
-        `{{ url_for('materials_bp.update_material_entry', entry_id=0) }}`.replace('0', id),
+      // ── Materials ───────────────────────────────────────────────
+      listMaterials:           "{{ url_for('materials_bp.get_pending_materials') }}",
+      confirmMaterials:        "{{ url_for('materials_bp.confirm_materials') }}",
+      deleteMaterialEntry:     id => (
+        "{{ url_for('materials_bp.delete_material_entry', entry_id=0) }}"
+          .replace('0', id)
+      ),
+      updateMaterialEntry:     id => (
+        "{{ url_for('materials_bp.update_material_entry', entry_id=0) }}"
+          .replace('0', id)
+      ),
 
-      // CWPs
-      listCwps:               "{{ url_for('labor_equipment_bp.list_cw_packages') }}",
+      // ── CWPs ────────────────────────────────────────────────────
+      listCwps:                "{{ url_for('labor_equipment_bp.list_cw_packages') }}",
 
-      // Activity codes & payment items
-      // ↓↓↓ here’s the corrected line ↓↓↓
-      listActivityCodes:      "{{ url_for('activity_codes.get_activity_codes') }}",
-      listPaymentItems:       "{{ url_for('data_entry_bp.list_payment_items') }}",
+      // ── Activity codes & payment items ─────────────────────────
+      listActivityCodes:       "{{ url_for('activity_codes.get_activity_codes') }}",
+      listPaymentItems:        "{{ url_for('data_entry_bp.list_payment_items') }}",
 
-      // Daily Notes
-      listNotes:   "{{ url_for('dailynotes.list_notes') }}",
-      addNote:     "{{ url_for('dailynotes.add_note') }}",
-      deleteNote:  id =>
-        `{{ url_for('dailynotes.delete_note', note_id=0) }}`.replace('0', id),
-      commitNotes: "{{ url_for('dailynotes.commit_notes') }}",
-    };
+      // ── Daily Notes ─────────────────────────────────────────────
+      listNotes:               "{{ url_for('dailynotes.list_notes') }}",
+      addNote:                 "{{ url_for('dailynotes.add_note') }}",
+      deleteNote:              id => (
+        "{{ url_for('dailynotes.delete_note', note_id=0) }}"
+          .replace('0', id)
+      ),
+      commitNotes:             "{{ url_for('dailynotes.commit_notes') }}",
+      
+      // ── Project Id and reportDate ───────────────────────────────────────────────
+      projectId:  "{{ project_id }}",
+      reportDate: "{{ report_date }}"
+    
+    });
 
     // legacy alias for the CWP loader
     window.CWP_LIST_URL = window.API.listCwps;
   </script>
 
   <!-- ──────────────────────────────────────────── -->
-  <!-- 1) Date / Weather / Progress loader -->
+  <!-- 2) Date / Weather / Progress loader             -->
   <script type="module">
     import {
-      showToday,
+      getCurrentDate,
       highlightDates,
       getTemperature,
       restoreProgress
     } from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
 
     document.addEventListener('DOMContentLoaded', () => {
-      showToday();
+      getCurrentDate();
       highlightDates();
       getTemperature();
       restoreProgress();
@@ -352,7 +371,7 @@
   </script>
 
   <!-- ──────────────────────────────────────────── -->
-  <!-- 2) Populate dropdowns & bootstrap each tab -->
+  <!-- 3) Populate dropdowns & bootstrap each tab    -->
   <script type="module">
     import { populateDropdowns }    from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
@@ -368,13 +387,11 @@
   </script>
 
   <!-- ──────────────────────────────────────────── -->
-  <!-- 3) Tab‐switcher (unchanged) -->
+  <!-- 4) Tab-switcher (unchanged)                   -->
   <script>
     function openTab(evt, tabName) {
-      document.querySelectorAll('.tabcontent')
-              .forEach(c => c.style.display = 'none');
-      document.querySelectorAll('.tablinks')
-              .forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tabcontent').forEach(c => c.style.display = 'none');
+      document.querySelectorAll('.tablinks').forEach(b => b.classList.remove('active'));
       document.getElementById(tabName).style.display = 'block';
       evt.currentTarget.classList.add('active');
     }

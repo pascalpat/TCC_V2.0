@@ -257,31 +257,51 @@ async function loadPendingEntries(projectId, reportDate) {
  */
 function renderConfirmedTable(workers = [], equipment = []) {
   const tbody = document.querySelector('#workersTable tbody');
-  // clear old confirmed
+  // 1) Clear any old rows
   tbody.querySelectorAll('tr.confirmed-row').forEach(r => r.remove());
 
-  // mix them together
-  const all = [
-    ...workers.map(w => ({...w, _type:'worker'})),
-    ...equipment.map(e => ({...e, _type:'equipment'}))
+  // 2) Merge workers + equipment into one array, tagging each with its type
+  const entries = [
+    ...workers.map(w => ({ ...w, _type: 'worker'   })),
+    ...equipment.map(e => ({ ...e, _type: 'equipment'}))
   ];
 
-  all.forEach(entry => {
+  // 3) Render each entry
+  entries.forEach(entry => {
+    // Name column (fall back to manual_name if provided)
+    const name = entry._type === 'worker'
+      ? (entry.worker_name   || entry.manual_name || '(no name)')
+      : (entry.equipment_name|| entry.manual_name || '(no name)');
+
+    // Hours
+    const hours = entry.hours || '';
+
+    // Activity: "CODE – Description"
+    const activity = entry.activity_code
+      ? `${entry.activity_code}${entry.activity_description
+          ? ' – ' + entry.activity_description
+          : ''}`
+      : '';
+
+    // Payment item: "CODE – ItemName"
+    const payment = entry.payment_item_code
+      ? `${entry.payment_item_code}${entry.payment_item_name
+          ? ' – ' + entry.payment_item_name
+          : ''}`
+      : '';
+
+    // CWP
+    const cwp = entry.cwp || '';
+
+    // Build the table row
     const tr = document.createElement('tr');
     tr.classList.add('confirmed-row');
     tr.innerHTML = `
-      <td>${entry._type==='worker'? entry.worker_name : entry.equipment_name}</td>
-      <td data-hours="${entry.hours}">${entry.hours}</td>
-      <td data-activity-id="${entry.activity_id}">
-            ${entry.activity_code} – ${entry.activity_description || ''}
-      </td>
-      <td data-payment-id="${entry.payment_item_id || ''}">
-            ${entry.payment_item_code || ''}
-      </td>
-      <td data-cwp="${entry.cwp || ''}">
-            ${entry.cwp || ''}
-      </td>
-
+      <td>${name}</td>
+      <td data-hours="${hours}">${hours}</td>
+      <td data-activity-id="${entry.activity_id || ''}">${activity}</td>
+      <td data-payment-id="${entry.payment_item_id || ''}">${payment}</td>
+      <td data-cwp="${cwp}">${cwp}</td>
       <td class="actions">
         <button class="edit-btn"   data-id="${entry.id}" data-type="${entry._type}">✏️</button>
         <button class="delete-btn" data-id="${entry.id}" data-type="${entry._type}">🗑️</button>
@@ -290,11 +310,10 @@ function renderConfirmedTable(workers = [], equipment = []) {
     tbody.appendChild(tr);
   });
 
-  // wire up
-  tbody.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', handleEdit));
+  // 4) Re-attach your edit/delete handlers
+  tbody.querySelectorAll('.edit-btn')  .forEach(b => b.addEventListener('click', handleEdit));
   tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', handleDelete));
 }
-
 /**
  * 9) Inline edit: swap to inputs / selects
  */

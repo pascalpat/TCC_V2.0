@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 // 1) Show “today” in a dedicated span (#todayDate)
 // ─────────────────────────────────────────────────────────────
-export function showToday() {
+export function getCurrentDate() {
   const todaySpan = document.getElementById('todayDate');
   if (!todaySpan) return;
   const today = new Date();
@@ -127,7 +127,7 @@ export async function restoreProgress() {
 // 6) Run on page load
 // ─────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  showToday();
+  getCurrentDate();
   highlightDates();
   getTemperature();
   restoreProgress();

@@ -1,4 +1,4 @@
-<!-- DOCTYPE html-->
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,12 +37,11 @@
 
   <!-- Expose your API endpoints to JS -->
   <script>
-    // JSON data for the calendar itself
+    // expose exactly one URL variable
     window.API_CALENDAR_DATA_URL = "{{ url_for('calendar_bp.get_calendar_data') }}";
-    // Where the calendar form POSTS to get into the data‐entry page
-    window.API_REPORT_URL        = "{{ url_for('data_entry_bp.redirect_to_data_entry') }}";
-</script>
-
+    window.API_BASE             = "{{ request.script_root }}";
+  </script>
+  
   <!-- Calendar behavior -->
   <script src="{{ url_for('static', filename='js/calendar.js') }}" defer></script>
 </body>

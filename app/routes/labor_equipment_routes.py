@@ -106,63 +106,73 @@ def confirm_labor_equipment():
 # ------------------------------------------------
 @labor_equipment_bp.route('/by-project-date', methods=['GET'])
 def get_pending_labor_equipment():
+    # 1) Params (front-end should send project_id & report_date)
     project_number = request.args.get('project_id')
-    date_str       = request.args.get('date')
-    if not project_number or not date_str:
-        return jsonify(error="Missing project_id or date"), 400
+    report_date    = request.args.get('report_date') or request.args.get('date')
+    if not project_number or not report_date:
+        return jsonify(error="Missing project_id or report_date"), 400
 
-    proj = Project.query.filter_by(project_number=project_number).first()
-    if not proj:
-        return jsonify(error="Invalid project number"), 400
+    # 2) Lookup Project
+    project = Project.query.filter_by(project_number=project_number).first()
+    if not project:
+        return jsonify(error="Invalid project_id"), 404
 
+    # 3) Parse date
     try:
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        date_obj = datetime.strptime(report_date, '%Y-%m-%d').date()
     except ValueError:
-        return jsonify(error="Invalid date format"), 400
+        return jsonify(error="Invalid date format, expected YYYY-MM-DD"), 400
 
+    # 4) Fetch pending entries
     w_entries = WorkerEntry.query.filter_by(
-        project_id=proj.id,
-        date_of_report=date_obj,
-        status="pending"
+        project_id     = project.id,
+        date_of_report = date_obj,
+        status         = 'pending'
     ).all()
+
     e_entries = EquipmentEntry.query.filter_by(
-        project_id=proj.id,
-        date_of_report=date_obj,
-        status="pending"
+        project_id     = project.id,
+        date_of_report = date_obj,
+        status         = 'pending'
     ).all()
 
-    def serialize(entry, is_worker=True):
-        pi = (PaymentItem.query.get(entry.payment_item_id)
-              if entry.payment_item_id else None)
-
-        base = {
-            "hours": entry.hours_worked if is_worker else entry.hours_used,
-            "activity_code": entry.activity.code if entry.activity else None,
-            "activity_description": entry.activity.description if entry.activity else None,
-            "payment_item_id": entry.payment_item_id,
-            "payment_item_code": pi.payment_code if pi else None,
-            "payment_item_name": pi.item_name if pi else None,
-            "cwp": entry.cwp
+    # 5) Serialization helpers
+    def serialize_worker(w):
+        pi = w.payment_item  # assuming a relationship exists; else PaymentItem.query.get(w.payment_item_id)
+        return {
+            "id":                  w.id,
+            "type":                "worker",
+            "entity_id":           w.worker_id,
+            "entity_name":         (w.worker.name if w.worker else w.worker_name),
+            "hours":               w.hours_worked,
+            "activity_code_id":    w.activity_id,
+            "activity_code":       (w.activity.code if w.activity else None),
+            "payment_item_id":     w.payment_item_id,
+            "payment_item_code":   (pi.payment_code if pi else None),
+            "payment_item_name":   (pi.item_name    if pi else None),
+            "cwp":                 w.cwp
         }
 
-        if is_worker:
-            return {
-                "id": entry.id,
-                "worker_id": entry.worker_id,
-                "worker_name": entry.worker.name if entry.worker else entry.worker_name,
-                **base
-            }
-        else:
-            return {
-                "id": entry.id,
-                "equipment_id": entry.equipment_id,
-                "equipment_name": entry.equipment.name if entry.equipment else entry.equipment_name,
-                **base
-            }
+    def serialize_equipment(e):
+        pi = e.payment_item
+        return {
+            "id":                  e.id,
+            "type":                "equipment",
+            "entity_id":           e.equipment_id,
+            "entity_name":         (e.equipment.name if e.equipment else e.equipment_name),
+            "hours":               e.hours_used,
+            "activity_code_id":    e.activity_id,
+            "activity_code":       (e.activity.code if e.activity else None),
+            "payment_item_id":     e.payment_item_id,
+            "payment_item_code":   (pi.payment_code if pi else None),
+            "payment_item_name":   (pi.item_name    if pi else None),
+            "cwp":                 e.cwp
+        }
 
+    # 6) Return combined JSON
     return jsonify(
-        workers   = [serialize(w, True)  for w in w_entries],
-        equipment = [serialize(e, False) for e in e_entries]
+        workers   = [serialize_worker(w) for w in w_entries],
+        equipment = [serialize_equipment(e) for e in e_entries]
     ), 200
 
 
