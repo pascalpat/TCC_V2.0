@@ -241,7 +241,7 @@
     import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
     import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
-    import { fetchAndRenderDailyNotes } from "{{ url_for('static', filename='js/notes.js') }}";
+    import { fetchAndRenderDailyNotes, saveDailyNote } from "{{ url_for('static', filename='js/notes.js') }}";
 
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) fill every dropdown across all tabs

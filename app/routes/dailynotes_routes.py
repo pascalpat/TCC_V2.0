@@ -1,65 +1,120 @@
-from flask import Blueprint, jsonify, request
-import pandas as pd
-import os
+from flask import Blueprint, jsonify, request, current_app
+from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
+from ..models.daily_models import DailyNoteEntry
+from .. import db
+
 
 # Define the Blueprint for daily notes
 dailynotes_bp = Blueprint('dailynotes_bp', __name__, url_prefix='/dailynotes')
 
-# Path to the daily notes data file
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DAILYNOTES_FILE = os.path.join(BASE_DIR, '../../data/dailynotes.csv')
 
 @dailynotes_bp.route('/list', methods=['GET'])
 def get_daily_notes():
-    """
-    Fetch and return the list of daily notes from the CSV file.
-    """
+    """Return all daily notes stored in the database."""
     try:
-        # Check if the file exists
-        if not os.path.exists(DAILYNOTES_FILE):
-            return jsonify({"status": "error", "message": "Daily notes file not found"}), 404
+        notes = DailyNoteEntry.query.all()
+        return jsonify({"daily_notes": [n.to_dict() for n in notes]}), 200
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Database error fetching daily notes: {e}", exc_info=True)
+        return jsonify({"error": "Database error fetching daily notes"}), 500
 
-        # Load the CSV file
-        dailynotes = pd.read_csv(DAILYNOTES_FILE)
-
-        # Check if the file is empty
-        if dailynotes.empty:
-            return jsonify({"status": "success", "data": [], "message": "No daily notes found"}), 200
-
-        # Convert DataFrame to JSON format
-        notes_list = dailynotes.to_dict(orient='records')
-        return jsonify({"status": "success", "data": notes_list}), 200
-
-    except Exception as e:
-        # Handle unexpected errors
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@dailynotes_bp.route('/add', methods=['POST'])
+@dailynotes_bp.route('/', methods=['POST'])
 def add_daily_note():
-    """
-    Add a new daily note to the CSV file.
-    """
+    """Create a new daily note entry in the database."""
+    data = request.get_json() or {}
+
+    if not data.get('project_id') or not data.get('content'):
+        return jsonify({"error": "project_id and content are required"}), 400
+
     try:
-        # Get the new note data from the request
-        new_note = request.json
+        note_dt = data.get('note_datetime')
+        note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
 
-        # Validate the input
-        if not new_note.get('content') or not new_note.get('date'):
-            return jsonify({"status": "error", "message": "Missing required fields: 'content' and/or 'date'"}), 400
+        new_note = DailyNoteEntry(
+            project_id=data.get('project_id'),
+            note_datetime=note_datetime,
+            author=data.get('author'),
+            category=data.get('category'),
+            tags=data.get('tags'),
+            content=data.get('content'),
+            priority=data.get('priority'),
+            activity_code_id=data.get('activity_code_id'),
+            editable_by=data.get('editable_by'),
+        )
 
-        # Check if the file exists, create it if not
-        if not os.path.exists(DAILYNOTES_FILE):
-            dailynotes = pd.DataFrame(columns=['content', 'date'])
-        else:
-            dailynotes = pd.read_csv(DAILYNOTES_FILE)
+        db.session.add(new_note)
+        db.session.commit()
+        return jsonify(new_note.to_dict()), 201
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error adding daily note: {e}", exc_info=True)
+        return jsonify({"error": "Database error adding daily note"}), 500
 
-        # Append the new note
-        dailynotes = dailynotes.append(new_note, ignore_index=True)
 
-        # Save back to the CSV file
-        dailynotes.to_csv(DAILYNOTES_FILE, index=False)
-        return jsonify({"status": "success", "message": "Daily note added successfully"}), 201
+@dailynotes_bp.route('/<int:note_id>', methods=['GET'])
+def get_daily_note(note_id: int):
+    """Retrieve a single daily note by its ID."""
+    try:
+        note = DailyNoteEntry.query.get(note_id)
+        if not note:
+            return jsonify({"error": "Daily note not found"}), 404
+        return jsonify(note.to_dict()), 200
+    except SQLAlchemyError as e:
+        current_app.logger.error(f"Database error fetching daily note {note_id}: {e}", exc_info=True)
+        return jsonify({"error": "Database error fetching daily note"}), 500
 
-    except Exception as e:
-        # Handle unexpected errors
-        return jsonify({"status": "error", "message": str(e)}), 500
+@dailynotes_bp.route('/<int:note_id>', methods=['PUT'])
+def update_daily_note(note_id: int):
+    """Update an existing daily note."""
+    data = request.get_json() or {}
+    if 'content' in data and not data['content']:
+        return jsonify({"error": "content cannot be empty"}), 400
+
+    try:
+        note = DailyNoteEntry.query.get(note_id)
+        if not note:
+            return jsonify({"error": "Daily note not found"}), 404
+
+        note_dt = data.get('note_datetime')
+        if note_dt is not None:
+            note.note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
+
+        for field in [
+            'project_id',
+            'author',
+            'category',
+            'tags',
+            'content',
+            'priority',
+            'activity_code_id',
+            'editable_by',
+        ]:
+            if field in data:
+                setattr(note, field, data[field])
+
+        db.session.commit()
+        return jsonify(note.to_dict()), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error updating daily note {note_id}: {e}", exc_info=True)
+        return jsonify({"error": "Database error updating daily note"}), 500
+
+
+@dailynotes_bp.route('/<int:note_id>', methods=['DELETE'])
+def delete_daily_note(note_id: int):
+    """Delete a daily note from the database."""
+    try:
+        note = DailyNoteEntry.query.get(note_id)
+        if not note:
+            return jsonify({"error": "Daily note not found"}), 404
+        db.session.delete(note)
+        db.session.commit()
+        return jsonify({"message": "Daily note deleted"}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error deleting daily note {note_id}: {e}", exc_info=True)
+        return jsonify({"error": "Database error deleting daily note"}), 500

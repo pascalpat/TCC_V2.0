@@ -22,6 +22,7 @@ export async function fetchAndRenderDailyNotes() {
 
 export async function saveDailyNote() {
     const payload = {
+        project_id: document.getElementById('projectNumber').value,
         date:      document.getElementById('noteDatetime').value,
         author:    document.getElementById('noteAuthor').value,
         category:  document.getElementById('noteCategory').value,
@@ -30,7 +31,7 @@ export async function saveDailyNote() {
     };
 
     try {
-        const resp = await fetch('/dailynotes/add', {
+        const resp = await fetch('/dailynotes/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
