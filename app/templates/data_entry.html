@@ -164,9 +164,52 @@
   </div>
 
   <!-- ──────────────────────────────────────────────────── -->
-  <!-- (other tabs unchanged…) -->
+  <!-- (Subcontractors tab) -->
   <div id="SubcontractorsTab" class="tabcontent">…</div>
-  <div id="NotesTab"          class="tabcontent">…</div>
+
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- Notes Tab -->
+  <!-- ──────────────────────────────────────────────────── -->
+  <div id="NotesTab" class="tabcontent">
+    <div class="form-table-container">
+      <form id="DailyNotesForm" class="form-box">
+        <h2>Ajouter une Note</h2>
+
+        <label for="noteDatetime">Date/Heure:</label>
+        <input type="datetime-local" id="noteDatetime" class="form-control" value="{{ current_datetime }}">
+
+        <label for="noteAuthor">Auteur:</label>
+        <input type="text" id="noteAuthor" class="form-control">
+
+        <label for="noteCategory">Catégorie:</label>
+        <select id="noteCategory" class="form-control">
+          <option value="" disabled selected>-- Sélectionner Catégorie --</option>
+          <option value="Progress">Progress</option>
+          <option value="Safety">Safety</option>
+          <option value="General">General</option>
+        </select>
+
+        <label for="noteTags">Tags:</label>
+        <input type="text" id="noteTags" class="form-control" placeholder="tag1, tag2">
+
+        <label for="noteContent">Note:</label>
+        <textarea id="noteContent" rows="4" class="form-control"></textarea>
+
+        <div class="button-container">
+          <button type="button" id="saveNoteBtn" class="btn btn-primary">Sauvegarder</button>
+          <button type="button" id="dictateNoteBtn" class="btn btn-secondary" onclick="startDictation('noteContent')">Dicter</button>
+        </div>
+      </form>
+
+      <div class="table-container">
+        <h3>Notes du Jour</h3>
+        <div id="dailyNotesContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- (Pictures tab) -->
   <div id="PicturesTab"       class="tabcontent">…</div>
 
 {% endblock %}
@@ -197,7 +240,8 @@
   <script type="module">
     import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
-    import { initMaterialsTab       } from "{{ url_for('static', filename='js/Materials.js') }}";
+    import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
+    import { fetchAndRenderDailyNotes } from "{{ url_for('static', filename='js/notes.js') }}";
 
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) fill every dropdown across all tabs
@@ -206,9 +250,15 @@
       // 2) initialize each tab’s logic (loads pending data, wires buttons, etc.)
       initLaborEquipmentTab();
       initMaterialsTab();
+      fetchAndRenderDailyNotes();
+      const saveBtn = document.getElementById('saveNoteBtn');
+      if (saveBtn) saveBtn.addEventListener('click', saveDailyNote);
+
+
       // …initSubcontractorsTab(), etc. as needed…
     });
   </script>
+  <script src="{{ url_for('static', filename='js/speech_recognition.js') }}"></script>
 
   <!-- 3) Tab‐switcher -->
   <script>

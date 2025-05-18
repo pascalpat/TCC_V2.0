@@ -92,7 +92,9 @@ def submit_data_entry():
     # now query by project.id for **all three** lists
     activity_codes = ActivityCode.query.filter_by(project_id=project.id).all()
     payment_items  = PaymentItem.   query.filter_by(project_id=project.id).all()
-    cwps           = CWPackage.     query.filter_by(project_id=project_number).all()  # ← fixed:contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+    cwps = CWPackage.query.filter_by(project_id=project_number).all()
+
+    current_datetime = datetime.utcnow().isoformat(timespec="minutes")
 
     return render_template(
         'data_entry.html',
@@ -100,7 +102,8 @@ def submit_data_entry():
         report_date=report_date,
         activity_codes=activity_codes,
         payment_items=payment_items,
-        cwps=cwps
+        cwps=cwps,
+        current_datetime=current_datetime,
     )
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -128,7 +131,7 @@ def list_cwps():
     cwps = CWPackage.query.filter_by(project_id=project_number).all()
     return jsonify({
         'cwps': [
-            {'id': c.id, 'code': c.code, 'name': c.name}
+            {'code': c.code, 'name': c.name}
             for c in cwps
         ]
     })

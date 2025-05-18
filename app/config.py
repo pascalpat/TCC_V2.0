@@ -60,8 +60,23 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     """Configuration for production environment."""
-    DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///../database/TCC.db')  # Ensures the correct DB is used
+    # 1) Secret key for sessions & CSRF
+    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "fallback-dev-key")
+    # 2) Database URL
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL",
+        "sqlite:///local-dev.db"  # fallback for local dev only
+    )
+    # 3) Whether to run builds during deployment
+    #    (Azure’s default is to set SCM_DO_BUILD_DURING_DEPLOYMENT)
+    DO_BUILD = os.environ.get("SCM_DO_BUILD_DURING_DEPLOYMENT", "false").lower() == "true"
+
+     # 4) Your Speech API creds (note: fix spelling to match Azure)
+    SPEECH_API_KEY    = os.environ.get("Speach_API_key")
+    SPEECH_REGION     = os.environ.get("Speach_region")
+
+     # 5) Weather API key
+    WEATHER_API_KEY   = os.environ.get("WEATHER_API_KEY")
 
 # Print or log the database path to verify it's correct
 logger.info(f"Config loaded. Using database: {Config.SQLALCHEMY_DATABASE_URI}")
