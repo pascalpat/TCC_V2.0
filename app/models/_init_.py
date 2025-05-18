@@ -4,7 +4,8 @@ from .material_models import Material
 from .equipment_models import Equipment
 from .work_orders_models import WorkOrder
 from .subcontractor_models import Subcontractor
-from .daily_models import DailyNote, DailyPicture, WeatherLog
+from .daily_models import DailyNoteEntry, DailyPicture, WeatherLog
+from .DailyNoteAttachment import DailyNoteAttachment
 from .models import TabProgress, Document, SustainabilityMetric
 from .daily_report_status import DailyReportStatus
 from .purchase_order_models import PurchaseOrder, PurchaseOrderAttachment
@@ -27,8 +28,9 @@ __all__ = [
             "Equipment_assignements",
             "WorkOrder",
             "Subcontractor",
-            "DailyNote",
+            "DailyNoteEntry",
             "DailyPicture",
+            "DailyNoteAttachment",
             "WeatherLog",
             "ProjectProgress",
             "TabProgress",

@@ -2,33 +2,49 @@ from datetime import datetime
 from .. import db
 
 
-class DailyNote(db.Model):
-    __tablename__ = 'daily_notes'
+class DailyNoteEntry(db.Model):
+    __tablename__ = 'entries_daily_notes'
 
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)  # Links to a project
-    #daily_log_id = db.Column(db.Integer, db.ForeignKey('daily_report_data.id'), nullable=True)  # Links to daily logs
-    note = db.Column(db.Text, nullable=False)  # Daily note or observation
-    created_by = db.Column(db.String(255), nullable=True)  # User who created the note
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of creation
-
-    # Categorization
-    category = db.Column(db.String(50), nullable=True)  # Category of the note (e.g., "Progress", "Issues")
-    priority = db.Column(db.Enum('low', 'medium', 'high', name='note_priority_enum'), default='low')  # Priority level
-
-    # Linking
-    linked_activity_code = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)  # Links to an activity code
-
-    # Attachments
-    attachment_url = db.Column(db.String(2083), nullable=True)  # Optional link to an attached file or picture
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+    note_datetime = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    author = db.Column(db.String(255), nullable=True)
+    category = db.Column(db.String(50), nullable=True)
+    tags = db.Column(db.JSON, nullable=True)
+    content = db.Column(db.Text, nullable=False)
+    priority = db.Column(db.Enum('low', 'medium', 'high', name='note_priority_enum'), default='low')
+    activity_code_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
+    editable_by = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Permissions
     editable_by = db.Column(db.String(255), nullable=True)  # User or role allowed to edit
 
     # Relationships
-    project = db.relationship('Project', backref='daily_notes', lazy=True)
-    #daily_log = db.relationship('DailyReportData', back_populates='daily_notes', lazy=True)
-    activity_code = db.relationship('ActivityCode', backref='daily_notes', lazy=True)
+    project = db.relationship('Project', back_populates='daily_note_entries')
+    activity_code = db.relationship('ActivityCode', back_populates='daily_note_entries')
+    attachments = db.relationship('DailyNoteAttachment', back_populates='daily_note', lazy=True)
+    documents = db.relationship('Document', back_populates='daily_note', lazy=True)
+
+    def __repr__(self):
+        return f"<DailyNoteEntry id={self.id} project_id={self.project_id}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'note_datetime': self.note_datetime.isoformat() if self.note_datetime else None,
+            'author': self.author,
+            'category': self.category,
+            'tags': self.tags,
+            'content': self.content,
+            'priority': self.priority,
+            'activity_code_id': self.activity_code_id,
+            'editable_by': self.editable_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
 
 class DailyPicture(db.Model):
     __tablename__ = 'daily_pictures'
@@ -45,7 +61,7 @@ class DailyPicture(db.Model):
     # Relationships to Activity Codes, Work Orders, and Notes
     activity_code = db.Column(db.String(50), db.ForeignKey('activity_codes.id'), nullable=True)  # Links to an activity code
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)  # Links to a work order
-    daily_note_id = db.Column(db.Integer, db.ForeignKey('daily_notes.id'), nullable=True)  # Links to a daily note
+    daily_note_id = db.Column(db.Integer, db.ForeignKey('entries_daily_notes.id'), nullable=True)
 
     # Advanced Parsing Fields
     coordinates = db.Column(db.JSON, nullable=True)  # JSON storing GPS coordinates (latitude, longitude)
@@ -58,8 +74,7 @@ class DailyPicture(db.Model):
     # Relationships
     project = db.relationship('Project', backref='daily_pictures', lazy=True)
     work_order = db.relationship('WorkOrder', backref='pictures', lazy=True)
-    daily_note = db.relationship('DailyNote', backref='pictures', lazy=True)
-    #daily_log = db.relationship('DailyReportData', back_populates='pictures', lazy=True)
+    daily_note = db.relationship('DailyNoteEntry', backref='pictures', lazy=True)
 
 
 class WeatherLog(db.Model):

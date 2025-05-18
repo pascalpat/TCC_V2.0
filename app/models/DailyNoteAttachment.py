@@ -5,8 +5,7 @@ class DailyNoteAttachment(db.Model):
     __tablename__ = 'daily_note_attachments'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    daily_note_id = db.Column(db.Integer, db.ForeignKey('daily_notes.id'), nullable=False)
-
+    daily_note_id = db.Column(db.Integer, db.ForeignKey('entries_daily_notes.id'), nullable=False)
     # From DailyPicture:
     file_name   = db.Column(db.String(255), nullable=True)   # e.g. "photo1.jpg", "report.pdf"
     file_url    = db.Column(db.String(2083), nullable=False) # The actual path/URL
@@ -22,7 +21,7 @@ class DailyNoteAttachment(db.Model):
     captured_by = db.Column(db.String(255), nullable=True)  # who took the pic
 
     # Relationship back to the note
-    daily_note = db.relationship('DailyNote', back_populates='attachments')
+    daily_note = db.relationship('DailyNoteEntry', back_populates='attachments')
 
     def __repr__(self):
         return f"<DailyNoteAttachment id={self.id}, file_url='{self.file_url}'>"

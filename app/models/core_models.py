@@ -87,6 +87,7 @@ class Project(db.Model):
     materials = relationship('Material', back_populates='project', lazy=True)
     material_entries = db.relationship("MaterialEntry", back_populates="project", lazy=True)
     purchase_orders = db.relationship('PurchaseOrder', back_populates='project', lazy=True)
+    daily_note_entries = db.relationship('DailyNoteEntry', back_populates='project', lazy=True)
 
     def __repr__(self):
         return f"<Project id={self.id} name={self.name}>"
@@ -119,7 +120,7 @@ class ActivityCode(db.Model):
     # Additional worker / order logs
     worker_entries = db.relationship('WorkerEntry', back_populates='activity')
     work_order_entries = db.relationship('WorkOrderEntry', back_populates='activity_code')
-
+    daily_note_entries = db.relationship('DailyNoteEntry', back_populates='activity_code', lazy=True)
 
 class ProjectTask(db.Model):
     __tablename__ = 'project_tasks'

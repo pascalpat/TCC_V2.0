@@ -69,10 +69,12 @@ def create_app(config_class='app.config.DevelopmentConfig'):
         from .models.material_models import Material
         from .models.equipment_models import Equipment
         from .models.subcontractor_models import Subcontractor
-        from .models.daily_models import DailyNote, DailyPicture, WeatherLog
+        from .models.daily_models import DailyNoteEntry as DailyNote, DailyPicture, WeatherLog
         from .models.models import TabProgress, Document, SustainabilityMetric
         from .models.purchase_order_models import PurchaseOrder
         from .models.daily_report_status import DailyReportStatus
+        from .models.DaylyNoteAttachement import DailyNoteAttachment
+        
         print(f"Registered tables: {db.metadata.tables.keys()}")
         
     # call imports for blueprints:

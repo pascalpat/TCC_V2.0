@@ -118,7 +118,7 @@ class Document(db.Model):
     category = db.Column(db.String(50), nullable=True)  # Free-form category for additional grouping
 
     # Related Daily Notes and Pictures
-    daily_note_id = db.Column(db.Integer, db.ForeignKey('daily_notes.id'), nullable=True)  # Links to Daily Notes
+    daily_note_id = db.Column(db.Integer, db.ForeignKey('entries_daily_notes.id'), nullable=True)
     picture_repository_url = db.Column(db.String(2083), nullable=True)  # Link to related pictures repository
 
     # Approval Workflow
@@ -133,6 +133,6 @@ class Document(db.Model):
 
     # Relationships
     project = db.relationship('Project', backref='documents', lazy=True)  # Links to Project
-    daily_note = db.relationship('DailyNote', backref='documents', lazy=True)  # Links to Daily Note
+    daily_note = db.relationship('DailyNoteEntry', back_populates='documents', lazy=True)
     #daily_log = db.relationship('DailyReportData', back_populates='documents')
 
