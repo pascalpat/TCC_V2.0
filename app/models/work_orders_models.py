@@ -50,3 +50,29 @@ class WorkOrder(db.Model):
     #daily_logs = db.relationship('DailyReportData', back_populates='work_order', lazy=True)
     activity_code_rel = db.relationship('ActivityCode', backref='work_orders')
     work_order_entries = db.relationship('WorkOrderEntry', back_populates="work_order")
+
+    def to_dict(self):
+        """Serialize the WorkOrder for JSON responses."""
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'sequential_number': self.sequential_number,
+            'work_order_number': self.work_order_number,
+            'description': self.description,
+            'subcontractor_id': self.subcontractor_id,
+            'type': self.type,
+            'status': self.status,
+            'reason': self.reason,
+            'estimated_cost': self.estimated_cost,
+            'cumulative_actual_cost': self.cumulative_actual_cost,
+            'activity_code_id': self.activity_code_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'expected_completion_date': self.expected_completion_date.isoformat() if self.expected_completion_date else None,
+            'requested_date': self.requested_date.isoformat() if self.requested_date else None,
+            'approved_date': self.approved_date.isoformat() if self.approved_date else None,
+            'completed_date': self.completed_date.isoformat() if self.completed_date else None,
+            'activity_code': self.activity_code,
+            'progress_percentage': self.progress_percentage,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

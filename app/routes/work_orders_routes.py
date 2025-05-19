@@ -1,67 +1,62 @@
-from flask import Blueprint, jsonify, request
-import pandas as pd
-import os
+from flask import Blueprint, jsonify, request, current_app
+from app import db
+from app.models.work_orders_models import WorkOrder
+from datetime import datetime
 
 # Define the Blueprint for work orders
 work_orders_bp = Blueprint('work_orders_bp', __name__, url_prefix='/work-orders')
 
-# Path to the work orders data file
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WORK_ORDERS_FILE = os.path.join(BASE_DIR, '../../data/work_orders.csv')
+def _parse_date(val):
+    if not val:
+        return None
+    try:
+        return datetime.strptime(val, '%Y-%m-%d').date()
+    except Exception:
+        return None
 
 @work_orders_bp.route('/list', methods=['GET'])
 def get_work_orders():
-    """
-    Fetch and return the list of work orders from the CSV file.
-    """
+    """Return all work orders from the database."""
     try:
-        # Check if the file exists
-        if not os.path.exists(WORK_ORDERS_FILE):
-            return jsonify({"status": "error", "message": "Work orders file not found"}), 404
-
-        # Load the CSV file
-        work_orders = pd.read_csv(WORK_ORDERS_FILE)
-
-        # Check if the file is empty
-        if work_orders.empty:
-            return jsonify({"status": "success", "data": [], "message": "No work orders found"}), 200
-
-        # Convert DataFrame to JSON format
-        work_orders_list = work_orders.to_dict(orient='records')
-        return jsonify({"status": "success", "data": work_orders_list}), 200
-
+        orders = WorkOrder.query.all()
+        return jsonify({'work_orders': [o.to_dict() for o in orders]}), 200
+    
     except Exception as e:
-        # Handle unexpected errors
-        return jsonify({"status": "error", "message": str(e)}), 500
-
+        current_app.logger.error(f"Error loading work orders: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+    
 @work_orders_bp.route('/add', methods=['POST'])
 def add_work_order():
-    """
-    Add a new work order to the CSV file.
-    """
+    """Create a new work order record."""
+
     try:
-        # Get the new work order data from the request
-        new_work_order = request.json
+        data = request.get_json() or {}
+        required = ['project_id', 'sequential_number', 'description', 'type']
+        if not all(data.get(f) for f in required):
+            return jsonify({'error': 'Missing required fields'}), 400
 
-        # Validate the input
-        required_fields = ['order_number', 'description', 'hours']
-        missing_fields = [field for field in required_fields if field not in new_work_order]
-        if missing_fields:
-            return jsonify({"status": "error", "message": f"Missing fields: {missing_fields}"}), 400
+        wo = WorkOrder(
+            project_id=data['project_id'],
+            sequential_number=data['sequential_number'],
+            description=data['description'],
+            type=data['type'],
+            status=data.get('status', 'open'),
+            reason=data.get('reason'),
+            estimated_cost=data.get('estimated_cost'),
+            subcontractor_id=data.get('subcontractor_id'),
+            start_date=_parse_date(data.get('start_date')),
+            expected_completion_date=_parse_date(data.get('expected_completion_date')),
+            activity_code_id=data.get('activity_code_id'),
+            activity_code=data.get('activity_code'),
+        )
 
-        # Check if the file exists, create it if not
-        if not os.path.exists(WORK_ORDERS_FILE):
-            work_orders = pd.DataFrame(columns=required_fields)
-        else:
-            work_orders = pd.read_csv(WORK_ORDERS_FILE)
+        db.session.add(wo)
+        db.session.commit()
+        return jsonify({'message': 'Work order created', 'data': wo.to_dict()}), 201
 
-        # Append the new work order
-        work_orders = work_orders.append(new_work_order, ignore_index=True)
 
-        # Save back to the CSV file
-        work_orders.to_csv(WORK_ORDERS_FILE, index=False)
-        return jsonify({"status": "success", "message": "Work order added successfully"}), 201
 
     except Exception as e:
-        # Handle unexpected errors
-        return jsonify({"status": "error", "message": str(e)}), 500
+        db.session.rollback()
+        current_app.logger.error(f"Error creating work order: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
