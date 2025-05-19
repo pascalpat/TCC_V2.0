@@ -1,4 +1,5 @@
 let editingNoteId = null;
+let stagedNotes   = [];
 
 export async function fetchAndRenderDailyNotes() {
     const tbody = document.querySelector('#dailyNotesTable tbody');
@@ -31,16 +32,20 @@ export async function fetchAndRenderDailyNotes() {
         tbody.querySelectorAll('.edit-note-btn').forEach(b => b.addEventListener('click', editNote));
         tbody.querySelectorAll('.delete-note-btn').forEach(b => b.addEventListener('click', deleteNote));
 
+        renderPreviewTable();
+
+
     } catch (err) {
         console.error('fetchAndRenderDailyNotes', err);
         tbody.innerHTML = '<tr><td colspan="7" class="error-msg">Impossible de charger les notes.</td></tr>';
     }
 }
 
-export async function saveDailyNote() {
+export async function addDailyNote() {
     const activityCode = document.getElementById('noteActivityCode')?.value || '';
     const paymentItem  = document.getElementById('notePaymentItem')?.value  || '';
     const cwp          = document.getElementById('noteCwp')?.value          || '';
+    const workOrder    = document.getElementById('noteWorkOrderNumber')?.value || '';
 
     const tagsInput = document.getElementById('noteTags').value || '';
     const tags = tagsInput
@@ -61,35 +66,38 @@ export async function saveDailyNote() {
         tags,
         content:   document.getElementById('noteContent').value,
         payment_item_id: document.getElementById('notePaymentItem').value,
+        work_order_number: workOrder,
         cwp: document.getElementById('noteCwp').value,
         activity_code_id: activityCode
     };
 
     try {
-        let resp;
         if (editingNoteId) {
-            resp = await fetch(`/dailynotes/${editingNoteId}`, {
+            const resp = await fetch(`/dailynotes/${editingNoteId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'save failed');
+            await fetchAndRenderDailyNotes();
         } else {
-            resp = await fetch('/dailynotes/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            stagedNotes.push({
+                ...payload,
+                _display: {
+                    activityText: document.getElementById('noteActivityCode').selectedOptions[0]?.text || '',
+                    paymentText:  document.getElementById('notePaymentItem').selectedOptions[0]?.text || '',
+                    cwpText:      document.getElementById('noteCwp').selectedOptions[0]?.text || ''
+                }
             });
+            renderPreviewTable();
         }
-
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'save failed');
 
         editingNoteId = null;  // reset after save
         resetNoteForm();
 
-        await fetchAndRenderDailyNotes();
     } catch (err) {
-        console.error('saveDailyNote', err);
+        console.error('addDailyNote', err);
         alert('Erreur sauvegarde: ' + err.message);
     }
 }
@@ -109,6 +117,7 @@ async function editNote(evt) {
         document.getElementById('noteTags').value = Array.isArray(note.tags) ? note.tags.join(', ') : '';
         document.getElementById('noteActivityCode').value = note.activity_code_id || '';
         document.getElementById('notePaymentItem').value = note.payment_item_id || '';
+        document.getElementById('noteWorkOrderNumber').value = note.work_order_number || '';
         document.getElementById('noteCwp').value = note.cwp || '';
         document.getElementById('noteContent').value = note.content || '';
     } catch (err) {
@@ -138,7 +147,61 @@ function resetNoteForm() {
     document.getElementById('noteTags').value = '';
     document.getElementById('noteActivityCode').selectedIndex = 0;
     document.getElementById('notePaymentItem').selectedIndex = 0;
+    const wo = document.getElementById('noteWorkOrderNumber');
+    if (wo) wo.value = '';
     document.getElementById('noteCwp').selectedIndex = 0;
     const txt = document.getElementById('noteContent');
     if (txt) txt.value = '';
+}
+// ────────────────────────────────────────────────────
+// Render staged preview rows
+// ────────────────────────────────────────────────────
+function renderPreviewTable() {
+    const tbody = document.querySelector('#dailyNotesTable tbody');
+    if (!tbody) return;
+    // remove existing preview rows
+    tbody.querySelectorAll('tr.preview-row').forEach(r => r.remove());
+
+    stagedNotes.forEach(n => {
+        const tr = document.createElement('tr');
+        tr.classList.add('preview-row');
+        tr.innerHTML = `
+            <td>${(n.content || '').substring(0,25)}</td>
+            <td>${n.category || ''}</td>
+            <td>${Array.isArray(n.tags) ? n.tags.join(', ') : ''}</td>
+            <td>${n._display.activityText || ''}</td>
+            <td>${n._display.paymentText || ''}</td>
+            <td>${n._display.cwpText || ''}</td>
+            <td></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ────────────────────────────────────────────────────
+// Confirm staged notes to server
+// ────────────────────────────────────────────────────
+export async function confirmDailyNotes() {
+    if (stagedNotes.length === 0) {
+        return alert('Aucune note à confirmer.');
+    }
+
+    try {
+        const resp = await fetch('/dailynotes/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes: stagedNotes })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erreur serveur');
+
+        alert(`Notes confirmées (${data.records.length}).`);
+        stagedNotes = [];
+        renderPreviewTable();
+        await fetchAndRenderDailyNotes();
+
+    } catch (err) {
+        console.error('confirmDailyNotes', err);
+        alert('Erreur : ' + err.message);
+    }
 }

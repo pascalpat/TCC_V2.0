@@ -92,6 +92,7 @@ def update_daily_note(note_id: int):
             'priority',
             'activity_code_id',
             'payment_item_id',
+            'work_order_number',
             'cwp',
             'editable_by',
         ]:
@@ -122,3 +123,44 @@ def delete_daily_note(note_id: int):
         db.session.rollback()
         current_app.logger.error(f"Database error deleting daily note {note_id}: {e}", exc_info=True)
         return jsonify({"error": "Database error deleting daily note"}), 500
+    
+@dailynotes_bp.route('/confirm', methods=['POST'])
+def confirm_daily_notes():
+    """Bulk create daily notes from staged entries."""
+    data = request.get_json() or {}
+    notes = data.get('notes')
+    if not notes or not isinstance(notes, list):
+        return jsonify(error="Missing notes list"), 400
+
+    created = []
+    try:
+        for n in notes:
+            if not n.get('project_id') or not n.get('content'):
+                return jsonify(error="project_id and content are required"), 400
+
+            note_dt = n.get('note_datetime')
+            note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
+
+            new_note = DailyNoteEntry(
+                project_id=n.get('project_id'),
+                note_datetime=note_datetime,
+                author=n.get('author'),
+                category=n.get('category'),
+                tags=n.get('tags'),
+                content=n.get('content'),
+                priority=n.get('priority'),
+                activity_code_id=n.get('activity_code_id'),
+                payment_item_id=n.get('payment_item_id'),
+                cwp=n.get('cwp'),
+                editable_by=n.get('editable_by'),
+            )
+            db.session.add(new_note)
+            created.append(new_note)
+
+        db.session.commit()
+        return jsonify(records=[c.id for c in created]), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error confirming notes: {e}", exc_info=True)
+        return jsonify(error="Database error confirming notes"), 500

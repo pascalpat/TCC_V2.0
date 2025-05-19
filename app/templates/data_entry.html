@@ -205,6 +205,10 @@
           {% endfor %}
         </select>
 
+        <label for="noteWorkOrderNumber">Work Order Number:</label>
+        <input type="number" id="noteWorkOrderNumber" class="form-control">
+
+
         <label for="noteCwp">Construction Work Package (CWP):</label>
         <select id="noteCwp" class="form-control">
           <option value="" disabled selected>-- Aucun --</option>
@@ -218,7 +222,8 @@
         <textarea id="noteContent" name="noteContent" rows="6" class="form-control w-100"></textarea>
 
         <div class="button-container">
-          <button type="button" id="saveNoteBtn" class="btn btn-primary">Sauvegarder</button>
+          <button type="button" id="addNoteBtn" class="btn btn-primary">Ajouter Note</button>
+          <button type="button" id="confirmNotesBtn" class="btn btn-success">Confirmer les notes</button>
           <button type="button" id="dictateNoteBtn" class="btn btn-secondary" onclick="startDictation('noteContent')">Dicter</button>
         </div>
       </form>
@@ -278,7 +283,8 @@
     import { populateDropdowns }   from "{{ url_for('static', filename='js/populate_drop_downs.js') }}";
     import { initLaborEquipmentTab } from "{{ url_for('static', filename='js/LaborEquipment.js') }}";
     import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
-    import { fetchAndRenderDailyNotes, saveDailyNote } from "{{ url_for('static', filename='js/notes.js') }}";
+    import { fetchAndRenderDailyNotes, addDailyNote, confirmDailyNotes } from "{{ url_for('static', filename='js/notes.js') }}";
+
 
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) fill every dropdown across all tabs
@@ -288,9 +294,10 @@
       initLaborEquipmentTab();
       initMaterialsTab();
       fetchAndRenderDailyNotes();
-      const saveBtn = document.getElementById('saveNoteBtn');
-      if (saveBtn) saveBtn.addEventListener('click', saveDailyNote);
-
+      const addBtn = document.getElementById('addNoteBtn');
+      const confirmBtn = document.getElementById('confirmNotesBtn');
+      if (addBtn) addBtn.addEventListener('click', addDailyNote);
+      if (confirmBtn) confirmBtn.addEventListener('click', confirmDailyNotes);
 
       // …initSubcontractorsTab(), etc. as needed…
     });
