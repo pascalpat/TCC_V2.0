@@ -246,7 +246,21 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
 #confirmMaterialsBtn
 #materialsTable
 ```
+### Notes Form
 
+```
+#noteDatetime
+#noteAuthor
+#noteCategory
+#noteTags
+#noteActivityCode
+#notePaymentItem
+#noteCwp
+#noteContent
+#saveNoteBtn
+#dictateNoteBtn
+#dailyNotesContainer
+```
 ---
 
 ## 4. JSON Payload Field Names

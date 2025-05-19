@@ -21,13 +21,32 @@ export async function fetchAndRenderDailyNotes() {
 }
 
 export async function saveDailyNote() {
+    const activityCode = document.getElementById('noteActivityCode')?.value || '';
+    const paymentItem  = document.getElementById('notePaymentItem')?.value  || '';
+    const cwp          = document.getElementById('noteCwp')?.value          || '';
+
+    const tagsInput = document.getElementById('noteTags').value || '';
+    const tags = tagsInput
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t);
+
+    [activityCode, paymentItem, cwp].forEach(val => {
+        if (val) tags.push(val);
+    });
+
+
     const payload = {
         project_id: document.getElementById('projectNumber').value,
-        date:      document.getElementById('noteDatetime').value,
+        note_datetime: document.getElementById('noteDatetime').value,
         author:    document.getElementById('noteAuthor').value,
         category:  document.getElementById('noteCategory').value,
-        tags:      document.getElementById('noteTags').value,
-        content:   document.getElementById('noteContent').value
+        tags,
+        content:   document.getElementById('noteContent').value,
+        payment_item_id: document.getElementById('notePaymentItem').value,
+        cwp: document.getElementById('noteCwp').value
+
+        activity_code_id: activityCode
     };
 
     try {

@@ -192,8 +192,30 @@
         <label for="noteTags">Tags:</label>
         <input type="text" id="noteTags" class="form-control" placeholder="tag1, tag2">
 
-        <label for="noteContent">Note:</label>
-        <textarea id="noteContent" rows="4" class="form-control"></textarea>
+        <label for="noteActivityCode">Code d'Activité:</label>
+        <select id="noteActivityCode" class="form-control">
+          <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+        </select>
+
+        <label for="notePaymentItem">Items de bordereau:</label>
+        <select id="notePaymentItem" class="form-control">
+          <option value="" disabled selected>-- Aucun --</option>
+          {% for item in payment_items %}
+            <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="noteCwp">Construction Work Package (CWP):</label>
+        <select id="noteCwp" class="form-control">
+          <option value="" disabled selected>-- Aucun --</option>
+          {% for c in cwps %}
+            <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
+          {% endfor %}
+        </select>
+
+
+        <label for="noteText">Note:</label>
+        <textarea id="noteText" name="noteText" rows="6" class="form-control w-100"></textarea>
 
         <div class="button-container">
           <button type="button" id="saveNoteBtn" class="btn btn-primary">Sauvegarder</button>

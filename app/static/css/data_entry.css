@@ -2,6 +2,14 @@
    Consolidated CSS for Data Entry Tabs
    (keep EVERYTHING here)
    ────────────────────────────────────────────────────*/
+/* data_entry.css (make sure this is loaded _after_ Bootstrap.css) */
+  #NotesTab .form-box textarea {
+    width: 100% !important;    /* force full width of its parent */
+    max-width: 100% !important;/* guard against any max-width you may have elsewhere */
+    box-sizing: border-box;    /* include padding in that 100% */
+    display: block;            /* ensure it’s a block-level element */
+  }
+
 
 /* Confirmed entries styling */
 .confirmed-row {
@@ -136,6 +144,9 @@
     max-width: 70%;
   }
   
+  
+
+
   /* ────────────────────────────────────────────────────
      FONT CONSISTENCY OVERRIDES
      ──────────────────────────────────────────────────── */
@@ -149,10 +160,13 @@
   */
   #LaborEquipTab .form-box *,
   #MaterialsTab  .form-box *,
+  #NotesTab      .form-box *,
   #LaborEquipTab .styled-table th,
   #MaterialsTab  .styled-table th,
+  #NotesTab      .styled-table th,
   #LaborEquipTab .styled-table td,
-  #MaterialsTab  .styled-table td {
+  #MaterialsTab  .styled-table td,  
+  #NotesTab      .styled-table td {
     font-family: Arial, sans-serif !important;
     font-size:   24px              !important;
     line-height: 1.4               !important;

@@ -40,6 +40,8 @@ def add_daily_note():
             content=data.get('content'),
             priority=data.get('priority'),
             activity_code_id=data.get('activity_code_id'),
+            payment_item_id=data.get('payment_item_id'),
+            cwp=data.get('cwp'),
             editable_by=data.get('editable_by'),
         )
 
@@ -89,6 +91,8 @@ def update_daily_note(note_id: int):
             'content',
             'priority',
             'activity_code_id',
+            'payment_item_id',
+            'cwp',
             'editable_by',
         ]:
             if field in data:

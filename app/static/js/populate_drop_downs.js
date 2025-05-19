@@ -54,7 +54,8 @@ export async function populateActivityDropdown() {
     const ids = [
       "activityCode",
       "materialActivityCode",
-      "subcontractorActivityCode"
+      "subcontractorActivityCode",
+      "noteActivityCode"
     ];
     ids.forEach(id => {
       const dd = document.getElementById(id);
@@ -86,14 +87,21 @@ export async function populatePaymentItemDropdown() {
     const { payment_items: items } = await resp.json();
     window.paymentItemsList = items;     // store for inline editing
 
-    const dd = document.getElementById("payment_item_id");
-    if (!dd) return;
-    dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
-    items.forEach(pi => {
-      const text = pi.payment_code
-        ? `${pi.payment_code} – ${pi.item_name}`
-        : pi.item_name;
-      dd.appendChild(new Option(text, pi.id));
+    
+    const selectIds = ["payment_item_id", "materialPaymentItem", "notePaymentItem"];
+    selectIds.forEach(id => {
+      const dd = document.getElementById(id);
+      if (!dd) return;
+      dd.innerHTML = `<option value="" disabled selected>-- Aucun --</option>`;
+      items.forEach(pi => {
+        const text = pi.payment_code
+          ? `${pi.payment_code} – ${pi.item_name}`
+          : pi.item_name;
+        dd.appendChild(new Option(text, pi.id));
+      });
+
+
+
     });
 
     console.log("[populatePaymentItemDropdown] done.");
@@ -117,7 +125,7 @@ export async function populateCwpDropdown() {
   }
 
   // target both selects by ID
-  const selectIds = ["cwp_code", "materialCwp"];
+  const selectIds = ["cwp_code", "materialCwp", "noteCwp"];
   selectIds.forEach(selectId => {
     const dd = document.getElementById(selectId);
     if (!dd) {
