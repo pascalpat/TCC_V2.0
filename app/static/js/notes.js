@@ -7,7 +7,7 @@ export async function fetchAndRenderDailyNotes() {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.message || 'fetch failed');
 
-        const notes = data.data || [];
+        const notes = data.dailynotes || [];
         container.innerHTML = notes.map(note => `
             <div class="note">
                 <p>${note.content}</p>
@@ -44,8 +44,7 @@ export async function saveDailyNote() {
         tags,
         content:   document.getElementById('noteContent').value,
         payment_item_id: document.getElementById('notePaymentItem').value,
-        cwp: document.getElementById('noteCwp').value
-
+        cwp: document.getElementById('noteCwp').value,
         activity_code_id: activityCode
     };
 

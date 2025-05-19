@@ -202,4 +202,3 @@ class CWPackage(db.Model):
     code       = db.Column(db.String(50), primary_key=True)
     name       = db.Column(db.String(255), nullable=False)
     unit       = db.Column(db.String(20), nullable=True)
-    project_id = db.Column(db.String(50), nullable=False, index=True)
