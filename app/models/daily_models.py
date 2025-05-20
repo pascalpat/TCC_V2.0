@@ -15,7 +15,7 @@ class DailyNoteEntry(db.Model):
     priority = db.Column(db.Enum('low', 'medium', 'high', name='note_priority_enum'), default='low')
     activity_code_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
-    work_order_number = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -45,7 +45,7 @@ class DailyNoteEntry(db.Model):
             'priority': self.priority,
             'activity_code_id': self.activity_code_id,
             'payment_item_id': self.payment_item_id,
-            'work_order_number': self.work_order_number,
+            'work_order_id': self.work_order_number,
             'cwp': self.cwp,
             'editable_by': self.editable_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
