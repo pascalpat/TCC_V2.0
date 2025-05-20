@@ -1,7 +1,8 @@
-from flask import Blueprint, session, jsonify, request
+from flask import Blueprint, session, jsonify, request, current_app
 from app.utils.data_loader import load_data
 import csv
 from datetime import datetime
+import os
 
 
 data_persistence_bp = Blueprint('data_persistence', __name__)
@@ -42,8 +43,16 @@ def persist_session_to_csv(session_data, current_date, csv_file_path):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Define the path to the CSV file
-DATA_FILE = "C:/Users/patri/OneDrive/Bureau/TCC_V2.0/data/daily_report_data.csv"
+# Define the default path to the CSV file. This path mirrors the default used
+# in the application's configuration and serves as a fallback if the
+# `DATA_FILE_PATH` configuration variable is not set.
+default_data_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'daily_report_data.csv')
+)
+
+
+
+
 
 # Route to save report
 @data_persistence_bp.route('/save-report', methods=['POST'])
@@ -68,8 +77,13 @@ def save_to_csv():
             }
             rows.append(row)
 
-    # Save rows to the CSV
-    save_to_csv(DATA_FILE, rows, append=True)
+    # Determine the CSV file path from configuration with a sensible fallback
+    data_file_path = current_app.config.get('DATA_FILE_PATH', default_data_path)
+
+    # Save rows to the CSV using the resolved path
+    save_to_csv(data_file_path, rows, append=True)
+
+
 
     # Clear session data for the saved date
     session['daily_data'].pop(current_date)

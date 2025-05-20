@@ -8,6 +8,8 @@ class DailyNoteEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     note_datetime = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    date_of_report = db.Column(db.Date, nullable=False, index=True)
+    status = db.Column(db.Enum('pending','committed','rejected', name='entry_status'), default='pending')
     author = db.Column(db.String(255), nullable=True)
     category = db.Column(db.String(50), nullable=True)
     tags = db.Column(db.JSON, nullable=True)
@@ -38,11 +40,13 @@ class DailyNoteEntry(db.Model):
             'id': self.id,
             'project_id': self.project_id,
             'note_datetime': self.note_datetime.isoformat() if self.note_datetime else None,
+            'date_of_report': self.date_of_report.isoformat() if self.date_of_report else None,
             'author': self.author,
             'category': self.category,
             'tags': self.tags,
             'content': self.content,
             'priority': self.priority,
+            'status': self.status,
             'activity_code_id': self.activity_code_id,
             'payment_item_id': self.payment_item_id,
             'work_order_id': self.work_order_id,

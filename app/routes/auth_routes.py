@@ -13,7 +13,7 @@ def login():
         # Store user in session
         session['username'] = username
         session['user_id'] = 101
-        session['projet_id'] = None
+        session['project_id'] = None
         session ['report_date'] = None
         print(f"User {username} logged in with user id 101.")
         return redirect(url_for('calendar_bp.calendar_page'))
