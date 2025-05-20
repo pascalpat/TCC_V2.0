@@ -45,7 +45,7 @@ class DailyNoteEntry(db.Model):
             'priority': self.priority,
             'activity_code_id': self.activity_code_id,
             'payment_item_id': self.payment_item_id,
-            'work_order_id': self.work_order_number,
+            'work_order_id': self.work_order_id,
             'cwp': self.cwp,
             'editable_by': self.editable_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
