@@ -7,7 +7,7 @@ export async function fetchAndRenderDailyNotes() {
     tbody.innerHTML = '';
 
     try {
-        const resp = await fetch('/dailynotes_routes/list');
+        const resp = await fetch('/dailynotes/list');
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'fetch failed');
 
