@@ -291,7 +291,7 @@ function renderConfirmedTable(workers = [], equipment = []) {
   });
 
   // wire up
-  tbody.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', handleEdit));
+  tbody.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', handleInLineEdit));
   tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', handleDelete));
 }
 

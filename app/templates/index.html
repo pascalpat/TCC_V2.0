@@ -84,7 +84,7 @@
             Bons de travail <span class="tab-status" id="statusWorkOrders"></span>
         </button>
         <button class="tablinks" id="tabPictures" onclick="openTab(event, 'Pictures')">
-            Photos du jour <span class="tab-status" id="statusPictures"></span>
+            Photos & Documents <span class="tab-status" id="statusPictures"></span>
         </button>
         <button id="submitReportBtn" class="btn btn-primary" style="display:none;">Submit Report</button>
     </div>
@@ -185,7 +185,7 @@
                     let unit = row.cells[2].innerText;
                     materialEntries.push({ materialName: name, quantity: quantity, unit: unit });
                 }
-                fetch("/data_entry/save_draft", {
+                fetch("/data-entry/save_draft", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ entries: materialEntries, tab: "materials" })

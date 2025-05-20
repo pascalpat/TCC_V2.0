@@ -40,7 +40,7 @@ class SubcontractorEntry(db.Model):
         """Convert the SubcontractorEntry instance to a dictionary for JSON serialization."""
         return {
             'id': self.id,
-            'date_of_report': self.date_of_report.isoformat(),
+            'date': self.date.isoformat() if self.date else None,
             'subcontractor_id': self.subcontractor_id,
             'project_id': self.project_id,
             'description': self.description,

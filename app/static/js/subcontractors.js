@@ -1,3 +1,40 @@
+// static/js/subcontractors.js
+import { populateDropdowns } from './populate_drop_downs.js';
+
+let stagedSubs = [];
+
+export async function initSubcontractorsTab() {
+    await populateDropdowns();                   // fill activity-code dropdown
+    loadSubcontractorList();                     // fetch /subcontractors/list
+    document.getElementById('addSubBtn')
+        .addEventListener('click', addSubLine);
+    document.getElementById('confirmSubBtn')
+        .addEventListener('click', confirmSubLines);
+
+    const projectId  = document.getElementById('projectNumber').value;
+    const reportDate = document.getElementById('dateSelector').value;
+    if (projectId && reportDate) {
+        loadPendingSubs(projectId, reportDate);  // GET /subcontractors/by-project-date
+    }
+}
+
+function addSubLine(e) {
+    e.preventDefault();
+    // push form values to stagedSubs and renderPreviewTable()
+}
+
+async function confirmSubLines(e) {
+    e.preventDefault();
+    // POST stagedSubs → /subcontractors/confirm-entries
+}
+
+async function loadPendingSubs(projectId, reportDate) {
+    const resp = await fetch(`/subcontractors/by-project-date?project_id=${projectId}&date=${reportDate}`);
+    const { entries } = await resp.json();
+    // renderConfirmedTable(entries)
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const addSubcontractorBtn = document.getElementById('addSubcontractorBtn');
     const confirmSubcontractorsBtn = document.getElementById('confirmSubcontractorsBtn');
@@ -64,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     activityCode: subActivity
                 });
             }
-            fetch("/data_entry/save_draft", {
+            fetch("/data-entry/save_draft", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ entries: subcontractorEntries, tab: "subcontractors" })

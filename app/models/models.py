@@ -106,6 +106,7 @@ class Document(db.Model):
     file_name = db.Column(db.String(255), nullable=False)  # Name of the uploaded file
     file_url = db.Column(db.String(2083), nullable=False)  # Path or URL to the file
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of upload
+    status = db.Column(db.Enum('pending', 'committed', name='record_status'),default='pending')
 
     # Document Type and Category
     document_type = db.Column(

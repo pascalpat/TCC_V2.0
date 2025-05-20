@@ -6,20 +6,20 @@ from .. import db
 
 
 # Define the Blueprint for daily notes
-dailynotes_bp = Blueprint('dailynotes_bp', __name__, url_prefix='/dailynotes')
+entries_daily_notes_bp = Blueprint('dailynotes_bp', __name__, url_prefix='/dailynotes')
 
 
-@dailynotes_bp.route('/list', methods=['GET'])
+@entries_daily_notes_bp.route('/list', methods=['GET'])
 def get_daily_notes():
     """Return all daily notes stored in the database."""
     try:
         notes = DailyNoteEntry.query.all()
-        return jsonify({"daily_notes": [n.to_dict() for n in notes]}), 200
+        return jsonify({"entries_daily_notes": [n.to_dict() for n in notes]}), 200
     except SQLAlchemyError as e:
         current_app.logger.error(f"Database error fetching daily notes: {e}", exc_info=True)
         return jsonify({"error": "Database error fetching daily notes"}), 500
 
-@dailynotes_bp.route('/', methods=['POST'])
+@entries_daily_notes_bp.route('/', methods=['POST'])
 def add_daily_note():
     """Create a new daily note entry in the database."""
     data = request.get_json() or {}
@@ -55,7 +55,7 @@ def add_daily_note():
         return jsonify({"error": "Database error adding daily note"}), 500
 
 
-@dailynotes_bp.route('/<int:note_id>', methods=['GET'])
+@entries_daily_notes_bp.route('/<int:note_id>', methods=['GET'])
 def get_daily_note(note_id: int):
     """Retrieve a single daily note by its ID."""
     try:
@@ -67,7 +67,7 @@ def get_daily_note(note_id: int):
         current_app.logger.error(f"Database error fetching daily note {note_id}: {e}", exc_info=True)
         return jsonify({"error": "Database error fetching daily note"}), 500
 
-@dailynotes_bp.route('/<int:note_id>', methods=['PUT'])
+@entries_daily_notes_bp.route('/<int:note_id>', methods=['PUT'])
 def update_daily_note(note_id: int):
     """Update an existing daily note."""
     data = request.get_json() or {}
@@ -108,7 +108,7 @@ def update_daily_note(note_id: int):
         return jsonify({"error": "Database error updating daily note"}), 500
 
 
-@dailynotes_bp.route('/<int:note_id>', methods=['DELETE'])
+@entries_daily_notes_bp.route('/<int:note_id>', methods=['DELETE'])
 def delete_daily_note(note_id: int):
     """Delete a daily note from the database."""
     try:
@@ -124,7 +124,7 @@ def delete_daily_note(note_id: int):
         current_app.logger.error(f"Database error deleting daily note {note_id}: {e}", exc_info=True)
         return jsonify({"error": "Database error deleting daily note"}), 500
     
-@dailynotes_bp.route('/confirm', methods=['POST'])
+@entries_daily_notes_bp.route('/confirm', methods=['POST'])
 def confirm_daily_notes():
     """Bulk create daily notes from staged entries."""
     data = request.get_json() or {}

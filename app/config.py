@@ -45,6 +45,8 @@ class Config:
     ACTIVITY_CODES_FILE = os.path.join(BASE_DIR, '../data/activity_codes.csv')
     MATERIALS_FILE = os.path.join(BASE_DIR, '../data/materials.csv')
     PICTURES_FILE = os.path.join(BASE_DIR, '../data/pictures.csv')
+    DAILY_PICTURES_FILE = os.path.join(BASE_DIR, '../database/daily_pictures.csv')
+    DOCUMENTS_FILE = os.path.join(BASE_DIR, '../database/documents.csv')
     SUBCONTRACTORS_FILE = os.path.join(BASE_DIR, '../data/subcontractors.csv')
     DATA_FILE_PATH = os.path.join(BASE_DIR, '../data/daily_report_data.csv')
 

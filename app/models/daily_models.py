@@ -15,7 +15,7 @@ class DailyNoteEntry(db.Model):
     priority = db.Column(db.Enum('low', 'medium', 'high', name='note_priority_enum'), default='low')
     activity_code_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
-    work_order_number = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
@@ -28,7 +28,7 @@ class DailyNoteEntry(db.Model):
     activity_code = db.relationship('ActivityCode', back_populates='daily_note_entries')
     attachments = db.relationship('DailyNoteAttachment', back_populates='daily_note', lazy=True)
     documents = db.relationship('Document', back_populates='daily_note', lazy=True)
-    work_order = db.relationship('WorkOrder', backref='daily_notes', lazy=True)
+    work_order = db.relationship('WorkOrder', backref='entries_daily_notes', lazy=True)
 
     def __repr__(self):
         return f"<DailyNoteEntry id={self.id} project_id={self.project_id}>"
@@ -45,7 +45,7 @@ class DailyNoteEntry(db.Model):
             'priority': self.priority,
             'activity_code_id': self.activity_code_id,
             'payment_item_id': self.payment_item_id,
-            'work_order_number': self.work_order_number,
+            'work_order_id': self.work_order_id,
             'cwp': self.cwp,
             'editable_by': self.editable_by,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -63,6 +63,7 @@ class DailyPicture(db.Model):
     description = db.Column(db.Text, nullable=True)  # Description or notes about the picture
     taken_at = db.Column(db.DateTime, nullable=True)  # Timestamp when the picture was taken
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of upload
+    status = db.Column(db.Enum('pending', 'committed', name='record_status'),default='pending')
 
     # Relationships to Activity Codes, Work Orders, and Notes
     activity_code = db.Column(db.String(50), db.ForeignKey('activity_codes.id'), nullable=True)  # Links to an activity code

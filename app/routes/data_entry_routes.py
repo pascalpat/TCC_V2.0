@@ -177,8 +177,34 @@ def reset_session():
         return jsonify({"message": "Session reset successfully."}), 200
     except Exception as e:
         logging.error(f"Error resetting session: {e}")
-        return jsonify({"error": "Failed to reset session."}), 500 
-    
+    return jsonify({"error": "Failed to reset session."}), 500
+
+
+@data_entry_bp.route('/save_draft', methods=['POST'])
+def save_draft():
+    """Persist tab entries into the session as a draft."""
+    try:
+        data = request.get_json() or {}
+        tab = data.get('tab')
+        entries = data.get('entries', [])
+
+        if not tab:
+            return jsonify({'error': 'Tab is required'}), 400
+
+        current_date = session.get('current_reporting_date')
+        if not current_date:
+            return jsonify({'error': 'No reporting date selected'}), 400
+
+        daily_data = session.setdefault('daily_data', {})
+        current_data = daily_data.setdefault(current_date, {})
+        session_entries = current_data.setdefault('entries', {})
+        session_entries[tab] = entries
+        session.modified = True
+
+        return jsonify({'message': 'Draft saved', 'entries': len(entries)}), 200
+    except Exception as e:
+        current_app.logger.error(f"Error saving draft: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to save draft'}), 500
     
 def collect_form_data(prefix, fields, max_count):
     data_list = []

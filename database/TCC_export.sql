@@ -24,7 +24,7 @@ CREATE TABLE alembic_version (
 	CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 INSERT INTO "alembic_version" VALUES('a87f3c0b5e8c');
-CREATE TABLE daily_notes (
+CREATE TABLE entries_daily_notes (
 	id INTEGER NOT NULL, 
 	project_id INTEGER NOT NULL, 
 	note TEXT NOT NULL, 
@@ -39,8 +39,8 @@ CREATE TABLE daily_notes (
 	FOREIGN KEY(linked_activity_code) REFERENCES activity_codes (id), 
 	FOREIGN KEY(project_id) REFERENCES projects (id)
 );
-INSERT INTO "daily_notes" VALUES(1,3,'cecci est un test de note','1','2025-01-06','extras','hogh',4,'"C:\Users\patri\OneDrive\Bureau\TCC_V2.0\20241024_134840.jpg"',NULL);
-INSERT INTO "daily_notes" VALUES(2,4,'ceci est aussi un test de notes','pascal patrice','2025-01-06','general','low',2,'"C:\Users\patri\OneDrive\Bureau\TCC_V2.0\20241024_134840.jpg"',NULL);
+INSERT INTO "entries_daily_notes" VALUES(1,3,'cecci est un test de note','1','2025-01-06','extras','hogh',4,'"C:\Users\patri\OneDrive\Bureau\TCC_V2.0\20241024_134840.jpg"',NULL);
+INSERT INTO "entries_daily_notes" VALUES(2,4,'ceci est aussi un test de notes','pascal patrice','2025-01-06','general','low',2,'"C:\Users\patri\OneDrive\Bureau\TCC_V2.0\20241024_134840.jpg"',NULL);
 CREATE TABLE daily_pictures (
 	id INTEGER NOT NULL, 
 	project_id INTEGER NOT NULL, 
@@ -59,7 +59,7 @@ CREATE TABLE daily_pictures (
 	captured_by VARCHAR(255), 
 	PRIMARY KEY (id), 
 	FOREIGN KEY(activity_code) REFERENCES activity_codes (id), 
-	FOREIGN KEY(daily_note_id) REFERENCES daily_notes (id), 
+	FOREIGN KEY(daily_note_id) REFERENCES entries_daily_notes (id), 
 	FOREIGN KEY(project_id) REFERENCES projects (id), 
 	FOREIGN KEY(work_order_id) REFERENCES work_orders (id)
 );
@@ -103,7 +103,7 @@ CREATE TABLE documents (
 	created_at DATETIME, 
 	last_modified_at DATETIME, 
 	PRIMARY KEY (id), 
-	FOREIGN KEY(daily_note_id) REFERENCES daily_notes (id), 
+	FOREIGN KEY(daily_note_id) REFERENCES entries_daily_notes (id), 
 	FOREIGN KEY(project_id) REFERENCES projects (id)
 );
 INSERT INTO "documents" VALUES(1,3,'project_tree','"C:\Users\patri\OneDrive\Bureau\TCC_V2.0\project_tree.docx"',NULL,'.docx','General',NULL,NULL,NULL,NULL,NULL,'project tree','2025-01-07',NULL);

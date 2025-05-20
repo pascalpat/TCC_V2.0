@@ -10,6 +10,7 @@ import { fetchAndRenderSubcontractors } from './subcontractors.js';
 import { fetchAndRenderDailyNotes } from './notes.js';
 import { fetchAndRenderWorkOrders } from './workorders.js';
 import { fetchAndRenderPictures } from './pictures.js';
+import { fetchAndRenderMedia } from './media.js';
 import { getCurrentDate, highlightDates, confirmDateSelection, getTemperature, markTabComplete, restoreProgress } from './date_temp_loader.js';
 import { populateDropdown, populateDropdowns } from './populate_drop_downs.js';
 import { confirmWorkers } from './workers.js';	
@@ -65,7 +66,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       console.error("Error initializing laborEquipmentTab:", err);
     }
-        populateWorkers();
+    populateWorkers();
+        try {
+          await fetchAndRenderMedia();
+        } catch (err) {
+          console.error('Error loading media:', err);
+        }
+
     // Any other startup logic goes here...
     
     // For example, load project numbers (if needed)

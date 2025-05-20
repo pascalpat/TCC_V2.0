@@ -1,17 +1,38 @@
 let editingNoteId = null;
 let stagedNotes   = [];
 
-export async function fetchAndRenderDailyNotes() {
+export function initNotesTab() {
+    const addBtn = document.getElementById('addNoteBtn');
+    const confirmBtn = document.getElementById('confirmNotesBtn');
+    if (addBtn) addBtn.addEventListener('click', addDailyNote);
+    if (confirmBtn) confirmBtn.addEventListener('click', confirmDailyNotes);
+
+    const cat = document.getElementById('noteCategory');
+    if (cat) cat.addEventListener('change', toggleWorkOrderInput);
+    toggleWorkOrderInput();
+
+    fetchAndRenderDailyNotes();
+}
+
+function toggleWorkOrderInput() {
+    const cat = document.getElementById('noteCategory');
+    const group = document.getElementById('noteWorkOrderGroup');
+    if (!cat || !group) return;
+    const show = cat.value === 'Work-order';
+    group.classList.toggle('hidden', !show);
+}
+
+export async function fetchAndRenderNoteEntries() {
     const tbody = document.querySelector('#dailyNotesTable tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
 
     try {
-        const resp = await fetch('/dailynotes_routes/list');
+        const resp = await fetch('/dailynotes/list');
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'fetch failed');
 
-        const notes = data.daily_notes || data.dailynotes || [];
+        const notes = data.entries_daily_notes || data.dailynotes || [];
         notes.forEach(note => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -102,6 +123,120 @@ export async function addDailyNote() {
     }
 }
 
+async function handleInlineEdit(event) {
+    event.preventDefault();
+    const btn = event.currentTarget;
+    const tr  = btn.closest('tr');
+    const id  = btn.dataset.id;
+
+    let note;
+    try {
+        const resp = await fetch(`/dailynotes/${id}`);
+        note = await resp.json();
+        if (!resp.ok) throw new Error(note.error || 'fetch failed');
+    } catch (err) {
+        console.error('handleInlineEdit', err);
+        alert('Erreur chargement note: ' + err.message);
+        return;
+    }
+
+    tr.children[0].innerHTML = `<textarea class="edit-content">${note.content || ''}</textarea>`;
+
+    const catSelect = document.createElement('select');
+    ['Progress', 'Safety', 'General'].forEach(c => {
+        catSelect.appendChild(new Option(c, c, false, c === note.category));
+    });
+    catSelect.classList.add('edit-category');
+    tr.children[1].innerHTML = '';
+    tr.children[1].appendChild(catSelect);
+
+    tr.children[2].innerHTML = `<input type="text" class="edit-tags"
+                                 value="${Array.isArray(note.tags) ? note.tags.join(', ') : ''}">`;
+
+    const actSel = document.createElement('select');
+    actSel.appendChild(new Option('-- Sélectionner Code d’Activité --',''));
+    (window.activityCodesList || []).forEach(ac => {
+        const opt = new Option(`${ac.code} – ${ac.description}`, ac.id);
+        if (String(ac.id) === String(note.activity_code_id)) opt.selected = true;
+        actSel.appendChild(opt);
+    });
+    actSel.classList.add('edit-activity');
+    tr.children[3].innerHTML = '';
+    tr.children[3].appendChild(actSel);
+
+    const paySel = document.createElement('select');
+    paySel.appendChild(new Option('-- Aucun --',''));
+    (window.paymentItemsList || []).forEach(pi => {
+        const opt = new Option(`${pi.payment_code} – ${pi.item_name}`, pi.id);
+        if (String(pi.id) === String(note.payment_item_id)) opt.selected = true;
+        paySel.appendChild(opt);
+    });
+    paySel.classList.add('edit-payment');
+    tr.children[4].innerHTML = '';
+    tr.children[4].appendChild(paySel);
+
+    const cwpSel = document.createElement('select');
+    cwpSel.appendChild(new Option('-- Aucun --',''));
+    (window.cwpList || []).forEach(cwp => {
+        const opt = new Option(`${cwp.code} – ${cwp.name}`, cwp.code);
+        if (cwp.code === note.cwp) opt.selected = true;
+        cwpSel.appendChild(opt);
+    });
+    cwpSel.classList.add('edit-cwp');
+    tr.children[5].innerHTML = '';
+    tr.children[5].appendChild(cwpSel);
+
+    tr.children[6].innerHTML =
+        `<button class="save-note-edit-btn" data-id="${id}">💾</button>
+         <button class="cancel-note-edit-btn">❌</button>`;
+    tr.querySelector('.save-note-edit-btn')
+        .addEventListener('click', saveInlineEdit);
+    tr.querySelector('.cancel-note-edit-btn')
+        .addEventListener('click', fetchAndRenderDailyNotes);
+}
+
+
+async function saveInlineEdit(event) {
+    event.preventDefault();
+    const btn = event.currentTarget;
+    const id  = btn.dataset.id;
+    const tr  = btn.closest('tr');
+
+    const content  = tr.querySelector('.edit-content').value.trim();
+    const category = tr.querySelector('.edit-category').value;
+    const tags     = tr.querySelector('.edit-tags').value
+                         .split(',')
+                         .map(t => t.trim())
+                         .filter(Boolean);
+    const actId = tr.querySelector('.edit-activity').value || null;
+    const payId = tr.querySelector('.edit-payment').value || null;
+    const cwp   = tr.querySelector('.edit-cwp').value || null;
+
+    if (!content) return alert('Veuillez saisir une note.');
+
+    try {
+        const resp = await fetch(`/dailynotes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content,
+                category,
+                tags,
+                activity_code_id: actId ? Number(actId) : null,
+                payment_item_id: payId || null,
+                cwp
+            })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'save failed');
+        await fetchAndRenderDailyNotes();
+    } catch (err) {
+        console.error('saveInlineEdit', err);
+        alert('Erreur sauvegarde: ' + err.message);
+    }
+}
+
+
 async function editNote(evt) {
     evt.preventDefault();
     const id = evt.currentTarget.dataset.id;
@@ -149,6 +284,9 @@ function resetNoteForm() {
     document.getElementById('notePaymentItem').selectedIndex = 0;
     const wo = document.getElementById('noteWorkOrderNumber');
     if (wo) wo.value = '';
+    const group = document.getElementById('noteWorkOrderGroup');
+    if (group) group.classList.add('hidden');
+
     document.getElementById('noteCwp').selectedIndex = 0;
     const txt = document.getElementById('noteContent');
     if (txt) txt.value = '';
