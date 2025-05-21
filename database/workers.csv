@@ -1,4 +1,0 @@
-id,name,genre,worker_id,project_id,code_postal,num_cell,courriel,certifications,experience_years,password_hash,last_login,login_attempts,metier,convention,taux_horaire,taux_over,Gite_couvert,transp_1,transp_2,equip_asso,departement,role,is_active,created_at,updated_at,updated_by
-1,,,,,,,,,,,,,,,,,,,,,,,,,,
-2,Joe Lapelle,male,1234,,,514-892-6501,p.patrice@nationalinc.ca,CCQ,30.0,,,,operateur,Civil annexe B-1,75.0,150.0,200.0,75.0,90.0,BU-06,Genie civil,employe,true,2025-01-06,,
-3,Serge le chargeur,male,4567,,,514-892-6501,p.patrice2nationalinc.ca,,15.0,,,,operateur,genie civil annexe b1,75.0,150.0,200.0,75.0,90.0,L-25,genie civil,employee,true,2025-01-06,,

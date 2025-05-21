@@ -72,7 +72,7 @@ def get_daily_notes():
             "Session state on error: project_id=%s, report_date=%s",
             proj_id, session.get('report_date')
         )
-
+        return jsonify(error="Database error fetching daily notes"), 500
 
 @entries_daily_notes_bp.route('/', methods=['POST'])
 def add_daily_note():
@@ -85,6 +85,7 @@ def add_daily_note():
     try:
         note_dt = data.get('note_datetime')
         note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
+        date_of_report = note_datetime.date() if note_datetime else datetime.utcnow().date()
 
         act_id  = data.get('activity_code_id')
         pay_id  = data.get('payment_item_id')
@@ -93,6 +94,7 @@ def add_daily_note():
         new_note = DailyNoteEntry(
             project_id=data.get('project_id'),
             note_datetime=note_datetime,
+            date_of_report=date_of_report,
             author=data.get('author'),
             category=data.get('category'),
             tags=data.get('tags'),

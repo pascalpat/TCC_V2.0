@@ -1,5 +1,0 @@
-id,project_id,report_date,workers_tab,materials_tab,equipment_tab,notes_tab,pictures_tab,subcontractors_tab,workorders_tab,report_status,created_at,updated_at
-1,2,2025-01-07,in_progress,,,,,,,completed,2025-01-07,
-2,3,2025-01-07,completed,,,,,,,in_progress,2025-01-07,
-3,4,2025-01-07,completed,completed,completed,,,,,completed,2025-01-07,
-4,3,2025-01-06,,completed,completed,,,,,in_progress,2025-01-07,

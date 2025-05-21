@@ -1,2 +1,0 @@
-id,subcontractor_id,project_id,task_id,work_order_id,date,description,equipment_hours,material_cost,labor_hours,total_cost,progress_percentage,created_at,updated_at,status,activity_code_id
-1,2,3,3,,,installation cable chauffant,,,10.0,,,,,,2

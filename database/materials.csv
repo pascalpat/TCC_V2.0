@@ -1,4 +1,0 @@
-id,material_id,name,unit,cost_per_unit,description,project_id,purchase_order_id,created_at,updated_at
-1,,,,,,,,,
-2,1234,Pierre Mg-20 DB,tm,15.0,Pierre MG-20 DB,,,2025-01-07,
-3,4567,Tuyaux pvc sdr-35 250mm diam,ml,35.0,Tuyaux pvc sdr-35 250mm diam,,,2025-01-07,

@@ -1,4 +1,0 @@
-id,project_id,name,activity_code_id,start_date,end_date,status,progress,man_hour_budget,man_hours,unit,qte,PV,EV,AC,CV,SV,VAC,CPI,SPI,EAC,ETC,TCPI,CWP,specialty,created_at,updated_at
-1,3,excavation de masse,6,2025-01-07,2025-01-30,,0.0,1000.0,,,,,,,,,,,,,,,,,2025-01-06,
-2,3,mobilisation du chantie,2,2025-01-06,2025-01-07,,0.0,200.0,,,,,,,,,,,,,,,, ,2025-01-06,
-3,4,Mobilisation de chantier,2,,,,0.0,200.0,,,,,,,,,,,,,,,,,2025-01-06,
