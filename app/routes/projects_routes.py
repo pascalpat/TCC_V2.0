@@ -35,7 +35,8 @@ def set_project():
             return jsonify({'error': 'Invalid project number'}), 404
 
         # Save project number to session
-        session['project_number'] = project_number
+        session['project_id'] = project_number
+        session['project_number'] = project_number  # legacy key
         session.modified = True
         current_app.logger.info(f"Project number saved to session: {project_number}")
         return jsonify({'message': f'Project number {project_number} saved to session'}), 200

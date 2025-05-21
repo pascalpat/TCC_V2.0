@@ -33,6 +33,9 @@ def initialize_day():
                 'entries': {}  # Placeholder for actual data
             }
             session['daily_data'] = daily_data
+            # store under new unified key
+            session['report_date'] = date_stamp
+            # keep legacy key for backward compatibility
             session['current_reporting_date'] = date_stamp
             session.modified = True
 
@@ -80,8 +83,8 @@ def get_days_status():
 def submit_data_entry():
     current_app.logger.info("Data_entry function called.")
     
-    project_number = session.get('project_number')
-    report_date    = session.get('current_reporting_date')
+    project_number = session.get('project_id') or session.get('project_number')
+    report_date    = session.get('report_date') or session.get('current_reporting_date')
 
     # resolve numeric PK from the project_number
     project = Project.query.filter_by(project_number=project_number).first()
@@ -111,7 +114,7 @@ def submit_data_entry():
 # ──────────────────────────────────────────────────────────────────────────────
 @data_entry_bp.route('/payment-items/list', methods=['GET'])
 def list_payment_items():
-    project_number = session.get('project_number')
+    project_number = session.get('project_id') or session.get('project_number')
     project = Project.query.filter_by(project_number=project_number).first()
     items = PaymentItem.query.filter_by(project_id=project.id).all()
     return jsonify({
@@ -126,7 +129,7 @@ def list_payment_items():
 # ──────────────────────────────────────────────────────────────────────────────
 @data_entry_bp.route('/cw-packages/list', methods=['GET'])
 def list_cwps():
-    project_number = session.get('project_number')
+    project_number = session.get('project_id') or session.get('project_number')
     #project = Project.query.filter_by(project_number=project_number).first()
     cwps = CWPackage.query.filter_by(project_id=project_number).all()
     return jsonify({
@@ -152,6 +155,9 @@ def redirect_to_data_entry():
             return redirect(url_for('calendar_bp.calendar_page'))  # Redirect to the calendar page if validation fails
 
         # Store in session for use in the data entry page
+        session['report_date'] = report_date
+        session['project_id'] = project_id
+        # Keep legacy keys for backward compatibility
         session['current_reporting_date'] = report_date
         session['project_number'] = project_id
 
@@ -171,6 +177,9 @@ def reset_session():
     Reset the current project and report date selection in the session.
     """
     try:
+        session.pop('project_id', None)
+        session.pop('report_date', None)
+        # Remove legacy keys as well
         session.pop('project_number', None)
         session.pop('current_reporting_date', None)
         session.modified = True
@@ -191,7 +200,8 @@ def save_draft():
         if not tab:
             return jsonify({'error': 'Tab is required'}), 400
 
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
+
         if not current_date:
             return jsonify({'error': 'No reporting date selected'}), 400
 

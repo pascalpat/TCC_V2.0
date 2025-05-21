@@ -57,7 +57,7 @@ default_data_path = os.path.abspath(
 # Route to save report
 @data_persistence_bp.route('/save-report', methods=['POST'])
 def save_to_csv():
-    current_date = session.get('current_reporting_date')
+    current_date = session.get('report_date') or session.get('current_reporting_date')
 
     if not current_date or current_date not in session['daily_data']:
         return jsonify({'error': 'No data available to save.'}), 400

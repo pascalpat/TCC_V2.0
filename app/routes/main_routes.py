@@ -73,7 +73,7 @@ def save_report():
     Save session data for the selected reporting date to the CSV file.
     """
     # Get the current date from session
-    date = session.get('current_reporting_date')
+    date = session.get('report_date') or session.get('current_reporting_date')
     if not date or date not in session.get('daily_data', {}):
         return jsonify({'error': 'No data to save for the selected date'}), 400
 

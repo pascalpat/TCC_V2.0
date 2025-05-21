@@ -47,7 +47,7 @@ def get_equipment_list():
 def add_equipment_entry():
     """Adds an equipment entry to the session for the current reporting date."""
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         if not current_date:
             return jsonify({'error': 'No reporting date selected'}), 400
 

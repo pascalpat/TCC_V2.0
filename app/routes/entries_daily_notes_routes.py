@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, session, current_app, request
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.daily_models import DailyNoteEntry
 from .. import db
-from datetime import datetime
+from datetime import datetime, date
 
 entries_daily_notes_bp = Blueprint(
     'entries_daily_notes_bp',
@@ -28,12 +28,31 @@ def get_daily_notes():
         if proj_id:
             q = q.filter_by(project_id=proj_id)
 
-        # 3) Filter by report_date if in session (compare date part only)
+        # 3) Filter by report_date if in session
         report_date = session.get('report_date')
         if report_date:
-            q = q.filter(
-                db.func.date(DailyNoteEntry.note_datetime) == report_date
-            )
+            # Accept ISO string or date object
+            if isinstance(report_date, str):
+                try:
+                    report_date = datetime.fromisoformat(report_date).date()
+                except ValueError:
+                    current_app.logger.debug(
+                        f"Invalid report_date format: {report_date}")
+                    report_date = None
+            elif isinstance(report_date, datetime):
+                report_date = report_date.date()
+            elif not isinstance(report_date, date):
+                current_app.logger.debug(
+                    f"Unsupported report_date type: {type(report_date)}")
+                report_date = None
+
+        current_app.logger.debug(
+            "get_daily_notes session values: project_id=%s, report_date=%s",
+            proj_id, report_date)
+
+        if report_date:
+            q = q.filter(DailyNoteEntry.date_of_report == report_date)
+
 
         # 4) Optional: order chronologically
         q = q.order_by(DailyNoteEntry.note_datetime.asc())
@@ -46,8 +65,13 @@ def get_daily_notes():
         return jsonify(entries=entries), 200
 
     except SQLAlchemyError as e:
-        current_app.logger.error("DB error in get_daily_notes", exc_info=True)
-        return jsonify(error="Unable to fetch daily notes"), 500
+        current_app.logger.debug(
+            "Exception in get_daily_notes", exc_info=True
+        )
+        current_app.logger.debug(
+            "Session state on error: project_id=%s, report_date=%s",
+            proj_id, session.get('report_date')
+        )
 
 
 @entries_daily_notes_bp.route('/', methods=['POST'])

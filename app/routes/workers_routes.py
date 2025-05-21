@@ -47,7 +47,7 @@ def add_worker():
     Adds a worker to the database and session for the current reporting date.
     """
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         if not current_date:
             return jsonify({'error': 'No reporting date selected'}), 400
 
@@ -126,7 +126,7 @@ def confirm_workers():
     Confirms workers for the current reporting date and updates session data.
     """
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         if not current_date:
             return jsonify({'error': 'No reporting date selected'}), 400
 
@@ -173,7 +173,7 @@ def confirm_workers():
 def get_session_workers():
     """Fetch workers from the session for the current reporting date."""
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         if not current_date:
             return jsonify({'error': 'No reporting date in session'}), 400
 

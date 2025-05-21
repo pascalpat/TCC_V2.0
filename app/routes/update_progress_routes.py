@@ -16,7 +16,7 @@ TOTAL_TABS = 7
 def mark_tab_completed(tab_name):
     """Mark a tab as completed and update progress."""
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         if not current_date:
             logging.error("No reporting date in session.")
             return {'error': 'No reporting date in session'}, 400
@@ -84,7 +84,7 @@ def reset_progress():
 @update_progress_bp.route('/check-all-tabs-completed', methods=['GET'])
 def check_all_tabs_completed():
     try:
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         daily_data = session.get('daily_data', {})
 
         if not current_date or current_date not in daily_data:
@@ -106,7 +106,7 @@ def get_progress():
     """
     try:
         # Retrieve session data
-        current_date = session.get('current_reporting_date')
+        current_date = session.get('report_date') or session.get('current_reporting_date')
         daily_data = session.get('daily_data', {})
 
         if not current_date or current_date not in daily_data:
