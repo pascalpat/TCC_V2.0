@@ -61,13 +61,13 @@ def create_app(config_name='development'):
         register_blueprints(app)
 
     # Routes
-    @app.route('/')
-    def index():
-        try:
-            return render_template('index.html')
-        except Exception as e:
-            logger.error(f"Error in index route: {e}")
-            return jsonify({'error': str(e)}), 500
+    #@app.route('/')
+    #def index():
+        #try:
+            #return render_template('index.html')
+        #except Exception as e:
+            #logger.error(f"Error in index route: {e}")
+            #return jsonify({'error': str(e)}), 500
 
     @app.route('/load_data', methods=['GET', 'POST'])
     def load_csv_data():

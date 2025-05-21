@@ -29,7 +29,7 @@ def initialize_day():
         daily_data = session.get('daily_data', {})
         if date_stamp not in daily_data:
             daily_data[date_stamp] = {
-                'tab_statuses': {tab: 'incomplete' for tab in ['Workers', 'Materials', 'Equipment', 'Subcontractors', 'DailyNotes', 'WorkOrders', 'Pictures']},
+                'tab_statuses': {tab: 'incomplete' for tab in ['Workers', 'Materials', 'Equipment', 'Subcontractors', 'DailyNoteEntry', 'WorkOrders', 'Pictures']},
                 'entries': {}  # Placeholder for actual data
             }
             session['daily_data'] = daily_data

@@ -1,23 +1,54 @@
-from flask import Blueprint, jsonify, request, current_app
+# app/routes/entries_daily_notes_routes.py
+
+from flask import Blueprint, jsonify, session, current_app, request
 from sqlalchemy.exc import SQLAlchemyError
-from datetime import datetime
 from ..models.daily_models import DailyNoteEntry
 from .. import db
+from datetime import datetime
 
-
-# Define the Blueprint for daily notes
-entries_daily_notes_bp = Blueprint('dailynotes_bp', __name__, url_prefix='/dailynotes')
-
+entries_daily_notes_bp = Blueprint(
+    'entries_daily_notes_bp',
+    __name__,
+    url_prefix='/entries_daily_notes'
+)
 
 @entries_daily_notes_bp.route('/list', methods=['GET'])
 def get_daily_notes():
-    """Return all daily notes stored in the database."""
+    """
+    Return JSON of all DailyNoteEntry rows for the currently
+    selected project & report date (from session).
+    Front-end expects: { entries: [ {…}, {…}, … ] }
+    """
     try:
-        notes = DailyNoteEntry.query.all()
-        return jsonify({"entries_daily_notes": [n.to_dict() for n in notes]}), 200
+        # 1) Base query
+        q = DailyNoteEntry.query
+
+        # 2) Filter by project if in session
+        proj_id = session.get('project_id')
+        if proj_id:
+            q = q.filter_by(project_id=proj_id)
+
+        # 3) Filter by report_date if in session (compare date part only)
+        report_date = session.get('report_date')
+        if report_date:
+            q = q.filter(
+                db.func.date(DailyNoteEntry.note_datetime) == report_date
+            )
+
+        # 4) Optional: order chronologically
+        q = q.order_by(DailyNoteEntry.note_datetime.asc())
+
+        # 5) Execute & serialize
+        notes = q.all()
+        entries = [note.to_dict() for note in notes]
+
+        # 6) Return exactly what your JS is looking for
+        return jsonify(entries=entries), 200
+
     except SQLAlchemyError as e:
-        current_app.logger.error(f"Database error fetching daily notes: {e}", exc_info=True)
-        return jsonify({"error": "Database error fetching daily notes"}), 500
+        current_app.logger.error("DB error in get_daily_notes", exc_info=True)
+        return jsonify(error="Unable to fetch daily notes"), 500
+
 
 @entries_daily_notes_bp.route('/', methods=['POST'])
 def add_daily_note():
@@ -33,7 +64,7 @@ def add_daily_note():
 
         act_id  = data.get('activity_code_id')
         pay_id  = data.get('payment_item_id')
-        wo_num  = data.get('work_order_number')
+        wo_id   = data.get('work_order_id')
 
         new_note = DailyNoteEntry(
             project_id=data.get('project_id'),
@@ -45,6 +76,7 @@ def add_daily_note():
             priority=data.get('priority'),
             activity_code_id=data.get('activity_code_id'),
             payment_item_id=data.get('payment_item_id'),
+            work_order_id=wo_id,
             cwp=data.get('cwp'),
             editable_by=data.get('editable_by'),
         )
@@ -99,11 +131,13 @@ def update_daily_note(note_id: int):
                 int(pay_val) if pay_val not in (None, "") else None
             )
 
-        if 'work_order_number' in data:
-            wo_val = data['work_order_number']
+            
+        if 'work_order_id' in data:
+            wo_val = data['work_order_id']
             note.work_order_id = (
                 int(wo_val) if wo_val not in (None, "") else None
             )
+
 
 
         for field in [
@@ -173,9 +207,9 @@ def confirm_daily_notes():
                 return jsonify(error="Invalid payment_item_id"), 400
 
             try:
-                wo_id = int(n['work_order_number']) if n.get('work_order_number') else None
+                wo_id = int(n['work_order_id']) if n.get('work_order_id') else None
             except (TypeError, ValueError):
-                return jsonify(error="Invalid work_order_number"), 400
+                return jsonify(error="Invalid work_order_id"), 400
             
             new_note = DailyNoteEntry(
                 project_id=n.get('project_id'),

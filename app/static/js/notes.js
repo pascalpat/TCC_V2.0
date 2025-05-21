@@ -32,50 +32,63 @@ function toggleWorkOrderInput() {
  * Fetch saved notes from the server and render into the table.
  */
 export async function fetchAndRenderDailyNotes() {
-    const tbody = document.querySelector('#dailyNotesTable tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    // 1) Find the table body
+  const tbody = document.querySelector('#entriesDailyNotesTable tbody');
+  if (!tbody) return;
 
-    try {
-        const resp = await fetch('/dailynotes/list');
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'fetch failed');
+  // 2) Wipe out any existing rows
+  tbody.innerHTML = '';
 
-        const notes = data.entries_daily_notes || data.dailynotes || [];
-        notes.forEach(note => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${(note.content || '').substring(0,25)}</td>
-                <td>${note.category || ''}</td>
-                <td>${Array.isArray(note.tags) ? note.tags.join(', ') : ''}</td>
-                <td>${note.activity_code_id || ''}</td>
-                <td>${note.payment_item_id || ''}</td>
-                <td>${note.cwp || ''}</td>
-                <td class="actions">
-                    <button class="edit-note-btn"   data-id="${note.id}">✏️</button>
-                    <button class="delete-note-btn" data-id="${note.id}">🗑️</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+  try {
+    // 3) Fetch from the new endpoint
+    const resp = await fetch('/entries_daily_notes/list');
+    const data = await resp.json();
 
-        // wire up inline edit/delete
-        tbody.querySelectorAll('.edit-note-btn')  .forEach(b => b.addEventListener('click', editNote));
-        tbody.querySelectorAll('.delete-note-btn').forEach(b => b.addEventListener('click', deleteNote));
+    // 4) If the status is not OK, throw to be caught below
+    if (!resp.ok) throw new Error(data.error || 'Fetch failed');
 
-        // render any locally staged notes
-        renderPreviewTable();
+    // 5) Pull the list from data.entries (empty array fallback)
+    const notes = Array.isArray(data.entries) ? data.entries : [];
 
-    } catch (err) {
-        console.error('fetchAndRenderDailyNotes', err);
-        tbody.innerHTML = `
-            <tr>
-              <td colspan="7" class="error-msg">
-                Impossible de charger les notes.
-              </td>
-            </tr>
-        `;
-    }
+    // 6) Render each note
+    notes.forEach(note => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${(note.content || '').substring(0, 25)}</td>
+        <td>${note.category || ''}</td>
+        <td>${Array.isArray(note.tags) ? note.tags.join(', ') : ''}</td>
+        <td>${note.activity_code_id || ''}</td>
+        <td>${note.payment_item_id || ''}</td>
+        <td>${note.cwp || ''}</td>
+        <td class="actions">
+          <button class="edit-note-btn"   data-id="${note.id}">✏️</button>
+          <button class="delete-note-btn" data-id="${note.id}">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // 7) Wire up the buttons
+    tbody.querySelectorAll('.edit-note-btn')
+         .forEach(btn => btn.addEventListener('click', editNote));
+    tbody.querySelectorAll('.delete-note-btn')
+         .forEach(btn => btn.addEventListener('click', deleteNote));
+
+    // 8) Finally, render any staged notes preview
+    renderPreviewTable();
+
+  } catch (err) {
+    console.error('fetchAndRenderDailyNotes Error:', err);
+
+    // 9) Show a single error row
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td colspan="7" class="error-msg">
+        Impossible de charger les notes.
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
 }
 
 /**
@@ -85,8 +98,7 @@ export async function addDailyNote() {
     const activityCode = document.getElementById('noteActivityCode')?.value || '';
     const paymentItem  = document.getElementById('notePaymentItem')?.value  || '';
     const cwp          = document.getElementById('noteCwp')?.value          || '';
-    const workOrder    = document.getElementById('noteWorkOrderNumber')?.value || '';
-
+    const workOrder    = document.getElementById('noteWorkOrderId')?.value || '';
     // build tags array
     const tagsInput = document.getElementById('noteTags').value || '';
     const tags = tagsInput
@@ -103,7 +115,7 @@ export async function addDailyNote() {
         tags,
         content:            document.getElementById('noteContent').value,
         payment_item_id:    document.getElementById('notePaymentItem').value,
-        work_order_number:  workOrder,
+        work_order_id:      workOrder,
         cwp:                document.getElementById('noteCwp').value,
         activity_code_id:   activityCode
     };
@@ -111,7 +123,7 @@ export async function addDailyNote() {
     try {
         if (editingNoteId) {
             // Update existing note
-            const resp = await fetch(`/dailynotes/${editingNoteId}`, {
+            const resp = await fetch(`/entries_daily_notes/${editingNoteId}`, {
                 method:  'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify(payload)
@@ -144,7 +156,7 @@ export async function addDailyNote() {
 /**
  * Switch a row into inline-edit mode.
  */
-async function handleInlineEdit(event) {
+async function handleInLineEdit(event) {
     event.preventDefault();
     const btn = event.currentTarget;
     const tr  = btn.closest('tr');
@@ -152,11 +164,11 @@ async function handleInlineEdit(event) {
 
     let note;
     try {
-        const resp = await fetch(`/dailynotes/${id}`);
+        const resp = await fetch(`/entries_daily_notes/${id}`);
         note = await resp.json();
         if (!resp.ok) throw new Error(note.error || 'fetch failed');
     } catch (err) {
-        console.error('handleInlineEdit', err);
+        console.error('handleInLineEdit', err);
         alert('Erreur chargement note: ' + err.message);
         return;
     }
@@ -238,7 +250,7 @@ async function saveInlineEdit(event) {
     if (!content) return alert('Veuillez saisir une note.');
 
     try {
-        const resp = await fetch(`/dailynotes/${id}`, {
+        const resp = await fetch(`/entries_daily_notes/${id}`, {
             method:  'PUT',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
@@ -267,7 +279,7 @@ async function editNote(evt) {
     const id = evt.currentTarget.dataset.id;
 
     try {
-        const resp = await fetch(`/dailynotes/${id}`);
+        const resp = await fetch(`/entries_daily_notes/${id}`);
         const note = await resp.json();
         if (!resp.ok) throw new Error(note.error || 'fetch failed');
 
@@ -278,7 +290,7 @@ async function editNote(evt) {
         document.getElementById('noteTags').value            = Array.isArray(note.tags)?note.tags.join(', '):'';
         document.getElementById('noteActivityCode').value    = note.activity_code_id || '';
         document.getElementById('notePaymentItem').value     = note.payment_item_id  || '';
-        document.getElementById('noteWorkOrderNumber').value = note.work_order_number|| '';
+        document.getElementById('noteWorkOrderId').value = note.work_order_id || '';
         document.getElementById('noteCwp').value             = note.cwp      || '';
         document.getElementById('noteContent').value         = note.content  || '';
 
@@ -296,7 +308,7 @@ async function deleteNote(evt) {
     const id = evt.currentTarget.dataset.id;
 
     try {
-        const resp = await fetch(`/dailynotes/${id}`, { method: 'DELETE' });
+        const resp = await fetch(`/entries_daily_notes/${id}`, { method: 'DELETE' });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'delete failed');
         await fetchAndRenderDailyNotes();
@@ -314,7 +326,8 @@ function resetNoteForm() {
     document.getElementById('noteTags').value            = '';
     document.getElementById('noteActivityCode').selectedIndex = 0;
     document.getElementById('notePaymentItem').selectedIndex  = 0;
-    const wo = document.getElementById('noteWorkOrderNumber');
+
+    const wo = document.getElementById('noteWorkOrderId');
     if (wo) wo.value = '';
     const group = document.getElementById('noteWorkOrderGroup');
     if (group) group.classList.add('hidden');
@@ -325,7 +338,7 @@ function resetNoteForm() {
 
 /** Render any locally staged notes above the saved ones. */
 function renderPreviewTable() {
-    const tbody = document.querySelector('#dailyNotesTable tbody');
+    const tbody = document.querySelector('#entriesDailyNotesTable tbody');
     if (!tbody) return;
     tbody.querySelectorAll('tr.preview-row').forEach(r => r.remove());
 
@@ -346,7 +359,7 @@ function renderPreviewTable() {
 }
 
 /**
- * Send all staged notes up in one batch to /dailynotes/confirm.
+ * Send all staged notes up in one batch to /entries_daily_notes/confirm.
  */
 export async function confirmDailyNotes() {
     if (stagedNotes.length === 0) {
@@ -354,7 +367,7 @@ export async function confirmDailyNotes() {
     }
 
     try {
-        const resp = await fetch('/dailynotes/confirm', {
+        const resp = await fetch('/entries_daily_notes/confirm', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ notes: stagedNotes })

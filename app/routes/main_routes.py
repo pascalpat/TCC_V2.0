@@ -48,8 +48,16 @@ def home():
     Render the main page with pre-filled project and date selection.
     
     """
-    if 'user_id' not in session or 'project_id' not in session or 'report_date' not in session:
-        return redirect(url_for('auth_bp.login'))  # Redirect to login if data is missing
+    if 'user_id' not in session:
+        return redirect(url_for('auth_bp.login'))  # Require login first
+
+    project_id  = session.get('project_id')
+    report_date = session.get('report_date')
+
+    # Ensure the user has selected a project and date via the calendar
+    if not project_id or not report_date:
+        return redirect(url_for('calendar_bp.calendar_page'))
+
 
     current_app.logger.info("Rendering main page with project and date pre-selected.")
     return render_template('data_entry.html', user_id=session['user_id'], project_id=session['project_id'], report_date=session['report_date'], username=session.get('username', 'Utilisateur'))
