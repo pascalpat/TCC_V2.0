@@ -320,20 +320,27 @@ async function deleteNote(evt) {
 
 /** Reset the note form fields. */
 function resetNoteForm() {
-    document.getElementById('noteDatetime').value        = '';
-    document.getElementById('noteAuthor').value          = '';
-    document.getElementById('noteCategory').selectedIndex = 0;
-    document.getElementById('noteTags').value            = '';
-    document.getElementById('noteActivityCode').selectedIndex = 0;
-    document.getElementById('notePaymentItem').selectedIndex  = 0;
+    // Helper: lookup by id, only run fn if the element exists
+    const safe = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) fn(el);
+    };
 
-    const wo = document.getElementById('noteWorkOrderId');
-    if (wo) wo.value = '';
-    const group = document.getElementById('noteWorkOrderGroup');
-    if (group) group.classList.add('hidden');
-    document.getElementById('noteCwp').selectedIndex     = 0;
-    const txt = document.getElementById('noteContent');
-    if (txt) txt.value = '';
+    // 1) Simple inputs
+    safe('noteDatetime',       el => el.value = '');
+    safe('noteAuthor',         el => el.value = '');
+    safe('noteTags',           el => el.value = '');
+    safe('noteWorkOrderId',    el => el.value = '');
+    safe('noteContent',        el => el.value = '');
+
+    // 2) <select> elements — reset to first option
+    safe('noteCategory',       el => { if ('selectedIndex' in el) el.selectedIndex = 0; });
+    safe('noteActivityCode',   el => { if ('selectedIndex' in el) el.selectedIndex = 0; });
+    safe('notePaymentItem',    el => { if ('selectedIndex' in el) el.selectedIndex = 0; });
+    safe('noteCwp',            el => { if ('selectedIndex' in el) el.selectedIndex = 0; });
+
+    // 3) Any extra container you need to hide
+    safe('noteWorkOrderGroup', el => el.classList.add('hidden'));
 }
 
 /** Render any locally staged notes above the saved ones. */

@@ -1,38 +1,77 @@
-# Python-specific
+# ───── Python Bytecode ─────
 __pycache__/
-*.py[co]
-*.pyd
+*.py[cod]
+*$py.class
 
-# Virtual environments
+# ───── Virtual Environments ─────
 env/
 venv/
+ENV/
+env.bak/
 
-# Flask/Project local config and data
+# ───── Env Files & Secrets ─────
 .env
 .env.*
 instance/
-database/
+
+# ───── SQLite & DB Dumps ─────
+*.db
+*.sqlite3
+# If you ever dump SQL to a file:
+*.sql
+
+# ───── Flask / Project Data ─────
 flask_session/
 uploads/
 backup/
 fresh-clone/
 
-# Data and backup files
-*.tmp
-*.csv
-*.db
-*.sqlite3
+# ───── Tests & Coverage ─────
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
 
-# IDE files
+# ───── Logs ─────
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ───── IDE & Editor ─────
+# VSCode
 .vscode/
-*.code-workspace
+# PyCharm / IntelliJ
+.idea/
+*.iml
+# Sublime
+*.sublime-project
+*.sublime-workspace
 
-# OS files
+# ───── Other Caches ─────
+.mypy_cache/
+.cache/
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# ───── OS Files ─────
 .DS_Store
 Thumbs.db
 
-# Project data files
+# ───── Node ─────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ───── Office / Binary ─────
 *.xlsx
 *.pdf
-
-node_modules/

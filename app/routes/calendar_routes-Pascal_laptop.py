@@ -1,83 +1,89 @@
 # app/routes/calendar_routes.py
 
 from flask import (
-    Blueprint, jsonify, session, render_template, 
-    redirect, url_for, request
+    Blueprint, render_template, request, session,
+    redirect, url_for, jsonify, current_app
 )
-# Remove unused imports like PROJECT_FILE and load_data if you're no longer using CSV.
-# from ..utils.data_loader import load_data
-# from ..config import PROJECT_FILE
+from app.models import Project
 
-from ..utils.user_id_by_projects import get_user_projects  # If you're still using this helper
-from ..models.core_models import Project  # Import the Project model
-from .. import db
-import logging
+calendar = Blueprint(
+    'calendar',
+    __name__,
+    url_prefix='/calendar'
+)
 
-calendar_bp = Blueprint('calendar_bp', __name__)
-
-@calendar_bp.route('/', methods=['GET', 'POST'])
-def calendar_page():
-    """
-    Render the calendar HTML page and handle project/date selection.
-    """
-    # Ensure user is authenticated
+@calendar.route('/', methods=['GET'])
+def show_calendar():
+    """Display the project+date picker calendar page."""
     if 'user_id' not in session:
-        return redirect(url_for('auth_bp.login'))
-    
-    if request.method == 'POST':
-        project_id = request.form.get('project_id')
-        report_date = request.form.get('report_date')
+        return redirect(url_for('auth.login'))
 
-        if not project_id or not report_date:
-            return render_template('calendar.html', error="Both project and date are required.")
-
-        # Save project_id and report_date in session
-        session['project_id'] = project_id
-        session['report_date'] = report_date
-        return redirect(url_for('main_bp.home'))  # e.g., loads index.html
-
-    # Query projects directly from the database
-    user_projects = Project.query.all()
+    # load all projects (or filter by user_id if you prefer)
+    projects = Project.query.all()
     projects_data = [
-        {'id': project.id, 'name': project.name, 'number': project.project_number}
-        for project in user_projects
+        {'id': p.id, 'name': p.name, 'number': p.project_number}
+        for p in projects
     ]
-    
-    # Render the calendar page, passing project list and optional username
+
     return render_template(
-        'calendar.html', 
-        projects=projects_data, 
+        'calendar.html',
+        projects=projects_data,
         username=session.get('username', 'Utilisateur')
     )
 
-@calendar_bp.route('/calendar-data', methods=['GET'])
-def get_calendar_data():
+
+@calendar.route('/select', methods=['POST'])
+def select_calendar_date():
     """
-    Fetch calendar data with fallback for missing session data.
-    Returns a mock structure for demonstration purposes.
+    Handle the form POST from the calendar page.
+    Expects form fields 'project_id' and 'report_date'.
     """
     if 'user_id' not in session:
-        return jsonify({'error': 'User not authenticated'}), 401
+        return redirect(url_for('auth.login'))
 
-    try:
-        # Optionally fetch user-specific projects, or just get all projects
-        # user_projects = get_user_projects(session['user_id'])
+    project_val = request.form.get('project_id')
+    report_date = request.form.get('report_date')
+
+    if not project_val or not report_date:
+        # re-fetch projects to re-render the form with an error
         projects = Project.query.all()
-        
-        project_data = {
-            str(project.id): project.name 
-            for project in projects
-        }
+        projects_data = [
+            {'id': p.id, 'name': p.name, 'number': p.project_number}
+            for p in projects
+        ]
+        return render_template(
+            'calendar.html',
+            projects=projects_data,
+            username=session.get('username', 'Utilisateur'),
+            error="Both project and date are required."
+        ), 400
 
-        # Mock calendar data; replace with real logic if needed
-        calendar_data = {
-            "2024-12-10": {"24-401": "completed", "24-404": "in_progress"},
-            "2024-12-11": {"24-401": "not_started"},
-            "2024-12-13": {"24-401": "completed", "24-404": "completed"},
-        }
+    # stash into session for downstream routes
+    session['project_id']  = project_val
+    session['report_date'] = report_date
+    current_app.logger.info(f"Selected project={project_val}, date={report_date}")
 
-        return jsonify({'calendar': calendar_data, 'projects': project_data}), 200
+    # jump into your data‐entry dashboard
+    return redirect(url_for('data_entry.dashboard'))
 
-    except Exception as e:
-        logging.error(f"Error in get_calendar_data: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+
+@calendar.route('/data', methods=['GET'])
+def calendar_data():
+    """
+    Returns JSON of calendar statuses.
+    e.g. which dates have reports in which projects.
+    """
+    if 'user_id' not in session:
+        return jsonify(error="Not authenticated"), 401
+
+    # Build a simple map of project IDs → names
+    projects = Project.query.all()
+    proj_map = {str(p.id): p.name for p in projects}
+
+    # TODO: replace the mock below with real lookups if desired
+    calendar_map = {
+        "2025-05-20": {"1": "completed", "2": "in_progress"},
+        "2025-05-21": {"2": "not_started"},
+    }
+
+    return jsonify(calendar=calendar_map, projects=proj_map), 200

@@ -1,27 +1,39 @@
-from flask import Blueprint, render_template, request, session, redirect, url_for
+# app/routes/auth_routes.py
 
-auth_bp = Blueprint('auth_bp', __name__, template_folder='templates')
+from flask import Blueprint, render_template, request, session, redirect, url_for, current_app
 
-@auth_bp.route('/login', methods=['GET', 'POST'])
+auth = Blueprint(
+    'auth_bp', 
+    __name__, 
+    url_prefix='/auth_bp', 
+    template_folder='templates'
+)
+
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handles user login."""
+    """Handles user login. On POST, stores user & clears any previous project/date."""
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('username', '').strip()
         if not username:
             return render_template('login.html', error="Please provide a username.")
-        
-        # Store user in session
-        session['username'] = username
-        session['user_id'] = 101
-        session['project_id'] = None
-        session ['report_date'] = None
-        print(f"User {username} logged in with user id 101.")
-        return redirect(url_for('calendar_bp.calendar_page'))
 
+        # In a real app you'd validate credentials here...
+        session.clear()  
+        session['username']   = username
+        session['user_id']    = 101      # example
+        session['project_id'] = None
+        session['report_date'] = None
+
+        current_app.logger.info(f"User {username!r} logged in as ID {session['user_id']}")
+        # Redirect into your calendar selection page
+        return redirect(url_for('calendar.show_calendar'))
+
+    # GET → show the login form
     return render_template('login.html')
 
-@auth_bp.route('/logout', methods=['GET'])
+
+@auth.route('/logout')
 def logout():
-    """Clear the session and redirect to the login page."""
+    """Clears session and sends the user back to login."""
     session.clear()
-    return redirect(url_for('auth_bp.login'))
+    return redirect(url_for('auth.login'))

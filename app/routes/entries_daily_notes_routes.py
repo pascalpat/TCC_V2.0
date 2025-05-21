@@ -1,6 +1,6 @@
 # app/routes/entries_daily_notes_routes.py
 
-from flask import Blueprint, jsonify, session, current_app, request
+from flask import Blueprint, jsonify, session, current_app, request, current_app
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.daily_models import DailyNoteEntry
 from .. import db
@@ -76,45 +76,93 @@ def get_daily_notes():
 
 @entries_daily_notes_bp.route('/', methods=['POST'])
 def add_daily_note():
-    """Create a new daily note entry in the database."""
-    data = request.get_json() or {}
+    """Create a new daily note entry, saving a numeric project_id & a date_of_report."""
+    data = request.get_json(silent=True) or {}
 
-    if not data.get('project_id') or not data.get('content'):
-        return jsonify({"error": "project_id and content are required"}), 400
+    # 1) Grab the raw project identifier
+    proj_val = session.get('project_id') or data.get('project_id')
+    if not proj_val:
+        return jsonify(error="No active project selected"), 400
 
+    # 1a) Turn it into the true numeric projects.id
+    if isinstance(proj_val, str):
+        # digits? cast directly
+        if proj_val.isdigit():
+            project_id = int(proj_val)
+        else:
+            # otherwise treat it as a project_number → look it up
+            proj_obj = Project.query.filter_by(project_number=proj_val).first()
+            if not proj_obj:
+                return jsonify(error=f"Project '{proj_val}' not found"), 400
+            project_id = proj_obj.id
+    else:
+        # not a string? hope it’s already an int or convertible
+        try:
+            project_id = int(proj_val)
+        except (TypeError, ValueError):
+            return jsonify(error="Invalid project_id"), 400
+
+    # 2) Compute date_of_report (session date → payload → today)
+    session_date = session.get('report_date')  # "YYYY-MM-DD"
+    if session_date:
+        try:
+            report_date = date.fromisoformat(session_date)
+        except ValueError:
+            report_date = datetime.utcnow().date()
+    else:
+        dt_str = data.get('note_datetime')
+        if dt_str:
+            try:
+                report_date = datetime.fromisoformat(dt_str).date()
+            except ValueError:
+                report_date = datetime.utcnow().date()
+        else:
+            report_date = datetime.utcnow().date()
+
+    # 3) Parse note_datetime override or use now
+    nd = data.get('note_datetime')
+    if nd:
+        try:
+            note_datetime = datetime.fromisoformat(nd)
+        except ValueError:
+            note_datetime = datetime.utcnow()
+    else:
+        note_datetime = datetime.utcnow()
+
+    # 4) Ensure required content
+    content = (data.get('content') or "").strip()
+    if not content:
+        return jsonify(error="Content is required"), 400
+
+    # 5) Instantiate and stage the new note
+    new_note = DailyNoteEntry(
+        project_id       = project_id,
+        note_datetime    = note_datetime,
+        date_of_report   = report_date,
+        author           = data.get('author'),
+        category         = data.get('category'),
+        tags             = data.get('tags'),
+        content          = content,
+        priority         = data.get('priority', 'low'),
+        status           = data.get('status'),  # or omit to use default
+        activity_code_id = data.get('activity_code_id'),
+        payment_item_id  = data.get('payment_item_id'),
+        work_order_id    = data.get('work_order_id'),
+        cwp              = data.get('cwp'),
+        editable_by      = data.get('editable_by'),
+    )
+    db.session.add(new_note)
+
+    # 6) Commit or rollback
     try:
-        note_dt = data.get('note_datetime')
-        note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
-        date_of_report = note_datetime.date() if note_datetime else datetime.utcnow().date()
-
-        act_id  = data.get('activity_code_id')
-        pay_id  = data.get('payment_item_id')
-        wo_id   = data.get('work_order_id')
-
-        new_note = DailyNoteEntry(
-            project_id=data.get('project_id'),
-            note_datetime=note_datetime,
-            date_of_report=date_of_report,
-            author=data.get('author'),
-            category=data.get('category'),
-            tags=data.get('tags'),
-            content=data.get('content'),
-            priority=data.get('priority'),
-            activity_code_id=data.get('activity_code_id'),
-            payment_item_id=data.get('payment_item_id'),
-            work_order_id=wo_id,
-            cwp=data.get('cwp'),
-            editable_by=data.get('editable_by'),
-        )
-
-        db.session.add(new_note)
         db.session.commit()
-        return jsonify(new_note.to_dict()), 201
-    
     except SQLAlchemyError as e:
         db.session.rollback()
-        current_app.logger.error(f"Database error adding daily note: {e}", exc_info=True)
-        return jsonify({"error": "Database error adding daily note"}), 500
+        current_app.logger.error("DB error adding daily note: %s", e, exc_info=True)
+        return jsonify(error="Database error adding daily note"), 500
+
+    # 7) Return the freshly‐created note
+    return jsonify(note=new_note.to_dict()), 201
 
 
 @entries_daily_notes_bp.route('/<int:note_id>', methods=['GET'])

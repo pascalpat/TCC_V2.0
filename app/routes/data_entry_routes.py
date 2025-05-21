@@ -3,6 +3,7 @@ from flask import Blueprint, request, session, jsonify, flash, redirect, url_for
 from app.models.workforce_models import Worker
 from app.models.core_models import ActivityCode, PaymentItem, CWPackage, Project
 import logging
+from app.models import DailyNoteEntry
 from datetime import datetime
 import openpyxl
 import os
@@ -53,20 +54,20 @@ def get_days_status():
         completed_days = []
         in_progress_days = []
 
-        
-        for date_stamp, tabs in daily_data.items():
-            statuses = [tab['status'] for tab in tabs.values()]
-            if all(status == 'completed' for status in statuses):
+        # each value in daily_data is a dict with keys 'tab_statuses' and 'entries'
+        for date_stamp, info in daily_data.items():
+            tab_statuses = info.get('tab_statuses', {})
+            statuses = list(tab_statuses.values())
+            if statuses and all(s == 'completed' for s in statuses):
                 completed_days.append(date_stamp)
             else:
                 in_progress_days.append(date_stamp)
 
-        # Return empty arrays if no data is found
         return jsonify({
-            'completedDays': completed_days or [],
-            'incompleteDays': in_progress_days or []
+            'completedDays': completed_days,
+            'incompleteDays': in_progress_days
         }), 200
-    
+        
     except Exception as e:
         # Handle unexpected errors
         return jsonify({
