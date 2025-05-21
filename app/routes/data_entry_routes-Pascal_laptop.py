@@ -140,8 +140,8 @@ def submit_data_entry():
         # STEP 3: Render a template (GET or after POST)
         # -----------------
         
-        # Render the index_old.html with the active project and report date
-        return render_template('index_old.html', project_id=project_number, report_date=report_date)
+        # Render the index.html with the active project and report date
+        return render_template('index.html', project_id=project_number, report_date=report_date)
 
     except Exception as e:
         logging.error(f"Error in submit_data_entry: {e}", exc_info=True)

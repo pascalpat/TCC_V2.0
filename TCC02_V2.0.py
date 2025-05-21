@@ -76,7 +76,7 @@ def load_csv_data():
     logger.info(f"Loaded project numbers: {project_numbers}")
     logger.info(f"Loaded equipment list: {equipment_list}")
 
-    return render_template('index_old.html', project_numbers=project_numbers, equipment_list=equipment_list)
+    return render_template('index.html', project_numbers=project_numbers, equipment_list=equipment_list)
 
 # Global variables for tracking progress (for form completion)
 completed_tabs = 0
@@ -226,7 +226,7 @@ def load_csv_data():
     logger.info(f"Loaded project numbers: {project_numbers}")
     logger.info(f"Loaded equipment list: {equipment_list}")
 
-    return render_template('index_old.html', project_numbers=project_numbers, equipment_list=equipment_list)
+    return render_template('index.html', project_numbers=project_numbers, equipment_list=equipment_list)
 
 # Global variables for progress tracking
 completed_tabs = 0

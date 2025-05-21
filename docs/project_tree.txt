@@ -1120,7 +1120,7 @@
         |-- Nouveau dossier
         |-- base_temp.html
         |-- calendar.html
-        |-- index_old.html
+        |-- index.html
         |-- login.html
     |-- tests
         |-- test_calendar_data.py

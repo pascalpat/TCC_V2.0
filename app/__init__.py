@@ -64,7 +64,7 @@ def create_app(config_name='development'):
     @app.route('/')
     def index():
         try:
-            return render_template('index_old.html')
+            return render_template('index.html')
         except Exception as e:
             logger.error(f"Error in index route: {e}")
             return jsonify({'error': str(e)}), 500
@@ -87,7 +87,7 @@ def create_app(config_name='development'):
         except Exception as e:
             logger.warning(f"Error loading equipment: {e}")
 
-        return render_template('index_old.html', project_numbers=project_numbers, equipment_list=equipment_list)
+        return render_template('index.html', project_numbers=project_numbers, equipment_list=equipment_list)
 
     @app.context_processor
     def inject_globals():

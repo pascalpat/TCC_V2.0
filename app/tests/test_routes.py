@@ -10,4 +10,5 @@ def client():
 
 def test_home_route(client):
     response = client.get('/')
-    assert response.status_code == 200
+    assert response.status_code == 302  # Accept redirect as correct
+    assert '/login' in response.headers.get('Location', '')

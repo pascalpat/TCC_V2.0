@@ -52,7 +52,7 @@ def home():
         return redirect(url_for('auth_bp.login'))  # Redirect to login if data is missing
 
     current_app.logger.info("Rendering main page with project and date pre-selected.")
-    return render_template('index_old.html', user_id=session['user_id'], project_id=session['project_id'], report_date=session['report_date'], username=session.get('username', 'Utilisateur'))
+    return render_template('data_entry.html', user_id=session['user_id'], project_id=session['project_id'], report_date=session['report_date'], username=session.get('username', 'Utilisateur'))
     
 @main_bp.route('/favicon.ico')
 def favicon():

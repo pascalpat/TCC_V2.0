@@ -34,7 +34,7 @@ def calendar_page():
         # Save project_id and report_date in session
         session['project_id'] = project_id
         session['report_date'] = report_date
-        return redirect(url_for('main_bp.home'))  # e.g., loads index_old.html
+        return redirect(url_for('main_bp.home'))  # e.g., loads index.html
 
     # Query projects directly from the database
     user_projects = Project.query.all()
