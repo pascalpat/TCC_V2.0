@@ -31,6 +31,10 @@ def add_daily_note():
         note_dt = data.get('note_datetime')
         note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
 
+        act_id  = data.get('activity_code_id')
+        pay_id  = data.get('payment_item_id')
+        wo_num  = data.get('work_order_number')
+
         new_note = DailyNoteEntry(
             project_id=data.get('project_id'),
             note_datetime=note_datetime,
@@ -83,6 +87,25 @@ def update_daily_note(note_id: int):
         if note_dt is not None:
             note.note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
 
+        if 'activity_code_id' in data:
+            act_val = data['activity_code_id']
+            note.activity_code_id = (
+                int(act_val) if act_val not in (None, "") else None
+            )
+
+        if 'payment_item_id' in data:
+            pay_val = data['payment_item_id']
+            note.payment_item_id = (
+                int(pay_val) if pay_val not in (None, "") else None
+            )
+
+        if 'work_order_number' in data:
+            wo_val = data['work_order_number']
+            note.work_order_id = (
+                int(wo_val) if wo_val not in (None, "") else None
+            )
+
+
         for field in [
             'project_id',
             'author',
@@ -90,9 +113,6 @@ def update_daily_note(note_id: int):
             'tags',
             'content',
             'priority',
-            'activity_code_id',
-            'payment_item_id',
-            'work_order_number',
             'cwp',
             'editable_by',
         ]:
@@ -140,17 +160,35 @@ def confirm_daily_notes():
 
             note_dt = n.get('note_datetime')
             note_datetime = datetime.fromisoformat(note_dt) if note_dt else None
+            date_of_report = note_datetime.date() if note_datetime else datetime.utcnow().date()
 
+            try:
+                act_id = int(n['activity_code_id']) if n.get('activity_code_id') else None
+            except (TypeError, ValueError):
+                return jsonify(error="Invalid activity_code_id"), 400
+
+            try:
+                pay_id = int(n['payment_item_id']) if n.get('payment_item_id') else None
+            except (TypeError, ValueError):
+                return jsonify(error="Invalid payment_item_id"), 400
+
+            try:
+                wo_id = int(n['work_order_number']) if n.get('work_order_number') else None
+            except (TypeError, ValueError):
+                return jsonify(error="Invalid work_order_number"), 400
+            
             new_note = DailyNoteEntry(
                 project_id=n.get('project_id'),
                 note_datetime=note_datetime,
+                date_of_report=date_of_report,
                 author=n.get('author'),
                 category=n.get('category'),
                 tags=n.get('tags'),
                 content=n.get('content'),
                 priority=n.get('priority'),
-                activity_code_id=n.get('activity_code_id'),
-                payment_item_id=n.get('payment_item_id'),
+                activity_code_id=act_id,
+                payment_item_id=pay_id,
+                work_order_id=wo_id,
                 cwp=n.get('cwp'),
                 editable_by=n.get('editable_by'),
             )
