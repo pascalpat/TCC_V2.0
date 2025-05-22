@@ -161,12 +161,15 @@
   #LaborEquipTab .form-box *,
   #MaterialsTab  .form-box *,
   #NotesTab      .form-box *,
+  #DocumentsTab  .form-box *,
   #LaborEquipTab .styled-table th,
   #MaterialsTab  .styled-table th,
   #NotesTab      .styled-table th,
+  #DocumentsTab  .styled-table th,
   #LaborEquipTab .styled-table td,
-  #MaterialsTab  .styled-table td,  
-  #NotesTab      .styled-table td {
+  #MaterialsTab  .styled-table td,
+  #NotesTab      .styled-table td,
+  #DocumentsTab  .styled-table td {
     font-family: Arial, sans-serif !important;
     font-size:   24px              !important;
     line-height: 1.4               !important;

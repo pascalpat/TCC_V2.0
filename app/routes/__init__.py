@@ -46,6 +46,8 @@ def register_blueprints(app):
     from .data_persistence       import data_persistence_bp
     from .labor_equipment_routes import labor_equipment_bp
     from .media_routes           import media_bp
+    from .documents_routes       import documents_bp
+
 
     app.register_blueprint(equipment_bp,        url_prefix='/equipment')
     app.register_blueprint(projects_bp,         url_prefix='/projects')
@@ -58,3 +60,4 @@ def register_blueprints(app):
     app.register_blueprint(data_persistence_bp)             # if that blueprint has its own prefix
     app.register_blueprint(labor_equipment_bp,  url_prefix='/labor-equipment')
     app.register_blueprint(media_bp,            url_prefix='/media')
+    app.register_blueprint(documents_bp,        url_prefix='/documents')

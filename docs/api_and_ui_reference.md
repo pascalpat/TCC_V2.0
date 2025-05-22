@@ -160,6 +160,12 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
   "cwp":              string|null
 }
 ```
+### Documents
+
+| Method | URI | Description | Payload Keys |
+| ------ | --- | ----------- | ------------ |
+| GET    | `/documents/list` | List documents for current project/date | n/a |
+| POST   | `/documents/upload` | Upload files (FormData) | `files`, `document_type`, `project_id`, `work_date` |
 
 ---
 

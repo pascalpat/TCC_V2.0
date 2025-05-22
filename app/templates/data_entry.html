@@ -17,6 +17,7 @@
     <button class="tablinks" onclick="openTab(event,'SubcontractorsTab')">Sous-traitants</button>
     <button class="tablinks" onclick="openTab(event,'NotesTab')">Notes du jour</button>
     <button class="tablinks" onclick="openTab(event,'PicturesTab')">Photos & Documents</button>
+    <button class="tablinks" onclick="openTab(event,'DocumentsTab')">Documents</button>
   </div>
 
   <!-- PROJECT + DATE -->
@@ -309,6 +310,45 @@
   <!-- ──────────────────────────────────────────────────── -->
   <div id="PicturesTab"       class="tabcontent">…</div>
 
+  <!-- ──────────────────────────────────────────────────── -->
+  <!-- Documents tab -->
+  <!-- ──────────────────────────────────────────────────── -->
+  <div id="DocumentsTab" class="tabcontent">
+    <div class="form-table-container">
+      <form id="DocumentsForm" class="form-box" enctype="multipart/form-data">
+        <h2>Ajouter des Documents</h2>
+        <label for="documentType">Type de Document:</label>
+        <select id="documentType" class="form-control">
+          <option value="general">Général</option>
+          <option value="h_s">Santé &amp; Sécurité</option>
+          <option value="environment">Environnement</option>
+          <option value="field_inspection">Inspection terrain</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+        <label for="documentFiles">Fichiers:</label>
+        <input type="file" id="documentFiles" multiple>
+        <div class="button-container">
+          <button type="button" id="uploadDocumentsBtn" class="btn btn-primary">Télécharger</button>
+        </div>
+      </form>
+
+      <div class="table-container">
+        <h3>Documents Téléchargés</h3>
+        <table id="documentsTable" class="styled-table">
+          <thead>
+            <tr>
+              <th>Nom du fichier</th>
+              <th>Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
 {% endblock %}
 
 
@@ -340,7 +380,8 @@
     import { initMaterialsTab       } from "{{ url_for('static', filename='js/materials.js') }}";
     import { initNotesTab          } from "{{ url_for('static', filename='js/notes.js') }}";
     import { initSubcontractorsTab } from "{{ url_for('static', filename='js/subcontractors.js') }}";
-
+    import { initDocumentsTab      } from "{{ url_for('static', filename='js/documents.js') }}";
+    
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) fill every dropdown across all tabs
       await populateDropdowns();
@@ -349,8 +390,10 @@
       initLaborEquipmentTab();
       initMaterialsTab();
       initNotesTab();
-      initSubcontractorsTab(); 
+      initSubcontractorsTab();
+      initDocumentsTab(); 
 
+      
       // …initSubcontractorsTab(), etc. as needed…
     });
   </script>
