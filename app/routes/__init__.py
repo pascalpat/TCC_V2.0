@@ -5,6 +5,8 @@ from flask import Blueprint, session, jsonify
 from .main_routes           import main_bp
 from .workers_routes        import workers_bp
 from .activity_codes_routes import activity_codes_bp
+from .cwp_routes            import cwp_bp
+from .purchase_orders_routes import purchase_orders_bp
 
 # -- debug session endpoint ---
 debug_bp = Blueprint("debug", __name__)
@@ -34,6 +36,8 @@ def register_blueprints(app):
     app.register_blueprint(main_bp)
     app.register_blueprint(workers_bp,        url_prefix='/workers')
     app.register_blueprint(activity_codes_bp, url_prefix='/activity-codes')
+    app.register_blueprint(cwp_bp,            url_prefix='/cw-packages')
+    app.register_blueprint(purchase_orders_bp, url_prefix='/purchase-orders')
 
     from .equipment_routes       import equipment_bp
     from .projects_routes        import projects_bp
@@ -47,6 +51,7 @@ def register_blueprints(app):
     from .labor_equipment_routes import labor_equipment_bp
     from .media_routes           import media_bp
     from .documents_routes       import documents_bp
+    from .admin_routes           import admin_bp
 
 
     app.register_blueprint(equipment_bp,        url_prefix='/equipment')
@@ -61,3 +66,4 @@ def register_blueprints(app):
     app.register_blueprint(labor_equipment_bp,  url_prefix='/labor-equipment')
     app.register_blueprint(media_bp,            url_prefix='/media')
     app.register_blueprint(documents_bp,        url_prefix='/documents')
+    app.register_blueprint(admin_bp,            url_prefix='/admin')

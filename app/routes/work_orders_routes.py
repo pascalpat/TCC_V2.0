@@ -59,4 +59,27 @@ def add_work_order():
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error creating work order: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+    return jsonify({'error': str(e)}), 500
+
+
+@work_orders_bp.route('/update/<int:wo_id>', methods=['PUT'])
+def update_work_order(wo_id):
+    wo = WorkOrder.query.get(wo_id)
+    if not wo:
+        return jsonify(error='Work order not found'), 404
+    data = request.get_json() or {}
+    wo.description = data.get('description', wo.description)
+    wo.status = data.get('status', wo.status)
+    wo.reason = data.get('reason', wo.reason)
+    db.session.commit()
+    return jsonify(message='Work order updated'), 200
+
+
+@work_orders_bp.route('/delete/<int:wo_id>', methods=['DELETE'])
+def delete_work_order(wo_id):
+    wo = WorkOrder.query.get(wo_id)
+    if not wo:
+        return jsonify(error='Work order not found'), 404
+    db.session.delete(wo)
+    db.session.commit()
+    return jsonify(message='Work order deleted'), 200

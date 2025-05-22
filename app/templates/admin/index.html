@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel{% endblock %}
+{% block extra_css %}
+<style>
+  .admin-section { margin-bottom: 2rem; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 4px; }
+</style>
+{% endblock %}
+{% block content %}
+<div id="admin-root"></div>
+{% endblock %}
+{% block extra_js %}
+{{ super() }}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script crossorigin src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" src="{{ url_for('static', filename='js/admin/adminApp.js') }}"></script>
+{% endblock %}

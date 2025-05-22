@@ -21,6 +21,48 @@ def get_materials_catalog():
     ]
     return jsonify(materials=material_list), 200
 
+@materials_bp.route('/create', methods=['POST'])
+def create_material():
+    data = request.get_json() or {}
+    name = data.get('name')
+    if not name:
+        return jsonify(error='Name is required'), 400
+    mat = Material(
+        name=name,
+        unit=data.get('unit'),
+        cost_per_unit=data.get('cost_per_unit'),
+        description=data.get('description'),
+        project_id=data.get('project_id'),
+        purchase_order_id=data.get('purchase_order_id')
+    )
+    db.session.add(mat)
+    db.session.commit()
+    return jsonify(message='Material created', id=mat.id), 201
+
+
+@materials_bp.route('/update/<int:material_id>', methods=['PUT'])
+def update_material(material_id):
+    mat = Material.query.get(material_id)
+    if not mat:
+        return jsonify(error='Material not found'), 404
+    data = request.get_json() or {}
+    mat.name = data.get('name', mat.name)
+    mat.unit = data.get('unit', mat.unit)
+    mat.cost_per_unit = data.get('cost_per_unit', mat.cost_per_unit)
+    mat.description = data.get('description', mat.description)
+    db.session.commit()
+    return jsonify(message='Material updated'), 200
+
+
+@materials_bp.route('/delete/<int:material_id>', methods=['DELETE'])
+def delete_material(material_id):
+    mat = Material.query.get(material_id)
+    if not mat:
+        return jsonify(error='Material not found'), 404
+    db.session.delete(mat)
+    db.session.commit()
+    return jsonify(message='Material deleted'), 200
+
 # --------------------------------------
 # Entry CRUD Routes (Materials tab data)
 # --------------------------------------

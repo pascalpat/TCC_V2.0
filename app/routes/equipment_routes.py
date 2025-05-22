@@ -86,3 +86,39 @@ def add_equipment_entry():
     except Exception as e:
         current_app.logger.error(f"Unexpected error adding equipment entry: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+@equipment_bp.route('/create', methods=['POST'])
+def create_equipment():
+    data = request.get_json() or {}
+    name = data.get('name')
+    if not name:
+        return jsonify(error='Name is required'), 400
+    equip = Equipment(
+        name=name,
+        serial_number=data.get('serial_number'),
+        maintenance_status=data.get('maintenance_status', 'operational')
+    )
+    db.session.add(equip)
+    db.session.commit()
+    return jsonify(message='Equipment created', id=equip.id), 201
+
+@equipment_bp.route('/update/<int:equip_id>', methods=['PUT'])
+def update_equipment(equip_id):
+    equip = Equipment.query.get(equip_id)
+    if not equip:
+        return jsonify(error='Equipment not found'), 404
+    data = request.get_json() or {}
+    equip.name = data.get('name', equip.name)
+    equip.serial_number = data.get('serial_number', equip.serial_number)
+    equip.maintenance_status = data.get('maintenance_status', equip.maintenance_status)
+    db.session.commit()
+    return jsonify(message='Equipment updated'), 200
+
+@equipment_bp.route('/delete/<int:equip_id>', methods=['DELETE'])
+def delete_equipment(equip_id):
+    equip = Equipment.query.get(equip_id)
+    if not equip:
+        return jsonify(error='Equipment not found'), 404
+    db.session.delete(equip)
+    db.session.commit()
+    return jsonify(message='Equipment deleted'), 200

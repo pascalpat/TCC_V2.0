@@ -119,6 +119,27 @@ def add_worker():
     except Exception as e:
         logging.error(f"Unexpected error in add_worker: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+    
+@workers_bp.route('/update/<int:worker_id>', methods=['PUT'])
+def update_worker(worker_id):
+    worker = Worker.query.get(worker_id)
+    if not worker:
+        return jsonify(error='Worker not found'), 404
+    data = request.get_json() or {}
+    worker.name = data.get('name', worker.name)
+    worker.role = data.get('role', worker.role)
+    db.session.commit()
+    return jsonify(message='Worker updated'), 200
+
+
+@workers_bp.route('/delete/<int:worker_id>', methods=['DELETE'])
+def delete_worker(worker_id):
+    worker = Worker.query.get(worker_id)
+    if not worker:
+        return jsonify(error='Worker not found'), 404
+    db.session.delete(worker)
+    db.session.commit()
+    return jsonify(message='Worker deleted'), 200   
 
 @workers_bp.route('/confirm-workers', methods=['POST'])
 def confirm_workers():
