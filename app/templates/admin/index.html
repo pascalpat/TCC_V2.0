@@ -8,13 +8,10 @@
 </style>
 {% endblock %}
 {% block content %}
-<div id="admin-root"></div>
+<div id="root"></div>
 {% endblock %}
 {% block extra_js %}
 {{ super() }}
-<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script crossorigin src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script type="text/babel" src="{{ url_for('static', filename='js/admin/adminApp.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='admin/assets/index.css') }}">
+<script type="module" src="{{ url_for('static', filename='admin/assets/index.js') }}"></script>
 {% endblock %}

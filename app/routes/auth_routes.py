@@ -26,8 +26,8 @@ def login():
 
         current_app.logger.info(f"User {username!r} logged in as ID {session['user_id']}")
         # Redirect into your calendar selection page
-        return redirect(url_for('calendar.show_calendar'))
-
+        return redirect(url_for('calendar_bp.calendar_page'))
+    
     # GET → show the login form
     return render_template('login.html')
 

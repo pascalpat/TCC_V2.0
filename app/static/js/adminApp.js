@@ -2,22 +2,22 @@ const { useState, useEffect } = React;
 
 const modelConfigs = {
   cwpackage: {
-    list: '/cwpackage/list',
-    create: '/cwpackage/create',
-    update: '/cwpackage/update/',
-    remove: '/cwpackage/delete/',
+    list: '/cw-packages/list',
+    create: '/cw-packages/create',
+    update: '/cw-packages/update/',
+    remove: '/cw-packages/delete/',
     fields: ['project_id', 'code', 'name', 'unit']
   },
   equipment: {
     list: '/equipment/list',
-    create: '/equipment/add',
+    create: '/equipment/create',
     update: '/equipment/update/',
     remove: '/equipment/delete/',
     fields: ['name','serial_number','maintenance_status']
   },
   material: {
     list: '/materials/list',
-    create: '/materials/add',
+    create: '/materials/create',
     update: '/materials/update/',
     remove: '/materials/delete/',
     fields: ['name','unit','cost_per_unit']
@@ -31,7 +31,7 @@ const modelConfigs = {
   },
   purchaseOrder: {
     list: '/purchase-orders/list',
-    create: '/purchase-orders/add',
+    create: '/purchase-orders/create',
     update: '/purchase-orders/update/',
     remove: '/purchase-orders/delete/',
     fields: ['order_number','vendor']
