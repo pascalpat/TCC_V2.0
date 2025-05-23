@@ -18,7 +18,11 @@ def login():
             return render_template('login.html', error="Please provide a username.")
 
         # In a real app you'd validate credentials here...
-        session.clear()  
+        session.clear()
+        # Explicitly mark the session as non-permanent so it expires when the
+        # browser is closed. This adds another safeguard alongside the
+        # configuration default.
+        session.permanent = False
         session['username']   = username
         session['user_id']    = 101      # example
         session['project_id'] = None
@@ -36,4 +40,4 @@ def login():
 def logout():
     """Clears session and sends the user back to login."""
     session.clear()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth_bp.login'))

@@ -38,6 +38,12 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_TYPE = 'filesystem'
+    # Ensure sessions are not permanent by default so data isn't kept after the
+    # browser is closed. A short lifetime can be configured separately if
+    # desired.
+    SESSION_PERMANENT = False
+
+
 
     # Common file paths
     PROJECT_FILE = os.path.join(BASE_DIR, '../data/project.csv')
