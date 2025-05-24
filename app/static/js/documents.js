@@ -20,13 +20,13 @@ export async function loadDocuments() {
   try {
     const resp = await fetch('/documents/list');
     if (!resp.ok) throw new Error('Erreur chargement');
-    const data = await resp.json();
-    renderDocumentsTable(data.documents || []);
+    const respData = await resp.json();
+    renderDocumentsTable(respData.documents || []);
   } catch (err) {
     console.error('loadDocuments', err);
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td colspan="3" class="error-msg">Impossible de charger les documents.</td>
+      <td colspan="3" class="error-msg">Aucun documents.</td>
     `;
     tbody.appendChild(tr);
   }
@@ -58,17 +58,17 @@ async function uploadDocuments(e) {
       body: formData
     });
 
-
-    const data = await resp.json();
-    let data;
+    const text = await resp.text();
+    let respData;
     try {
-      data = JSON.parse(text);
+      respData = JSON.parse(text);
     } catch (parseErr) {
       throw new Error(text);
     }
-    if (!resp.ok) throw new Error(data.error || text || 'Erreur upload');
+    if (!resp.ok) throw new Error(respData.error || text || 'Erreur upload')
 
-    alert(`${data.records.length} fichier(s) téléversé(s).`);
+    alert(`${respData.records.length} fichier(s) téléversé(s).`);  
+
     filesInput.value = '';
     await loadDocuments();
   } catch (err) {
@@ -95,6 +95,28 @@ function renderDocumentsTable(docs) {
       <td>${doc.document_type}</td>
       <td>${doc.status}</td>
     `;
+
+  const link = tr.querySelector('a');
+    link.addEventListener('mouseover', e => showPreview(doc.file_url, e.target));
+    link.addEventListener('mouseout', hidePreview);
     tbody.appendChild(tr);
   });
+
+    function showPreview(url, anchor) {
+    const ext = url.split('.').pop().toLowerCase();
+    const allowed = ['jpg', 'jpeg', 'png', 'gif'];
+    if (!allowed.includes(ext)) return;
+    const img = document.getElementById('docPreviewImg');
+    const box = document.getElementById('docPreview');
+    img.src = url;
+    const rect = anchor.getBoundingClientRect();
+    box.style.top = `${rect.bottom + window.scrollY}px`;
+    box.style.left = `${rect.left + window.scrollX}px`;
+    box.classList.remove('hidden');
+}
+    function hidePreview() {
+        const box = document.getElementById('docPreview');
+        box.classList.add('hidden');
+        document.getElementById('docPreviewImg').src = '';
+    }
 }
