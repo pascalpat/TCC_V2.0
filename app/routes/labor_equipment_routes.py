@@ -1,6 +1,6 @@
 # app/routes/labor_equipment_routes.py
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models.WorkerEntry_models import WorkerEntry
 from app.models.EquipmentEntry_models import EquipmentEntry
@@ -120,17 +120,28 @@ def get_pending_labor_equipment():
     except ValueError:
         return jsonify(error="Invalid date format"), 400
 
-    w_entries = WorkerEntry.query.filter_by(
-        project_id=proj.id,
-        date_of_report=date_obj,
-        status="pending"
-    ).all()
-    e_entries = EquipmentEntry.query.filter_by(
-        project_id=proj.id,
-        date_of_report=date_obj,
-        status="pending"
-    ).all()
+    try:
+        w_entries = WorkerEntry.query.filter_by(
+            project_id=proj.id,
+            date_of_report=date_obj,
+            status="pending"
+        ).all()
+    except Exception as exc:
+        current_app.logger.exception(exc)
+        return jsonify(error="Internal server error"), 500
 
+    try:
+        e_entries = EquipmentEntry.query.filter_by(
+            project_id=proj.id,
+            date_of_report=date_obj,
+            status="pending"
+        ).all()
+
+    except Exception as exc:
+        current_app.logger.exception(exc)
+        return jsonify(error="Internal server error"), 500
+    
+    
     def serialize(entry, is_worker=True):
         pi = (PaymentItem.query.get(entry.payment_item_id)
               if entry.payment_item_id else None)

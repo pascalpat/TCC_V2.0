@@ -18,11 +18,15 @@ def list_payment_items():
     # Query all payment items, ordered by the item name
     items = PaymentItem.query.order_by(PaymentItem.item_name).all()
 
-    # Build a simple list of {id, name}
-    result = [
-        {'id': item.id, 'name': item.item_name}
-        for item in items
-    ]
-
-    # Wrap it in a top‐level key if your front‐end expects it
-    return jsonify(items=result), 200
+    # Convert the query result to a list of dictionaries
+    # Each dictionary contains the id, payment_code, and item_name of the payment item
+    return jsonify({
+        'payment_items': [
+            {
+                'id': item.id,
+                'payment_code': item.payment_code,
+                'item_name': item.item_name
+            }
+            for item in items
+        ]
+    }), 200

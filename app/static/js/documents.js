@@ -14,6 +14,9 @@ export function initDocumentsTab() {
 }
 
 export async function loadDocuments() {
+  const tbody = document.querySelector('#documentsTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
   try {
     const resp = await fetch('/documents/list');
     if (!resp.ok) throw new Error('Erreur chargement');
@@ -21,6 +24,11 @@ export async function loadDocuments() {
     renderDocumentsTable(data.documents || []);
   } catch (err) {
     console.error('loadDocuments', err);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td colspan="3" class="error-msg">Impossible de charger les documents.</td>
+    `;
+    tbody.appendChild(tr);
   }
 }
 
@@ -49,8 +57,16 @@ async function uploadDocuments(e) {
       method: 'POST',
       body: formData
     });
+
+
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Erreur upload');
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      throw new Error(text);
+    }
+    if (!resp.ok) throw new Error(data.error || text || 'Erreur upload');
 
     alert(`${data.records.length} fichier(s) téléversé(s).`);
     filesInput.value = '';
@@ -65,6 +81,13 @@ function renderDocumentsTable(docs) {
   const tbody = document.querySelector('#documentsTable tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
+  if (!docs.length) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" class="error-msg">Aucun document disponible.</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
   docs.forEach(doc => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
