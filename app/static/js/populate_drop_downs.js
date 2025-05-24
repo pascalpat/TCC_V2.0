@@ -82,7 +82,7 @@ export async function populateActivityDropdown() {
 export async function populatePaymentItemDropdown() {
   console.log("[populatePaymentItemDropdown] fetching payment items...");
   try {
-    const resp = await fetch("payment-items/list");
+    const resp = await fetch("/payment-items/list");
     if (!resp.ok) throw new Error(`Status ${resp.status}`);
     const { payment_items: items } = await resp.json();
     window.paymentItemsList = items;     // store for inline editing
