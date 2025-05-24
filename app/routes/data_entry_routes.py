@@ -17,7 +17,6 @@ data_entry_bp = Blueprint('data_entry_bp', __name__, url_prefix='/data-entry')
 @data_entry_bp.route('/initialize-day', methods=['POST'])
 def initialize_day():
     """Initialize session data for the selected reporting day."""
-    print("sartting: @data_entry_bp.route('/initialize-day', methods=['POST'])")
     try:
         data = request.get_json()
         date_stamp = data.get('dateStamp')
