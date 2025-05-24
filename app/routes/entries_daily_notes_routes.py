@@ -6,11 +6,7 @@ from ..models.daily_models import DailyNoteEntry
 from .. import db
 from datetime import datetime, date
 
-entries_daily_notes_bp = Blueprint(
-    'entries_daily_notes_bp',
-    __name__,
-    url_prefix='/entries_daily_notes'
-)
+entries_daily_notes_bp = Blueprint('entries_daily_notes_bp', __name__, url_prefix='/entries_daily_notes')
 
 @entries_daily_notes_bp.route('/list', methods=['GET'])
 def get_daily_notes():

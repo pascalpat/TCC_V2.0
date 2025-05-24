@@ -6,7 +6,7 @@ from app import db  # Import the db object
 
 
 # Define a new blueprint for projects
-projects_bp = Blueprint('projects_bp', __name__)
+projects_bp = Blueprint('projects_bp', __name__, url_prefix='/projects')
 
 # Route to get list of project numbers
 @projects_bp.route('/list', methods=['GET'])

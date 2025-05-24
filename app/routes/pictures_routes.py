@@ -3,7 +3,7 @@ from ..utils.data_loader import load_data
 import os
 
 
-pictures_bp = Blueprint('pictures_bp', __name__)
+pictures_bp = Blueprint('pictures_bp', __name__, url_prefix='/pictures')
 
 @pictures_bp.route('/pictures/list', methods=['GET'])
 def get_pictures():

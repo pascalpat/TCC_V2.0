@@ -7,10 +7,7 @@ from app.models.EquipmentEntry_models import EquipmentEntry
 from app.models.core_models import ActivityCode, Project, PaymentItem, CWPackage
 from datetime import datetime
 
-labor_equipment_bp = Blueprint(
-    'labor_equipment_bp', __name__,
-    url_prefix='/labor-equipment'
-)
+labor_equipment_bp = Blueprint('labor_equipment_bp', __name__,url_prefix='/labor-equipment')
 
 # ----------------------------------------------------------------
 # 0) CW-Packages master-data route (for your CWP dropdown JS fetch)

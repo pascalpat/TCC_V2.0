@@ -3,7 +3,7 @@ from app.models.core_models import ActivityCode
 from app import db
 
 # Define the Blueprint for activity code-related routes
-activity_codes_bp = Blueprint('activity_codes', __name__)
+activity_codes_bp = Blueprint('activity_codes', __name__, url_prefix='/activity-codes')
 
 # Route to get list of activity codes
 @activity_codes_bp.route('/get_activity_codes', methods=['GET'])

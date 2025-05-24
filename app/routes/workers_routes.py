@@ -10,7 +10,8 @@ from app.models.workforce_models import Worker
 from app.routes.update_progress_routes import mark_tab_completed
 
 # Define the Blueprint for worker-related routes
-workers_bp = Blueprint('workers_bp', __name__)
+workers_bp = Blueprint('workers_bp', __name__, url_prefix='/workers')
+
 
 # Logging Configuration
 logging.basicConfig(level=logging.INFO)

@@ -7,7 +7,7 @@ from app.models.MaterialEntry import MaterialEntry
 from app.models.core_models import ActivityCode, Project, PaymentItem
 from datetime import datetime
 
-materials_bp = Blueprint('materials_bp', __name__)
+materials_bp = Blueprint('materials_bp', __name__, url_prefix='/materials')
 
 # --------------------------------------
 # Master Data Routes (Materials catalog)

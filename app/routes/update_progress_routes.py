@@ -8,7 +8,7 @@ import logging
 app = Flask(__name__)
 
 # Create the blueprint
-update_progress_bp = Blueprint('update_progress', __name__)
+update_progress_bp = Blueprint('update_progress', __name__, url_prefix='/update-progress')
 
 # Global variable for simplicity; replace with a more persistent storage if needed
 TOTAL_TABS = 7
