@@ -44,7 +44,7 @@ from app.routes.labor_equipment_routes     import labor_equipment_bp
 from app.routes.media_routes               import media_bp
 from app.routes.documents_routes           import documents_bp
 from app.routes.admin_routes               import admin_bp
-from app.routes import debug_bp  # debug_bp defined in routes/__init__.py
+
 
 
 def create_app(config_name: str = None) -> Flask:
@@ -74,7 +74,7 @@ def create_app(config_name: str = None) -> Flask:
     Session(app)
 
     # Register blueprints in order
-    app.register_blueprint(debug_bp)
+   
     app.register_blueprint(auth_bp)
     app.register_blueprint(calendar_bp)
     app.register_blueprint(data_entry_bp)
