@@ -12,9 +12,8 @@ documents_bp = Blueprint('documents_bp', __name__, url_prefix='/documents')
 
 @documents_bp.route("/files/<path:filename>")
 def download_document(filename):
-    upload_folder = current_app.config.get("UPLOAD_FOLDER", "uploads")
-    return send_from_directory(upload_folder, filename)
-
+    """Serve a file from the configured upload directory."""
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
 @documents_bp.route("/list", methods=["GET"])
 def list_documents():

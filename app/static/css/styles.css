@@ -397,11 +397,17 @@
     }
     
     /* Styles for the image previews */
+
     .image-preview {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 10px;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    position: absolute;
+    background: white;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
 
     .image-preview img {
         max-width: 100px;

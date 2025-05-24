@@ -49,8 +49,13 @@ async function uploadDocuments(e) {
 
   const projectId = document.getElementById('projectNumber').value;
   const reportDate = document.getElementById('dateSelector').value;
+  const note = document.getElementById('docNote').value || '';
+  const tags = document.getElementById('docTags').value || '';
   formData.append('project_id', projectId);
   formData.append('work_date', reportDate);
+  formData.append('short_note', note);
+  formData.append('tags', tags);
+
 
   try {
     const resp = await fetch('/documents/upload', {
@@ -58,16 +63,13 @@ async function uploadDocuments(e) {
       body: formData
     });
 
-    const text = await resp.text();
-    let respData;
-    try {
-      respData = JSON.parse(text);
-    } catch (parseErr) {
-      throw new Error(text);
+    const data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error || 'Erreur upload');   
     }
-    if (!resp.ok) throw new Error(respData.error || text || 'Erreur upload')
 
-    alert(`${respData.records.length} fichier(s) téléversé(s).`);  
+    alert(`${data.records.length} fichier(s) téléversé(s).`);
+
 
     filesInput.value = '';
     await loadDocuments();
@@ -89,34 +91,37 @@ function renderDocumentsTable(docs) {
   }
 
   docs.forEach(doc => {
+    const fileUrl = `/documents/files/${encodeURIComponent(doc.file_name)}`;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><a href="${doc.file_url}" target="_blank">${doc.file_name}</a></td>
+      <td><a href="${fileUrl}" target="_blank">${doc.file_name}</a></td>
       <td>${doc.document_type}</td>
       <td>${doc.status}</td>
     `;
 
   const link = tr.querySelector('a');
     link.addEventListener('mouseover', e => showPreview(doc.file_url, e.target));
+    link.addEventListener('mouseover', e => showPreview(fileUrl, e.target));
     link.addEventListener('mouseout', hidePreview);
     tbody.appendChild(tr);
   });
-
-    function showPreview(url, anchor) {
-    const ext = url.split('.').pop().toLowerCase();
-    const allowed = ['jpg', 'jpeg', 'png', 'gif'];
-    if (!allowed.includes(ext)) return;
-    const img = document.getElementById('docPreviewImg');
-    const box = document.getElementById('docPreview');
-    img.src = url;
-    const rect = anchor.getBoundingClientRect();
-    box.style.top = `${rect.bottom + window.scrollY}px`;
-    box.style.left = `${rect.left + window.scrollX}px`;
-    box.classList.remove('hidden');
 }
-    function hidePreview() {
-        const box = document.getElementById('docPreview');
-        box.classList.add('hidden');
-        document.getElementById('docPreviewImg').src = '';
-    }
+
+export function showPreview(url, anchor) {
+  const ext = url.split('.').pop().toLowerCase();
+  const allowed = ['jpg', 'jpeg', 'png', 'gif'];
+  if (!allowed.includes(ext)) return;
+  const img = document.getElementById('docPreviewImg');
+  const box = document.getElementById('docPreview');
+  img.src = url;
+  const rect = anchor.getBoundingClientRect();
+  box.style.top = `${rect.bottom + window.scrollY}px`;
+  box.style.left = `${rect.left + window.scrollX}px`;
+  box.classList.remove('hidden');
+
+}
+export function hidePreview() {
+  const box = document.getElementById('docPreview');
+  box.classList.add('hidden');
+  document.getElementById('docPreviewImg').src = '';
 }

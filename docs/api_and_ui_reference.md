@@ -165,7 +165,14 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
 | Method | URI | Description | Payload Keys |
 | ------ | --- | ----------- | ------------ |
 | GET    | `/documents/list` | List documents for current project/date | n/a |
+| GET    | `/documents/files/<filename>` | Serve uploaded file | n/a |
 | POST   | `/documents/upload` | Upload files (FormData) | `files`, `document_type`, `project_id`, `work_date` |
+
+#### Hover Preview
+
+Include a container with ID `docPreview` (containing an `img#docPreviewImg`) on pages
+that list document links. The preview box is shown on link hover for files ending
+in `jpg`, `jpeg`, `png` or `gif`.
 
 ---
 
@@ -209,7 +216,13 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
   * `loadPendingMaterials(pId,date)` → GET `/materials/by-project-date`
   * `renderConfirmedTableFromServer(materials)` → draw confirmed rows
   * `handleEditConfirmedRow()`, `handleDeleteConfirmedRow()` → edit/delete
+  
+  * \`\`
 
+  * `initDocumentsTab()`            → bootstrap form & load list
+  * `loadDocuments()`               → GET `/documents/list`, populate table
+  * `showPreview(url, anchor)`      → show `#docPreview` for allowed images
+  * `hidePreview()`                 → hide the preview bo
 ---
 
 ## 3. DOM Element IDs & Global JS Vars
@@ -252,6 +265,17 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
 #confirmMaterialsBtn
 #materialsTable
 ```
+### Documents Tab
+
+```
+#documentFiles
+#documentType
+#uploadDocumentsBtn
+#documentsTable
+#docPreview        // preview container
+#docPreviewImg
+```
+
 ### Notes Form
 
 ```
