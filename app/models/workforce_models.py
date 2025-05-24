@@ -26,7 +26,9 @@ class Worker(db.Model):
     worker_id = db.Column(db.String(50), unique=True, nullable=False)  # Unique worker company identifier (e.g., Employee ID)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id', name='fk_worker_project'), nullable=True)
     #daily_report_id = db.Column(db.Integer, db.ForeignKey('daily_report_data.id'))
-
+    metier       = db.Column(db.String(100), nullable=True)
+    convention   = db.Column(db.String(100), nullable=True)
+    taux_horaire = db.Column(db.Float(),    nullable=True)     # Hourly rate
     ################################## Contact Information #######################################
     code_postal = db.Column(db.String(10), nullable=True)  # Postal code
     num_cell = db.Column(db.String(15), nullable=True)  # Cellphone number

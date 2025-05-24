@@ -22,6 +22,8 @@ class WorkerEntry(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)  # FK to Activity Codes
     cwp = db.Column(db.String(50), nullable=True)  # Construction Work Package
     phase = db.Column(db.String(50), nullable=True)  # Construction phase
+    metier = db.Column(db.String(100), nullable=True)
+    taux_horaire = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp for creation
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # Last updated timestamp
 
@@ -48,7 +50,9 @@ class WorkerEntry(db.Model):
             'activity_id': self.activity_id,
             'cwp': self.cwp,
             'phase': self.phase,
-            'payment_item_id': self.payment_item_id, 
+            'metier': self.metier,
+            'taux_horaire': self.taux_horaire,
+            'payment_item_id': self.payment_item_id,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

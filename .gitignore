@@ -75,3 +75,5 @@ yarn-error.log*
 # ───── Office / Binary ─────
 *.xlsx
 *.pdf
+
+DATABASE_URL=sqlite:///C:/Projects/TCC_V2.0/database/TCC.db

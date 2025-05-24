@@ -1,69 +1,111 @@
-# app/routes/__init__.py
+# app/__init__.py
 
-from flask import Blueprint, session, jsonify
+import os
+import logging
+from dotenv import load_dotenv
+from flask import Flask, redirect, url_for, session
+from flask_session import Session
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-from .main_routes           import main_bp
-from .workers_routes        import workers_bp
-from .activity_codes_routes import activity_codes_bp
-from .cwp_routes            import cwp_bp
-from .purchase_orders_routes import purchase_orders_bp
+# ─── Load environment variables & logging ────────────────────────────────────────
+load_dotenv()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
-# -- debug session endpoint ---
-debug_bp = Blueprint("debug", __name__)
+# ─── Initialize extensions ──────────────────────────────────────────────────────
+db = SQLAlchemy()
+migrate = Migrate()
 
-@debug_bp.route("/debug/session", methods=["GET"])
-def debug_session():
-    return jsonify(dict(session))
+# ─── Config mapping ─────────────────────────────────────────────────────────────
+from app.config import config_map
+
+# ─── Blueprint imports ──────────────────────────────────────────────────────────
+# Import each blueprint directly to avoid circular imports
+from app.routes.auth_routes                import auth_bp
+from app.routes.calendar_routes            import calendar_bp
+from app.routes.data_entry_routes          import data_entry_bp
+from app.routes.entries_daily_notes_routes import entries_daily_notes_bp
+from app.routes.main_routes                import main_bp
+from app.routes.workers_routes             import workers_bp
+from app.routes.equipment_routes           import equipment_bp
+from app.routes.activity_codes_routes      import activity_codes_bp
+from app.routes.cwp_routes                 import cwp_bp
+from app.routes.purchase_orders_routes     import purchase_orders_bp
+from app.routes.projects_routes            import projects_bp
+from app.routes.update_progress_routes     import update_progress_bp
+from app.routes.validation_routes          import validation_bp
+from app.routes.materials_routes           import materials_bp
+from app.routes.pictures_routes            import pictures_bp
+from app.routes.subcontractors_routes      import subcontractors_bp
+from app.routes.work_orders_routes         import work_orders_bp
+from app.routes.data_persistence           import data_persistence_bp
+from app.routes.labor_equipment_routes     import labor_equipment_bp
+from app.routes.media_routes               import media_bp
+from app.routes.documents_routes           import documents_bp
+from app.routes.admin_routes               import admin_bp
+from app.routes import debug_bp  # debug_bp defined in routes/__init__.py
 
 
-def register_blueprints(app):
-    # 1) Debug first
+def create_app(config_name: str = None) -> Flask:
+    """
+    Application factory:
+    - Loads config
+    - Initializes extensions
+    - Registers blueprints explicitly (avoids circular imports)
+    """
+    # Determine environment
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'development')
+
+    app = Flask(
+        __name__,
+        static_folder=os.path.join(os.path.dirname(__file__), 'static'),
+        template_folder=os.path.join(os.path.dirname(__file__), 'templates')
+    )
+
+    # Load configuration
+    app.config.from_object(config_map.get(config_name, config_map['development']))
+    logger.info(f"Starting '{config_name}' mode with DB={app.config['SQLALCHEMY_DATABASE_URI']}")
+
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    Session(app)
+
+    # Register blueprints in order
     app.register_blueprint(debug_bp)
-
-    # 2) Core flow: Auth → Calendar → Data-Entry → Daily-Notes
-    from .auth_routes                import auth             # defines auth = Blueprint('auth', …)
-    from .calendar_routes            import calendar_bp      # defines calendar_bp = Blueprint('calendar_bp', …)
-    from .data_entry_routes          import data_entry_bp    # defines data_entry_bp = Blueprint('data_entry_bp', url_prefix='/data-entry')
-    from .entries_daily_notes_routes import entries_daily_notes_bp
-                                                    # defines entries_daily_notes_bp = Blueprint('entries_daily_notes_bp', url_prefix='/entries_daily_notes')
-
-    app.register_blueprint(auth)                             # auth has its own url_prefix='/auth'
-    app.register_blueprint(calendar_bp, url_prefix='/calendar')
-    app.register_blueprint(data_entry_bp)                     # data_entry_bp already has url_prefix
-    app.register_blueprint(entries_daily_notes_bp)            # ditto for entries_daily_notes_bp
-
-    # 3) Everything else
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(calendar_bp)
+    app.register_blueprint(data_entry_bp)
+    app.register_blueprint(entries_daily_notes_bp)
     app.register_blueprint(main_bp)
-    app.register_blueprint(workers_bp,        url_prefix='/workers')
-    app.register_blueprint(activity_codes_bp, url_prefix='/activity-codes')
-    app.register_blueprint(cwp_bp,            url_prefix='/cw-packages')
-    app.register_blueprint(purchase_orders_bp, url_prefix='/purchase-orders')
+    app.register_blueprint(workers_bp)
+    app.register_blueprint(equipment_bp)
+    app.register_blueprint(activity_codes_bp)
+    app.register_blueprint(cwp_bp)
+    app.register_blueprint(purchase_orders_bp)
+    app.register_blueprint(projects_bp)
+    app.register_blueprint(update_progress_bp)
+    app.register_blueprint(validation_bp)
+    app.register_blueprint(materials_bp)
+    app.register_blueprint(pictures_bp)
+    app.register_blueprint(subcontractors_bp)
+    app.register_blueprint(work_orders_bp)
+    app.register_blueprint(data_persistence_bp)
+    app.register_blueprint(labor_equipment_bp)
+    app.register_blueprint(media_bp)
+    app.register_blueprint(documents_bp)
+    app.register_blueprint(admin_bp)
 
-    from .equipment_routes       import equipment_bp
-    from .projects_routes        import projects_bp
-    from .update_progress_routes import update_progress_bp
-    from .validation_routes      import validation_bp
-    from .materials_routes       import materials_bp
-    from .pictures_routes        import pictures_bp
-    from .subcontractors_routes  import subcontractors_bp
-    from .work_orders_routes     import work_orders_bp
-    from .data_persistence       import data_persistence_bp
-    from .labor_equipment_routes import labor_equipment_bp
-    from .media_routes           import media_bp
-    from .documents_routes       import documents_bp
-    from .admin_routes           import admin_bp
+    # Redirect the root URL to your data-entry endpoint
+    @app.route('/')
+    def root():
+        return redirect(url_for('data_entry_bp.submit_data_entry'))
 
+    # Inject session globals into templates
+    @app.context_processor
+    def inject_globals():
+        return {'username': session.get('username', 'Utilisateur')}
 
-    app.register_blueprint(equipment_bp,        url_prefix='/equipment')
-    app.register_blueprint(projects_bp,         url_prefix='/projects')
-    app.register_blueprint(update_progress_bp,  url_prefix='/update-progress')
-    app.register_blueprint(validation_bp,       url_prefix='/validation')
-    app.register_blueprint(materials_bp,        url_prefix='/materials')
-    app.register_blueprint(pictures_bp,         url_prefix='/pictures')
-    app.register_blueprint(subcontractors_bp,   url_prefix='/subcontractors')
-    app.register_blueprint(work_orders_bp,      url_prefix='/work-orders')
-    app.register_blueprint(data_persistence_bp)             # if that blueprint has its own prefix
-    app.register_blueprint(labor_equipment_bp,  url_prefix='/labor-equipment')
-    app.register_blueprint(media_bp,            url_prefix='/media')
-    app.register_blueprint(documents_bp,        url_prefix='/documents')
-    app.register_blueprint(admin_bp,            url_prefix='/admin')
+    return app
