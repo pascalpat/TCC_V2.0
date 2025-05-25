@@ -169,7 +169,12 @@
     max-width: 70%;
   }
   
-  
+  /* Documents table layout */
+  #documentsTableContainer {
+    max-height: 800px;
+    overflow-y: auto;
+    min-width: 300px;
+  }
 
 
   /* ────────────────────────────────────────────────────
@@ -195,8 +200,8 @@
   #MaterialsTab  .styled-table td,
   #NotesTab      .styled-table td,
   #DocumentsTab  .styled-table td {
-    font-family: Arial, sans-serif !important;
+  font-family: Arial, sans-serif !important;
     font-size:   24px              !important;
     line-height: 1.4               !important;
   }
-  
+
