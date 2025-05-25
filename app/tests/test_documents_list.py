@@ -1,7 +1,8 @@
-import pytest
 from app import create_app, db
 from app.models.models import Document
 from app.models.core_models import Project
+from tempfile import TemporaryDirectory
+import io
 import os
 from datetime import datetime
 
@@ -42,3 +43,35 @@ def test_download_document(client, app):
     assert response.data == content
 
     os.remove(file_path)
+
+def test_upload_document_with_notes(client, app):
+    with app.app_context():
+        project = Project(name='TestProj', project_number='TP1', category='Test')
+        db.session.add(project)
+        db.session.commit()
+        project_id = project.id
+        tmp_dir = TemporaryDirectory()
+        app.config['UPLOAD_FOLDER'] = tmp_dir.name
+
+    data = {
+        'project_id': project_id,
+        'work_date': datetime.utcnow().isoformat(),
+        'document_type': 'general',
+        'doc_notes': 'sample note',
+        'files': (io.BytesIO(b'content'), 'test.txt'),
+    }
+
+    resp = client.post('/documents/upload', data=data, content_type='multipart/form-data')
+    assert resp.status_code == 201
+
+    with client.session_transaction() as sess:
+        sess['project_id'] = project_id
+        sess['report_date'] = datetime.utcnow().date().isoformat()
+
+    resp = client.get('/documents/list')
+    assert resp.status_code == 200
+    docs = resp.get_json()['documents']
+    assert len(docs) == 1
+    assert docs[0]['doc_notes'] == 'sample note'
+
+    tmp_dir.cleanup()

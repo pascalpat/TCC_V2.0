@@ -50,10 +50,12 @@ async function uploadDocuments(e) {
   const projectId = document.getElementById('projectNumber').value;
   const reportDate = document.getElementById('dateSelector').value;
   const note = document.getElementById('docNote').value || '';
+  const detailed = document.getElementById('docNotes').value || '';
   const tags = document.getElementById('docTags').value || '';
   formData.append('project_id', projectId);
   formData.append('work_date', reportDate);
   formData.append('short_note', note);
+  formData.append('doc_notes', detailed);
   formData.append('tags', tags);
 
 
@@ -100,8 +102,7 @@ function renderDocumentsTable(docs) {
     `;
 
   const link = tr.querySelector('a');
-    link.addEventListener('mouseover', e => showPreview(doc.file_url, e.target));
-    link.addEventListener('mouseover', e => showPreview(fileUrl, e.target));
+  link.addEventListener('mouseover', e => showPreview(fileUrl, e.target));
     link.addEventListener('mouseout', hidePreview);
     tbody.appendChild(tr);
   });

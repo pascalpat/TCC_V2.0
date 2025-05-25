@@ -107,6 +107,7 @@ class Document(db.Model):
     file_url = db.Column(db.String(2083), nullable=False)  # Path or URL to the file
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of upload
     status = db.Column(db.Enum('pending', 'committed', name='record_status'),default='pending')
+    doc_notes = db.Column(db.Text, nullable=True)
 
     # Document Type and Category
     document_type = db.Column(
@@ -129,6 +130,7 @@ class Document(db.Model):
 
     # Tags and Metadata
     tags = db.Column(db.JSON, nullable=True)  # JSON array for tags (e.g., ["Safety", "Urgent"])
+    doc_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp for creation
     last_modified_at = db.Column(db.DateTime, nullable=True)  # Timestamp of the last modification
 

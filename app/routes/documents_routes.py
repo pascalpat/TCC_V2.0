@@ -45,7 +45,7 @@ def list_documents():
     if date_obj:
         start = datetime.combine(date_obj, datetime.min.time())
         end = datetime.combine(date_obj, datetime.max.time())
-    query = query.filter(Document.uploaded_at >= start, Document.uploaded_at <= end)
+        query = query.filter(Document.uploaded_at >= start, Document.uploaded_at <= end)
     query = query.filter(Document.status.in_(["pending", "committed"]))
 
 
@@ -59,6 +59,7 @@ def list_documents():
             "document_type": d.document_type,
             "status": d.status,
             "uploaded_at": d.uploaded_at.isoformat() if d.uploaded_at else None,
+            "doc_notes": d.doc_notes,
         }
         for d in docs
     ]
@@ -73,6 +74,7 @@ def upload_documents():
     proj_val = session.get("project_id") or request.form.get("project_id")
     work_date = session.get("report_date") or request.form.get("work_date")
     doc_type = request.form.get("document_type", "general")
+    doc_notes = request.form.get('doc_notes')
     files = request.files.getlist("files")
 
     if not proj_val or not files:
@@ -118,7 +120,8 @@ def upload_documents():
                 file_url=rel_path,
                 uploaded_at=upload_dt,
                 document_type=doc_type,
-                status="pending"
+                status="pending",
+                doc_notes=doc_notes
                 )
             db.session.add(doc)
             created.append(doc)
