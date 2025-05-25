@@ -8,6 +8,8 @@ This repository contains a modular Flask and JavaScript application for tracking
    ```bash
    pip install -r requirements.txt
    ```
+   The list includes `python-dotenv` so the app can load variables from a `.env`
+   file during development.
 2. Provide the following environment variables (see `.env.txt` for examples):
    - `DATABASE_URL` – SQLAlchemy connection string (defaults to `sqlite:///database/TCC.db` if unset).
    - `FLASK_SECRET_KEY` – secret key for sessions.
