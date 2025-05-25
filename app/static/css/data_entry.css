@@ -95,6 +95,13 @@
     margin-top: 10px;
   }
 
+  details.doc-metadata summary {
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
+
   /* increase notes textarea size */
   #docNotes {
     height: 6em;
