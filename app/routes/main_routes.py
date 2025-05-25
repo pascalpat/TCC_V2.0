@@ -82,6 +82,6 @@ def save_report():
         save_to_csv(session['daily_data'], date)
         return jsonify({'message': f'Data for {date} saved successfully!'}), 200
     except Exception as e:
-        print(f"Error saving data: {e}")
+        current_app.logger.debug(f"Error saving data: {e}")
         return jsonify({'error': 'Failed to save data. Please try again.'}), 500
     

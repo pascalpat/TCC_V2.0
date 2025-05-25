@@ -161,7 +161,7 @@ def redirect_to_data_entry():
         session['current_reporting_date'] = report_date
         session['project_number'] = project_id
 
-        print(f"Redirecting to data entry page with Date: {report_date}, Project: {project_id}")
+        current_app.logger.debug(f"Redirecting to data entry page with Date: {report_date}, Project: {project_id}")
 
         # Redirect to the data entry page
         return redirect(url_for('data_entry_bp.submit_data_entry'))
@@ -262,7 +262,7 @@ def collect_work_orders(max_count, upload_folder):
                     work_order_signed.save(save_path)
                     work_order_entry['Signed Work Order'] = filename
                 except Exception as e:
-                    print(f"Failed to save signed work order: {e}")
+                    current_app.logger.debug(f"Failed to save signed work order: {e}")
                     flash("Failed to save signed work order.", "danger")
                     
             # Save associated pictures
@@ -274,7 +274,7 @@ def collect_work_orders(max_count, upload_folder):
                         picture.save(pic_save_path)
                         work_order_entry['Pictures'].append(pic_filename)
                     except Exception as e:
-                        print(f"Failed to save work order picture: {e}")
+                        current_app.logger.debug(f"Failed to save work order picture: {e}")
                         flash("Failed to save work order picture.", "danger")
 
             work_orders.append(work_order_entry)
@@ -369,8 +369,8 @@ def collect_work_orders(max_count, upload_folder):
             if general_notes:
                 append_to_sheet(writer, [{'General Notes': general_notes}], 'General Notes')
 
-        print(f"Data appended to Excel file: {file_path}")
+        current_app.logger.debug(f"Data appended to Excel file: {file_path}")
 
     except Exception as e:
-        print(f"Failed to save data tp excel: {e}")
+        current_app.logger.debug(f"Failed to save data tp excel: {e}")
     

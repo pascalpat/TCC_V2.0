@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask import Blueprint
 from app.utils.validation import validate_worker_input
 from app.routes.data_persistence import save_to_csv
-from flask import session
+from flask import session, current_app
 import logging
 
 app = Flask(__name__)
@@ -116,7 +116,7 @@ def get_progress():
         completed_tabs = [tab for tab, status in tab_statuses.items() if status == 'completed']
         progress_percentage = (len(completed_tabs) / TOTAL_TABS) * 100 if TOTAL_TABS else 0
 
-        print(f"Progress data: {progress_percentage}, {completed_tabs}")
+        current_app.logger.debug(f"Progress data: {progress_percentage}, {completed_tabs}")
 
         return jsonify({
             'progressPercentage': round(progress_percentage, 2),
