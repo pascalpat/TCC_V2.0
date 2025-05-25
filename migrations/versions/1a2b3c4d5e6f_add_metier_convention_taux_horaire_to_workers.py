@@ -37,3 +37,4 @@ def downgrade():
             batch_op.drop_column('convention')
         if 'metier' in existing:
             batch_op.drop_column('metier')
+            

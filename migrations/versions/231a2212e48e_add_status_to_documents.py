@@ -36,3 +36,4 @@ def downgrade():
     with op.batch_alter_table('documents') as batch_op:
         if 'status' in columns:
             batch_op.drop_column('status')
+            

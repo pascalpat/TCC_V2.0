@@ -166,7 +166,7 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
 | ------ | --- | ----------- | ------------ |
 | GET    | `/documents/list` | List documents for current project/date | n/a |
 | GET    | `/documents/files/<filename>` | Serve uploaded file | n/a |
-| POST   | `/documents/upload` | Upload files (FormData) | `files`, `document_type`, `project_id`, `work_date` |
+| POST   | `/documents/upload` | Upload files (FormData) | `files`, `document_type`, `project_id`, `work_date`, `doc_notes`, `activity_code_id`, `payment_item_id`, `cwp_code` |
 
 #### Hover Preview
 
@@ -272,6 +272,12 @@ in `jpg`, `jpeg`, `png` or `gif`.
 #documentType
 #uploadDocumentsBtn
 #documentsTable
+#docActivityCode
+#docPaymentItem
+#docCwp
+#docTags
+#docNote
+#docNotes
 #docPreview        // preview container
 #docPreviewImg
 ```
@@ -298,6 +304,7 @@ in `jpg`, `jpeg`, `png` or `gif`.
 * **Common**: `project_id`, `date_of_report`
 * **Labor/Equipment**: `employee_id`, `equipment_id`, `hours`, `activity_code_id`, `payment_item_id`, `cwp_id`, `is_manual`, `manual_name`
 * **Materials**: `material_id`, `manual_name`, `quantity`, `activity_code`, `payment_item_id`, `cwp`
+* **Documents**: `files`, `document_type`, `project_id`, `work_date`, `doc_notes`, `activity_code_id`, `payment_item_id`, `cwp_code`
 * **Update (PUT)**: labor→ `{ hours, activity_code }`, materials→ `{ quantity, activity_code }`
 
 ---

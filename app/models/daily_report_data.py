@@ -24,7 +24,6 @@ class DailyReportData(db.Model):
     date = Column(Date, nullable=False)  # Date of the log entry
     hours = Column(Float, default=0.0)  # Hours worked or used
     cost = Column(Float, default=0.0)  # Associated cost
-    quantity_used = db.Column(db.Float, default=0.0)  # Quantity of material used
 
     # Dynamic Entity Association
     entity_type = Column(String(50), nullable=False)  # Type of entity ('worker', 'equipment', 'material', etc.)
@@ -32,7 +31,6 @@ class DailyReportData(db.Model):
 
     # Granularity and Custom Fields
     task_id = Column(Integer, ForeignKey('project_tasks.id'), nullable=True)  # FK to Tasks table
-    payment_item_id = Column(Integer, ForeignKey('payment_items.id'), nullable=True)  # FK to Payment Items table
     CWP = Column(String(100), nullable=True)  # Construction Work Package (optional)
     phase = Column(String(100), nullable=True)  # Construction phase (optional)
     location = Column(String(100), nullable=True)  # Optional location or sector

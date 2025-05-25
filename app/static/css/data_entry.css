@@ -95,6 +95,10 @@
     margin-top: 10px;
   }
 
+  /* increase notes textarea size */
+  #docNotes {
+    height: 6em;
+  }
 
 
   button {

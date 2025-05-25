@@ -18,8 +18,13 @@ depends_on = None
 def upgrade():
     bind = op.get_bind()
     inspector = inspect(bind)
+    fks_to_drop = [fk['name'] for fk in inspector.get_foreign_keys('documents')
+                   if fk.get('referred_table') in ('daily_notes', 'entries_daily_notes') and fk.get('name')]
+
     columns = {c['name'] for c in inspector.get_columns('documents')}
-    with op.batch_alter_table('documents', schema=None) as batch_op:
+    with op.batch_alter_table('documents', schema=None, reflect_kwargs={'resolve_fks': False}) as batch_op:
+        for fk_name in fks_to_drop:
+            batch_op.drop_constraint(fk_name, type_='foreignkey')
         if 'activity_code_id' not in columns:
             batch_op.add_column(sa.Column('activity_code_id', sa.Integer(), nullable=True))
             batch_op.create_foreign_key('fk_documents_activity_code_id', 'activity_codes', ['activity_code_id'], ['id'])
@@ -35,7 +40,7 @@ def downgrade():
     inspector = inspect(bind)
     columns = {c['name'] for c in inspector.get_columns('documents')}
     
-    with op.batch_alter_table('documents', schema=None) as batch_op:    
+    with op.batch_alter_table('documents', schema=None, reflect_kwargs={'resolve_fks': False}) as batch_op:
         if 'cwp_code' in columns:
             batch_op.drop_constraint('fk_documents_cwp_code', type_='foreignkey')
             batch_op.drop_column('cwp_code')

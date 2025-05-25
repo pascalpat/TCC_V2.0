@@ -22,3 +22,4 @@ def upgrade():
 
 def downgrade():
     op.drop_column('documents', 'doc_notes')
+    

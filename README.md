@@ -13,6 +13,7 @@ This repository contains a modular Flask and JavaScript application for tracking
    - `FLASK_SECRET_KEY` – secret key for sessions.
    - Optional: `WEATHER_API_KEY`, `SPEECH_API_KEY`, `SPEECH_REGION`.
    When `FLASK_ENV=development`, variables from a local `.env` file are loaded automatically by `run.py`.
+3. Alembic migrations use `render_as_batch=True` when the database is SQLite. This is configured automatically in `migrations/env.py`.
 
 ## Running the Application
 

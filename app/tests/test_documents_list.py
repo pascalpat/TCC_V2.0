@@ -1,6 +1,6 @@
 from app import create_app, db
 from app.models.models import Document
-from app.models.core_models import Project
+from app.models.core_models import Project, ActivityCode, PaymentItem, CWPackage
 from tempfile import TemporaryDirectory
 import io
 import os
@@ -73,5 +73,53 @@ def test_upload_document_with_notes(client, app):
     docs = resp.get_json()['documents']
     assert len(docs) == 1
     assert docs[0]['doc_notes'] == 'sample note'
+
+    tmp_dir.cleanup()
+
+
+def test_upload_document_with_activity_payment_cwp(client, app):
+    with app.app_context():
+        project = Project(name='MixProj', project_number='MX1', category='Test')
+        db.session.add(project)
+        db.session.commit()
+        project_id = project.id
+
+        activity = ActivityCode(code='AC01', description='Desc')
+        db.session.add(activity)
+        db.session.commit()
+
+        payment = PaymentItem(project_id=project_id, payment_code='PI01',
+                              activity_code_id=activity.id, item_name='Item')
+        cwp = CWPackage(project_id=project_id, code='CWP1', name='CWP Name')
+        db.session.add_all([payment, cwp])
+        db.session.commit()
+
+        tmp_dir = TemporaryDirectory()
+        app.config['UPLOAD_FOLDER'] = tmp_dir.name
+
+    data = {
+        'project_id': project_id,
+        'work_date': datetime.utcnow().isoformat(),
+        'document_type': 'general',
+        'activity_code_id': activity.id,
+        'payment_item_id': payment.id,
+        'cwp_code': cwp.code,
+        'files': (io.BytesIO(b'content2'), 'test2.txt'),
+    }
+
+    resp = client.post('/documents/upload', data=data, content_type='multipart/form-data')
+    assert resp.status_code == 201
+
+    with client.session_transaction() as sess:
+        sess['project_id'] = project_id
+        sess['report_date'] = datetime.utcnow().date().isoformat()
+
+    resp = client.get('/documents/list')
+    assert resp.status_code == 200
+    docs = resp.get_json()['documents']
+    assert len(docs) == 1
+    assert docs[0]['activity_code_id'] == activity.id
+    assert docs[0]['payment_item_id'] == payment.id
+    assert docs[0]['cwp_code'] == cwp.code
 
     tmp_dir.cleanup()
