@@ -314,76 +314,76 @@
   <!-- Documents tab -->
   <!-- ──────────────────────────────────────────────────── -->
   <div id="DocumentsTab" class="tabcontent">
-  <div class="form-table-container">
-    <form id="DocumentsForm" class="form-box" enctype="multipart/form-data">
-      <h2>Ajouter des Documents</h2>
+    <div class="form-table-container">
+      <form id="DocumentsForm" class="form-box" enctype="multipart/form-data">
+        <h2>Ajouter des Documents</h2>
 
-      <label for="documentType">Type de Document:</label>
-      <select id="documentType" class="form-control">
-        <option value="general">Général</option>
-        <option value="h_s">Santé &amp; Sécurité</option>
-        <option value="environment">Environnement</option>
-        <option value="field_inspection">Inspection terrain</option>
-        <option value="maintenance">Maintenance</option>
-      </select>
-
-      <label for="documentFiles">Fichiers:</label>
-      <input type="file" id="documentFiles" multiple>
-
-      <div class="button-container doc-upload-controls">
-        <button type="button" id="uploadDocumentsBtn" class="btn btn-primary">
-          Télécharger
-        </button>
-
-        <div class="doc-inputs"></div>
-
-        <label for="docActivityCode">Code d'Activité:</label>
-        <select id="docActivityCode" class="form-control">
-          <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
-          {% for code in activity_codes %}
-            <option value="{{ code.id }}">{{ code.code }} – {{ code.description }}</option>
-          {% endfor %}
+        <label for="documentType">Type de Document:</label>
+        <select id="documentType" class="form-control">
+          <option value="general">Général</option>
+          <option value="h_s">Santé &amp; Sécurité</option>
+          <option value="environment">Environnement</option>
+          <option value="field_inspection">Inspection terrain</option>
+          <option value="maintenance">Maintenance</option>
         </select>
 
-        <label for="docPaymentItem">Items de bordereau:</label>
-        <select id="docPaymentItem" class="form-control">
-          <option value="" disabled selected>-- Aucun --</option>
-          {% for item in payment_items %}
-            <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
-          {% endfor %}
-        </select>
+        <label for="documentFiles">Fichiers:</label>
+        <input type="file" id="documentFiles" multiple>
 
-        <label for="docCwp">Construction Work Package (CWP):</label>
-        <select id="docCwp" class="form-control">
-          <option value="" disabled selected>-- Aucun --</option>
-          {% for c in cwps %}
-            <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
-          {% endfor %}
-        </select>
+        <div class="button-container doc-upload-controls">
+          <button type="button" id="uploadDocumentsBtn" class="btn btn-primary">
+            Télécharger
+          </button>
 
-        <label for="docTags">Tags (séparés par des virgules):</label>
-        <input type="text" id="docTags" class="form-control" placeholder="tag1, tag2">
-      </div>
-    </form>
+          <div class="doc-inputs"></div>
 
-    <div id="documentsTableContainer" class="table-container">
-      <h3>Documents Téléchargés</h3>
-      <table id="documentsTable" class="styled-table">
-        <thead>
-          <tr>
-            <th>Nom du fichier</th>
-            <th>Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div id="docPreview" class="image-preview hidden">
-        <img id="docPreviewImg" src="" alt="preview"><!-- small preview on hover -->
+          <label for="docActivityCode">Code d'Activité:</label>
+          <select id="docActivityCode" class="form-control">
+            <option value="" disabled selected>-- Sélectionner Code d'Activité --</option>
+            {% for code in activity_codes %}
+              <option value="{{ code.id }}">{{ code.code }} – {{ code.description }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="docPaymentItem">Items de bordereau:</label>
+          <select id="docPaymentItem" class="form-control">
+            <option value="" disabled selected>-- Aucun --</option>
+            {% for item in payment_items %}
+              <option value="{{ item.id }}">{{ item.payment_code }} – {{ item.item_name }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="docCwp">Construction Work Package (CWP):</label>
+          <select id="docCwp" class="form-control">
+            <option value="" disabled selected>-- Aucun --</option>
+            {% for c in cwps %}
+              <option value="{{ c.code }}">{{ c.code }} – {{ c.name }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="docTags">Tags (séparés par des virgules):</label>
+          <input type="text" id="docTags" class="form-control" placeholder="tag1, tag2">
+        </div>
+      </form>
+
+      <div id="documentsTableContainer" class="table-container">
+        <h3>Documents Téléchargés</h3>
+        <table id="documentsTable" class="styled-table">
+          <thead>
+            <tr>
+              <th>Nom du fichier</th>
+              <th>Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+          <div id="docPreview" class="image-preview hidden">
+            <img id="docPreviewImg" src="" alt="preview"><!-- small preview on hover -->
+          </div>
       </div>
     </div>
   </div>
-</div>
 
 
 {% endblock %}
