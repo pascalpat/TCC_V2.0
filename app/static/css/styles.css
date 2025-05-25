@@ -456,6 +456,15 @@
         min-width: 300px;                  /* The table will take up 50% of the container */
     }
 
+    #documentsTableContainer {
+        flex-grow: 2px;
+        max-height: 800px;
+        overflow-y: auto;
+        min-width: 300px;
+    }
+
+
+
     /* Styling for the check mark */
     .check-mark {
         font-size:20px; /* Increase the size of the check mark */
