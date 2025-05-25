@@ -46,21 +46,30 @@ def normalize_db_url(url: str) -> str:
 
 def validate_config():
     required_env_vars = ['FLASK_SECRET_KEY', 'DATABASE_URL']
+    optional_api_keys = ['WEATHER_API_KEY', 'SPEECH_API_KEY', 'SPEECH_REGION']
+    env = os.getenv("FLASK_ENV", "production")
+
+
+
     for var in required_env_vars:
         if not os.getenv(var):
-            if os.getenv("FLASK_ENV") == "production":
+            if env == "production":
                 raise RuntimeError(f"Critical Error: {var} is not set in Production!")
             logger.warning(f"Environment variable '{var}' is not set. Using default values.")
-
+    for key in optional_api_keys:
+        if not os.getenv(key):
+            if env == "production":
+                raise RuntimeError(f"Critical Error: {key} is not set in Production!")
+            logger.warning(f"Environment variable '{key}' is not set. Some features may be disabled.")
 validate_config()
 
 # ─── Base Config ────────────────────────────────────────────────────────────────
 
 class Config:
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
-    WEATHER_API_KEY = os.getenv('WEATHER_API_KEY', 'default_weather_key')
-    SPEECH_API_KEY  = os.getenv('SPEECH_API_KEY', 'default_speechkey')
-    SPEECH_REGION   = os.getenv('SPEECH_REGION', 'default_region')
+    WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
+    SPEECH_API_KEY  = os.getenv('SPEECH_API_KEY')
+    SPEECH_REGION   = os.getenv('SPEECH_REGION')
 
     # Use a full DATABASE_URL if provided, otherwise fall back to our sqlite file
     raw_db = os.getenv('DATABASE_URL', DEFAULT_DB_PATH)

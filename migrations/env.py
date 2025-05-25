@@ -89,6 +89,8 @@ def run_migrations_online():
         conf_args['process_revision_directives'] = process_revision_directives
 
     connectable = get_engine()
+    if connectable.dialect.name == 'sqlite':
+        conf_args.setdefault('render_as_batch', True)
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
