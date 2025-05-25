@@ -7,6 +7,7 @@ Create Date: 2025-05-24 17:37:05.164396
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = '2b9ddba5022f'
@@ -19,12 +20,19 @@ record_status = sa.Enum('pending', 'committed', name='record_status')
 
 
 def upgrade():
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = {c['name'] for c in inspector.get_columns('documents')}
     # Ensure the enum exists for databases that require explicit creation
-    record_status.create(op.get_bind(), checkfirst=True)
+    record_status.create(bind, checkfirst=True)
     with op.batch_alter_table('documents') as batch_op:
-        batch_op.add_column(sa.Column('status', record_status, nullable=True))
-
+        if 'status' not in columns:
+            batch_op.add_column(sa.Column('status', record_status, nullable=True))
 
 def downgrade():
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = {c['name'] for c in inspector.get_columns('documents')}
     with op.batch_alter_table('documents') as batch_op:
-        batch_op.drop_column('status')
+        if 'status' in columns:
+            batch_op.drop_column('status')

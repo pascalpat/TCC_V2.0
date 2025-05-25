@@ -76,6 +76,15 @@
     margin-top: 10px;
   }
   
+  .doc-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+
+
   button {
     background-color: #007bff;
     color: white;
