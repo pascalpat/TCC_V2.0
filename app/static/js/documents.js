@@ -60,10 +60,9 @@ async function uploadDocuments(e) {
   formData.append('short_note', note);
   formData.append('doc_notes', detailed);
   formData.append('tags', tags);
-  formData.append('activity_id', activity);
+  formData.append('activity_code_id', activity);
   formData.append('payment_item_id', payment);
-  formData.append('cwp', cwp);
-
+  formData.append('cwp_code', cwp);
 
   try {
     const resp = await fetch('/documents/upload', {

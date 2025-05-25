@@ -1,7 +1,7 @@
 """add activity, payment item, cwp to documents
 
 Revision ID: 15bfc999523b
-Revises: 4ab0aa99c24f
+Revises: 5c7a995b3d7e
 Create Date: 2025-05-30 00:00:00.000000
 """
 from alembic import op
@@ -10,7 +10,7 @@ from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = '15bfc999523b'
-down_revision = '4ab0aa99c24f'
+down_revision = '5c7a995b3d7e'
 branch_labels = None
 depends_on = None
 
