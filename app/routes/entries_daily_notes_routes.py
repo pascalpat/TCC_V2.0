@@ -3,6 +3,7 @@
 from flask import Blueprint, jsonify, session, current_app, request, current_app
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.daily_models import DailyNoteEntry
+from ..models.core_models import Project
 from .. import db
 from datetime import datetime, date
 

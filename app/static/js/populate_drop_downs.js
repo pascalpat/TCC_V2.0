@@ -55,7 +55,8 @@ export async function populateActivityDropdown() {
       "activityCode",
       "materialActivityCode",
       "subcontractorActivityCode",
-      "noteActivityCode"
+      "noteActivityCode",
+      "docActivityCode"
     ];
     ids.forEach(id => {
       const dd = document.getElementById(id);
@@ -88,7 +89,7 @@ export async function populatePaymentItemDropdown() {
     window.paymentItemsList = items;     // store for inline editing
 
     
-    const selectIds = ["payment_item_id", "materialPaymentItem", "notePaymentItem"];
+    const selectIds = ["payment_item_id", "materialPaymentItem", "notePaymentItem", "docPaymentItem"];
     selectIds.forEach(id => {
       const dd = document.getElementById(id);
       if (!dd) return;
@@ -125,7 +126,7 @@ export async function populateCwpDropdown() {
   }
 
   // target both selects by ID
-  const selectIds = ["cwp_code", "materialCwp", "noteCwp"];
+  const selectIds = ["cwp_code", "materialCwp", "noteCwp", "docCwp"];
   selectIds.forEach(selectId => {
     const dd = document.getElementById(selectId);
     if (!dd) {

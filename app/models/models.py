@@ -106,8 +106,10 @@ class Document(db.Model):
     file_name = db.Column(db.String(255), nullable=False)  # Name of the uploaded file
     file_url = db.Column(db.String(2083), nullable=False)  # Path or URL to the file
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)  # Timestamp of upload
-    status = db.Column(db.Enum('pending', 'committed', name='record_status'),default='pending')
-    doc_notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.Enum('pending', 'committed', name='record_status'), default='pending')
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
+    payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
+    cwp = db.Column(db.String(50), nullable=True)
 
     # Document Type and Category
     document_type = db.Column(
@@ -138,4 +140,5 @@ class Document(db.Model):
     project = db.relationship('Project', backref='documents', lazy=True)  # Links to Project
     daily_note = db.relationship('DailyNoteEntry', back_populates='documents', lazy=True)
     #daily_log = db.relationship('DailyReportData', back_populates='documents')
-
+    activity = db.relationship('ActivityCode', backref='documents', lazy=True)
+    payment_item = db.relationship('PaymentItem', backref='documents', lazy=True)

@@ -52,11 +52,17 @@ async function uploadDocuments(e) {
   const note = document.getElementById('docNote').value || '';
   const detailed = document.getElementById('docNotes').value || '';
   const tags = document.getElementById('docTags').value || '';
+  const activity = document.getElementById('docActivityCode')?.value || '';
+  const payment = document.getElementById('docPaymentItem')?.value || '';
+  const cwp = document.getElementById('docCwp')?.value || '';
   formData.append('project_id', projectId);
   formData.append('work_date', reportDate);
   formData.append('short_note', note);
   formData.append('doc_notes', detailed);
   formData.append('tags', tags);
+  formData.append('activity_id', activity);
+  formData.append('payment_item_id', payment);
+  formData.append('cwp', cwp);
 
 
   try {

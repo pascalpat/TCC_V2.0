@@ -75,6 +75,9 @@ def upload_documents():
     work_date = session.get("report_date") or request.form.get("work_date")
     doc_type = request.form.get("document_type", "general")
     doc_notes = request.form.get('doc_notes')
+    activity_id = request.form.get('activity_id')
+    payment_item_id = request.form.get('payment_item_id')
+    cwp = request.form.get('cwp')
     files = request.files.getlist("files")
 
     if not proj_val or not files:
@@ -121,7 +124,10 @@ def upload_documents():
                 uploaded_at=upload_dt,
                 document_type=doc_type,
                 status="pending",
-                doc_notes=doc_notes
+                doc_notes=doc_notes,
+                activity_id=int(activity_id) if activity_id else None,
+                payment_item_id=int(payment_item_id) if payment_item_id else None,
+                cwp=cwp,
                 )
             db.session.add(doc)
             created.append(doc)

@@ -80,7 +80,20 @@ def get_calendar_data():
         }
 
         # 2) Query daily_report_status table
-        status_rows = DailyReportStatus.query.all()  
+        status_rows = DailyReportStatus.query.all()
+
+        if not status_rows and 'daily_data' in session:
+            daily_data = session['daily_data']
+            calendar_data = {}
+            for date_str, info in daily_data.items():
+                projects = info.get('projects', {})
+                calendar_data[date_str] = {pid: pinfo['status'] for pid, pinfo in projects.items()}
+            return jsonify({'calendar': calendar_data, 'projects': {}}), 200
+
+
+
+
+
 
         # 3) Build the calendar dictionary
         #    date_str => { "project_number": "status", ... }

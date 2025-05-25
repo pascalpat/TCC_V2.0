@@ -12,10 +12,10 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-db = SQLAlchemy()
+db = SQLAlchemy(session_options={"expire_on_commit": False})
 migrate = Migrate()
 
-from app.config import config_map
+from app.config import config_map, TestingConfig
 
 # Blueprint imports
 from app.routes.auth_routes                import auth_bp
@@ -48,7 +48,16 @@ from app.routes.admin_routes               import admin_bp
 # The app is configured based on the environment variable FLASK_ENV.
 def create_app(config_name: str = None):
     if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'development')
+        if 'PYTEST_CURRENT_TEST' in os.environ:
+            config_name = 'testing'
+        else:
+            config_name = os.getenv('FLASK_ENV', 'development')
+
+    if isinstance(config_name, type):
+        config_class = config_name
+    else:
+        config_class = config_map.get(config_name, config_map['development'])
+
 
     app = Flask(
         __name__,
@@ -56,12 +65,17 @@ def create_app(config_name: str = None):
         template_folder=os.path.join(os.path.dirname(__file__), 'templates')
     )
 
-    app.config.from_object(config_map.get(config_name, config_map['development']))
+    app.config.from_object(config_class)
     logger.info(f"Starting '{config_name}' mode → DB = {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     db.init_app(app)
     migrate.init_app(app, db)
     Session(app)
+
+    if config_class is TestingConfig:
+        with app.app_context():
+            db.create_all()
+
 
     # Register blueprints
     app.register_blueprint(auth_bp)

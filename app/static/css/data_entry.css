@@ -75,6 +75,18 @@
     gap: 8px;
     margin-top: 10px;
   }
+
+  /* Stacked layout for document upload controls */
+  .doc-upload-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .doc-upload-controls textarea,
+  .doc-upload-controls select {
+    width: 100%;
+  }
+
   
   .doc-inputs {
     display: flex;
