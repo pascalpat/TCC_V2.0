@@ -31,6 +31,10 @@ def index():
     else:
         assets_dir = os.path.join(static_admin, "assets")
         js_matches = glob.glob(os.path.join(assets_dir, "index-*.js"))
+        if not js_matches:
+            plain_js = os.path.join(assets_dir, "index.js")
+            if os.path.exists(plain_js):
+                js_matches = [plain_js]
         if js_matches:
             js_path = js_matches[0]
             admin_js = f"admin/assets/{os.path.basename(js_path)}"
