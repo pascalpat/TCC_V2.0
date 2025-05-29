@@ -35,11 +35,17 @@ export async function loadSubcontractorList() {
 export async function initSubcontractorsTab() {
     await populateDropdowns();                   // fill activity-code dropdown
     loadSubcontractorList();                     // fetch /subcontractors/list
-    document.getElementById('addSubcontractorBtn')
-        .addEventListener('click', addSubLine);
-    document.getElementById('confirmSubcontractorsBtn')
-        .addEventListener('click', confirmSubLines);
 
+    const addBtn = document.getElementById('addSubcontractorBtn');
+    const confirmBtn = document.getElementById('confirmSubcontractorsBtn');
+    if (addBtn) {
+        addBtn.removeEventListener('click', addSubLine);
+        addBtn.addEventListener('click', addSubLine);
+    }
+    if (confirmBtn) {
+        confirmBtn.removeEventListener('click', confirmSubLines);
+        confirmBtn.addEventListener('click', confirmSubLines);
+    }
     const projectId  = document.getElementById('projectNumber').value;
     const reportDate = document.getElementById('dateSelector').value;
     if (projectId && reportDate) {
@@ -49,7 +55,63 @@ export async function initSubcontractorsTab() {
 
 function addSubLine(e) {
     e.preventDefault();
-    // push form values to stagedSubs and renderPreviewTable()
+    
+    const nameInput   = document.getElementById('subcontractorName');
+    const empInput    = document.getElementById('numEmployees');
+    const hrsInput    = document.getElementById('totalHours');
+    const actSelect   = document.getElementById('subcontractorActivityCode');
+
+    const name   = nameInput.value.trim();
+    const empTxt = empInput.value.trim();
+    const hrsTxt = hrsInput.value.trim();
+    const actId  = actSelect.value;
+
+    if (!name || !empTxt || !hrsTxt || !actId) {
+        return alert("Veuillez remplir tous les champs (y compris le code activité).");
+    }
+
+    stagedSubs.push({
+        companyName:      name,
+        numEmployees:     parseInt(empTxt, 10),
+        totalHours:       parseFloat(hrsTxt),
+        activity_code_id: parseInt(actId, 10),
+        _display: {
+            name,
+            emp: empTxt,
+            hrs: hrsTxt,
+            activityText: actSelect.options[actSelect.selectedIndex]?.text || ''
+        }
+    });
+
+    renderPreviewTable();
+    resetSubForm();
+}
+
+function resetSubForm() {
+    document.getElementById('subcontractorName').value = '';
+    document.getElementById('numEmployees').value = '';
+    document.getElementById('totalHours').value = '';
+    const act = document.getElementById('subcontractorActivityCode');
+    if (act) act.selectedIndex = 0;
+}
+
+function renderPreviewTable() {
+    const tbody = document.querySelector('#subcontractorsTable tbody');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr.preview-row').forEach(r => r.remove());
+
+    stagedSubs.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.classList.add('preview-row');
+        tr.innerHTML = `
+            <td>${entry._display.name}</td>
+            <td>${entry._display.emp}</td>
+            <td>${entry._display.hrs}</td>
+            <td>${entry._display.activityText}</td>
+            <td></td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 async function confirmSubLines(e) {
@@ -62,6 +124,13 @@ async function confirmSubLines(e) {
     const projectId  = document.getElementById('projectNumber').value;
     const reportDate = document.getElementById('dateSelector').value;
 
+    const usage = stagedSubs.map(entry => ({
+        companyName:      entry.companyName,
+        numEmployees:     entry.numEmployees,
+        totalHours:       entry.totalHours,
+        activity_code_id: entry.activity_code_id
+    }));
+
     try {
         const resp = await fetch('/subcontractors/confirm-entries', {
             method: 'POST',
@@ -69,7 +138,7 @@ async function confirmSubLines(e) {
             body: JSON.stringify({
                 project_id: projectId,
                 date: reportDate,
-                usage: stagedSubs
+                usage
             })
         });
         const data = await resp.json();
@@ -77,6 +146,7 @@ async function confirmSubLines(e) {
 
         alert(`Sous-traitants confirmés (${data.records.length} lignes).`);
         stagedSubs = [];
+        renderPreviewTable();
         await loadPendingSubs(projectId, reportDate);
     } catch (err) {
         console.error('Erreur confirmation sous-traitants:', err);
@@ -85,95 +155,33 @@ async function confirmSubLines(e) {
 }
 
 async function loadPendingSubs(projectId, reportDate) {
-    const resp = await fetch(
-        `/subcontractors/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}`
-    );
-    const { entries } = await resp.json();
-    // renderConfirmedTable(entries)
+    try {
+        const resp = await fetch(
+            `/subcontractors/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}`
+        );
+        if (!resp.ok) throw new Error(await resp.text());
+        const { entries } = await resp.json();
+        renderConfirmedTable(entries);
+    } catch (err) {
+        console.error('Error loading pending subcontractors:', err);
+    }
 }
 
+function renderConfirmedTable(entries = []) {
+    const tbody = document.querySelector('#subcontractorsTable tbody');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr.confirmed-row').forEach(r => r.remove());
 
-document.addEventListener('DOMContentLoaded', function () {
-    const addSubcontractorBtn = document.getElementById('addSubcontractorBtn');
-    const confirmSubcontractorsBtn = document.getElementById('confirmSubcontractorsBtn');
-
-    if (addSubcontractorBtn) {
-        addSubcontractorBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const name = document.getElementById('subcontractorName').value.trim();
-            const numEmployees = document.getElementById('numEmployees').value.trim();
-            const totalHours = document.getElementById('totalHours').value.trim();
-            const activitySelect = document.getElementById('subcontractorActivityCode');
-
-            if (!activitySelect) {
-                console.error("Subcontractor activity code dropdown not found.");
-                return;
-            }
-
-            const activityText = activitySelect.options[activitySelect.selectedIndex]?.text || "";
-
-            if (!name || !numEmployees || !totalHours || !activitySelect.value) {
-                alert("Veuillez remplir tous les champs (y compris le code activité).");
-                return;
-            }
-
-            const tableBody = document.getElementById('subcontractorsTable').querySelector("tbody");
-            if (!tableBody) {
-                console.error("Subcontractors table tbody not found.");
-                return;
-            }
-
-            let row = tableBody.insertRow();
-            row.innerHTML = `
-                <td>${name}</td>
-                <td>${numEmployees}</td>
-                <td>${totalHours}</td>
-                <td>${activityText}</td>
-            `;
-
-            console.log("Subcontractor row added:", { name, numEmployees, totalHours, activityCode: activityText });
-
-            // Clear inputs after adding
-            document.getElementById('subcontractorName').value = "";
-            document.getElementById('numEmployees').value = "";
-            document.getElementById('totalHours').value = "";
-            activitySelect.selectedIndex = 0;
-        });
-    }
-
-    if (confirmSubcontractorsBtn) {
-        confirmSubcontractorsBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const tbody = document.getElementById('subcontractorsTable').querySelector('tbody');
-            let subcontractorEntries = [];
-            for (let row of tbody.rows) {
-                let subName = row.cells[0].innerText;
-                let subEmployees = row.cells[1].innerText;
-                let subHours = row.cells[2].innerText;
-                let subActivity = row.cells[3]?.innerText || "";
-                subcontractorEntries.push({
-                    companyName: subName,
-                    numEmployees: subEmployees,
-                    totalHours: subHours,
-                    activityCode: subActivity
-                });
-            }
-            fetch("/data-entry/save_draft", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entries: subcontractorEntries, tab: "subcontractors" })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Subcontractors draft saved successfully:", data);
-                alert("Les sous-traitants ont été sauvegardés en tant que brouillon.");
-            })
-            .catch(error => {
-                console.error("Error saving subcontractors draft:", error);
-                alert("Erreur lors de la sauvegarde des brouillons des sous-traitants.");
-            });
-        });
-    }
-});
-
+    entries.forEach(e => {
+        const tr = document.createElement('tr');
+        tr.classList.add('confirmed-row');
+        tr.innerHTML = `
+            <td data-entry-id="${e.id}" data-subcontractor-id="${e.subcontractor_id}">${e.subcontractor_id}</td>
+            <td>${e.num_employees || ''}</td>
+            <td>${e.labor_hours || ''}</td>
+            <td data-activity-id="${e.activity_code_id || ''}">${e.activity_code_id || ''}</td>
+            <td class="actions"></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
