@@ -57,7 +57,7 @@
     <!-- Additional Scripts -->
     {% block extra_js %}
     <script type="module">
-        import { getCurrentDate, highlightDates, getTemperature, restoreProgress }
+        import { showToday, highlightDates, getTemperature, restoreProgress }
           from "{{ url_for('static', filename='js/date_temp_loader.js') }}";
       
         document.addEventListener('DOMContentLoaded', () => {

@@ -10,14 +10,13 @@ import { fetchAndRenderDailyNotes } from './notes.js';
 import { fetchAndRenderWorkOrders } from './workorders.js';
 import { fetchAndRenderPictures } from './pictures.js';
 import { fetchAndRenderMedia } from './media.js';
-import { getCurrentDate, highlightDates, confirmDateSelection, getTemperature, markTabComplete, restoreProgress } from './date_temp_loader.js';
+import { highlightDates, confirmDateSelection, getTemperature, markTabComplete, restoreProgress } from './date_temp_loader.js';
 import { populateDropdown, populateDropdowns } from './populate_drop_downs.js';
 import { confirmWorkers } from './workers.js';	
 
 
 // Date / temp / progress logic
 import { 
-    getCurrentDate, 
     highlightDates, 
     confirmDateSelection, 
     getTemperature, 

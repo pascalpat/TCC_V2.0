@@ -12,6 +12,9 @@
 {% endblock %}
 {% block extra_js %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='admin/assets/index.css') }}">
-<script type="module" src="{{ url_for('static', filename='admin/assets/index.js') }}"></script>
+{% if admin_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename=admin_css) }}">
+{% endif %}
+<script type="module" src="{{ url_for('static', filename=admin_js) }}"></script>
+
 {% endblock %}
