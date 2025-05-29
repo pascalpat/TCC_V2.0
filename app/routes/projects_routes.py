@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, current_app
+from flask import Blueprint, request, jsonify, session, current_app, render_template
 from app.utils.data_loader import load_data
 import pandas as pd
 from app.models.core_models import Project  # Adjust the import path as necessary
@@ -107,3 +107,8 @@ def add_project():
     db.session.add(project)
     db.session.commit()
     return jsonify({'message': 'Project added successfully', 'id': project.id}), 201
+
+@projects_bp.route("/entry", methods=["GET"])
+def project_entry_form():
+    """Display the project entry form."""
+    return render_template("projects_entry.html")
