@@ -1,0 +1,38 @@
+{% macro input_field(model, field_name, label_text, **attrs) %}
+  {# check once #}
+  {% set req = is_required(model, field_name) %}
+  <div class="form-group">
+    <label
+      for="{{ field_name }}"
+      class="{% if req %}required{% endif %}">
+      {{ label_text }}
+    </label>
+    <input
+      id="{{ field_name }}"
+      name="{{ field_name }}"
+      {% if req %}required{% endif %}
+      class="form-control"
+      {{- xmlattr(attrs) }}>
+  </div>
+{% endmacro %}
+
+{% macro select_field(model, field_name, label_text, options, **attrs) %}
+  {% set req = is_required(model, field_name) %}
+  <div class="form-group">
+    <label
+      for="{{ field_name }}"
+      class="{% if req %}required{% endif %}">
+      {{ label_text }}
+    </label>
+    <select
+      id="{{ field_name }}"
+      name="{{ field_name }}"
+      {% if req %}required{% endif %}
+      class="form-control"
+      {{- xmlattr(attrs) }}>
+      {% for val, text in options %}
+        <option value="{{ val }}">{{ text }}</option>
+      {% endfor %}
+    </select>
+  </div>
+{% endmacro %}
