@@ -1,3 +1,4 @@
+{% from "utilities/_form_macros.html" import input_field, select_field %}
 {% extends "base_temp.html" %}
 
 {% block title %}
@@ -18,14 +19,12 @@ Login
             {% if error %}
                 <p class="error">{{ error }}</p>
             {% endif %}
-            <!-- Username input -->
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" placeholder="Enter your username" required>
-            <!-- Password input -->
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            <!-- Submit button -->
+
+            {{ input_field('username', 'Username:', required=True) }}
+            {{ input_field('password', 'Password:', required=True, type='password') }}
+            
             <button type="submit">Login</button>
+
         </form>
     </div>
 </body>

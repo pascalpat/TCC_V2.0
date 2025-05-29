@@ -1,38 +1,20 @@
-{% macro input_field(model, field_name, label_text, **attrs) %}
-  {# check once #}
-  {% set req = is_required(model, field_name) %}
-  <div class="form-group">
-    <label
-      for="{{ field_name }}"
-      class="{% if req %}required{% endif %}">
-      {{ label_text }}
-    </label>
-    <input
-      id="{{ field_name }}"
-      name="{{ field_name }}"
-      {% if req %}required{% endif %}
-      class="form-control"
-      {{- xmlattr(attrs) }}>
-  </div>
+{% macro input_field(name, label='', required=False, value='', type='text') %}
+<label for="{{ name }}">
+  {{ label }}{% if required %}<span class="required">*</span>{% endif %}
+</label>
+<input id="{{ name }}" name="{{ name }}" type="{{ type }}"
+       value="{{ value }}" {% if required %}required{% endif %}>
 {% endmacro %}
 
-{% macro select_field(model, field_name, label_text, options, **attrs) %}
-  {% set req = is_required(model, field_name) %}
-  <div class="form-group">
-    <label
-      for="{{ field_name }}"
-      class="{% if req %}required{% endif %}">
-      {{ label_text }}
-    </label>
-    <select
-      id="{{ field_name }}"
-      name="{{ field_name }}"
-      {% if req %}required{% endif %}
-      class="form-control"
-      {{- xmlattr(attrs) }}>
-      {% for val, text in options %}
-        <option value="{{ val }}">{{ text }}</option>
-      {% endfor %}
-    </select>
-  </div>
+{% macro select_field(name, label='', required=False, options=None, value='') %}
+{% set options = options or [] %}
+<label for="{{ name }}">
+  {{ label }}{% if required %}<span class="required">*</span>{% endif %}
+</label>
+<select id="{{ name }}" name="{{ name }}" {% if required %}required{% endif %}>
+  {% for val, text in options %}
+  <option value="{{ val }}" {% if val == value %}selected{% endif %}>{{ text }}</option>
+  {% endfor %}
+</select>
 {% endmacro %}
+

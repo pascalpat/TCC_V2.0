@@ -78,6 +78,14 @@ body {
     background-color: #d9534f !important;
 }
 
+/* Required field indicator */
+.required {
+    color: #c00;        /* or another highlight color */
+    margin-left: 0.25rem;
+    font-weight: bold;
+}
+
+
 /* Footer */
 footer {
     background-color: #f8f9fa;

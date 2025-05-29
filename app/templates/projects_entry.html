@@ -1,3 +1,4 @@
+{% from "utilities/_form_macros.html" import input_field, select_field %}
 {% extends "base.html" %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -8,14 +9,11 @@
 <div class="form-table-container">
   <form id="ProjectForm" class="form-box">
     <h2>Nouveau Projet</h2>
-    <label for="projectName">Nom du projet *</label>
-    <input id="projectName" name="name" type="text" required>
+    {{ input_field('projectName', 'Nom du projet:', required=True) }}
 
-    <label for="projectNumber">Numéro *</label>
-    <input id="projectNumber" name="project_number" type="text" required>
+    {{ input_field('projectNumber', 'Numéro:', required=True) }}
 
-    <label for="category">Catégorie *</label>
-    <input id="category" name="category" type="text" required>
+    {{ input_field('category', 'Catégorie:', required=True) }}
 
     <label for="status">Statut</label>
     <select id="status" name="status">
