@@ -113,6 +113,7 @@ export default function ProjectForm() {
         <h2>Add Project</h2>
 
         <section>
+          <h3>Project information</h3>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
           <input value={projectNumber} onChange={(e) => setProjectNumber(e.target.value)} placeholder="Project Number" required />
@@ -127,6 +128,7 @@ export default function ProjectForm() {
         </section>
 
         <section>
+          <h3>Client Info</h3>
           <input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client Name" />
           <input value={projectManager} onChange={(e) => setProjectManager(e.target.value)} placeholder="Project Manager" />
           <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" />
@@ -134,6 +136,7 @@ export default function ProjectForm() {
 
 
         <section>
+          <h3>Budget</h3>
           <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Budget" />
           <input type="number" value={originalBudget} onChange={(e) => setOriginalBudget(e.target.value)} placeholder="Original Budget" />
           <input type="number" value={revisedBudget} onChange={(e) => setRevisedBudget(e.target.value)} placeholder="Revised Budget" />
@@ -141,6 +144,7 @@ export default function ProjectForm() {
         </section>
 
         <section>
+          <h3>Risk Management</h3>
           <select value={riskLevel} onChange={(e) => setRiskLevel(e.target.value)}>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -154,6 +158,7 @@ export default function ProjectForm() {
 
 
         <section>
+          <h3>Media</h3>
           <input value={pictureUrl} onChange={(e) => setPictureUrl(e.target.value)} placeholder="Picture URL" />
           <input value={videoCaptureUrl} onChange={(e) => setVideoCaptureUrl(e.target.value)} placeholder="Video Capture URL" />
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -162,6 +167,7 @@ export default function ProjectForm() {
 
 
         <section>
+          <h3>Project Details</h3>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
           <input value={planRepositoryUrl} onChange={(e) => setPlanRepositoryUrl(e.target.value)} placeholder="Plan Repository URL" />
           <select value={sustainabilityRating} onChange={(e) => setSustainabilityRating(e.target.value)}>
@@ -187,6 +193,7 @@ export default function ProjectForm() {
 
 
         <section>
+          <h3>Community Engagement</h3>
           <input type="number" value={localHires} onChange={(e) => setLocalHires(e.target.value)} placeholder="Local Hires" />
           <textarea value={communityEngagementNotes} onChange={(e) => setCommunityEngagementNotes(e.target.value)} placeholder="Community Engagement Notes" />
           <input value={previousProjectId} onChange={(e) => setPreviousProjectId(e.target.value)} placeholder="Previous Project ID" />
