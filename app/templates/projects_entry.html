@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/data_entry.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-table-container">
+  <form id="ProjectForm" class="form-box">
+    <h2>Nouveau Projet</h2>
+    <label for="projectName">Nom du projet *</label>
+    <input id="projectName" name="name" type="text" required>
+
+    <label for="projectNumber">Numéro *</label>
+    <input id="projectNumber" name="project_number" type="text" required>
+
+    <label for="category">Catégorie *</label>
+    <input id="category" name="category" type="text" required>
+
+    <label for="status">Statut</label>
+    <select id="status" name="status">
+      <option value="planned">Planifié</option>
+      <option value="in_progress">En cours</option>
+      <option value="completed">Terminé</option>
+    </select>
+
+    <!-- Dates -->
+    <label for="startDate">Date de début</label>
+    <input id="startDate" name="start_date" type="date">
+
+    <label for="endDate">Date de fin</label>
+    <input id="endDate" name="end_date" type="date">
+
+    <!-- Address with map placeholder -->
+    <div id="addressMap"
+         style="height:200px; background:#eaeaea; margin-bottom:1rem;">
+      <!-- map will be shown here -->
+    </div>
+    <label for="address">Adresse</label>
+    <input id="address" name="address" type="text">
+
+    <!-- Optional fields such as budget -->
+    <label for="budget">Budget</label>
+    <input id="budget" name="budget" type="number" step="0.01">
+
+    <div class="button-container">
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
+  </form>
+
+  <div class="table-container">
+    <h3>Liste des Projets</h3>
+    <table id="projectsTable" class="styled-table">
+      <thead>
+        <tr><th>Nom</th><th>Numéro</th><th>Statut</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
