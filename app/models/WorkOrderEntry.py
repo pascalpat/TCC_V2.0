@@ -18,7 +18,7 @@ class WorkOrderEntry(db.Model):
     hours_worked    = db.Column(db.Float, default=0.0)  # or nullable=True
     date            = db.Column(db.Date,  nullable=True)
     description     = db.Column(db.Text,  nullable=True)
-    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
+    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_progress_status'), default='pending', nullable=True)
 
     # Costs
     labor_cost          = db.Column(db.Float, nullable=True, default=0.0)

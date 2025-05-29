@@ -10,6 +10,7 @@ class DailyNoteEntry(db.Model):
     note_datetime = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     date_of_report = db.Column(db.Date, nullable=False, index=True)
     status = db.Column(db.Enum('pending','committed','rejected', name='entry_status'), default='pending')
+    status = db.Column(db.Enum('pending', 'committed', 'rejected', name='daily_note_status'), default='pending')
     author = db.Column(db.String(255), nullable=True)
     category = db.Column(db.String(50), nullable=True)
     tags = db.Column(db.JSON, nullable=True)

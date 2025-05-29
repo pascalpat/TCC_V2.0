@@ -25,11 +25,40 @@ function addSubLine(e) {
 
 async function confirmSubLines(e) {
     e.preventDefault();
-    // POST stagedSubs → /subcontractors/confirm-entries
+
+    if (stagedSubs.length === 0) {
+        return alert('Aucun sous-traitant à confirmer.');
+    }
+
+    const projectId  = document.getElementById('projectNumber').value;
+    const reportDate = document.getElementById('dateSelector').value;
+
+    try {
+        const resp = await fetch('/subcontractors/confirm-entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: projectId,
+                date: reportDate,
+                usage: stagedSubs
+            })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erreur serveur');
+
+        alert(`Sous-traitants confirmés (${data.records.length} lignes).`);
+        stagedSubs = [];
+        await loadPendingSubs(projectId, reportDate);
+    } catch (err) {
+        console.error('Erreur confirmation sous-traitants:', err);
+        alert('Erreur : ' + err.message);
+    }
 }
 
 async function loadPendingSubs(projectId, reportDate) {
-    const resp = await fetch(`/subcontractors/by-project-date?project_id=${projectId}&date=${reportDate}`);
+    const resp = await fetch(
+        `/subcontractors/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}`
+    );
     const { entries } = await resp.json();
     // renderConfirmedTable(entries)
 }

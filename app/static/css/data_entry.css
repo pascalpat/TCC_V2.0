@@ -199,14 +199,17 @@
   #MaterialsTab  .form-box *,
   #NotesTab      .form-box *,
   #DocumentsTab  .form-box *,
+  #SubcontractorsTab .form-box *,
   #LaborEquipTab .styled-table th,
   #MaterialsTab  .styled-table th,
   #NotesTab      .styled-table th,
   #DocumentsTab  .styled-table th,
+  #SubcontractorsTab .styled-table th,
   #LaborEquipTab .styled-table td,
   #MaterialsTab  .styled-table td,
   #NotesTab      .styled-table td,
-  #DocumentsTab  .styled-table td {
+  #DocumentsTab  .styled-table td,
+  #SubcontractorsTab .styled-table td {
   font-family: Arial, sans-serif !important;
     font-size:   24px              !important;
     line-height: 1.4               !important;

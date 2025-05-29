@@ -15,7 +15,7 @@ class MaterialEntry(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('project_tasks.id'), nullable=True)
     date_of_report = db.Column(db.Date, nullable=False)
     work_order_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), nullable=True)
-    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
+    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_progress_status'), default='pending', nullable=True)
     payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
     

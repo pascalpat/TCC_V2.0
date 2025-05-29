@@ -141,13 +141,14 @@ def get_pending_labor_equipment():
         current_app.logger.exception(exc)
         return jsonify(error="Internal server error"), 500
     
-    
+
     def serialize(entry, is_worker=True):
         pi = (PaymentItem.query.get(entry.payment_item_id)
               if entry.payment_item_id else None)
 
         base = {
             "hours": entry.hours_worked if is_worker else entry.hours_used,
+            "activity_id": entry.activity_id,
             "activity_code": entry.activity.code if entry.activity else None,
             "activity_description": entry.activity.description if entry.activity else None,
             "payment_item_id": entry.payment_item_id,

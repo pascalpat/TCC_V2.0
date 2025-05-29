@@ -105,12 +105,12 @@ def update_subcontractor(subcontractor_id):
 def confirm_entries():
     """
     Create new SubcontractorEntry rows for the selected project/date.
-    Payload: { project_id, date_of_report, usage: [ {...} ] }
+    Payload: { project_id, date, usage: [ {...} ] }
     """
     data = request.get_json() or {}
     usage = data.get('usage')
     project_number = data.get('project_id')
-    date_str = data.get('date_of_report')
+    date_str = data.get('date')
     # validate project_number, date_str, and each usage line...
     # add SubcontractorEntry(status='pending') rows
     created = []
@@ -118,9 +118,9 @@ def confirm_entries():
         for entry in usage:
             new_entry = SubcontractorEntry(
                 project_id=project_number,
-                date_of_report=date_str,
+                date=date_str,
                 subcontractor_id=entry.get('subcontractor_id'),
-                hours=entry.get('hours', 0),
+                labor_hours=entry.get('hours', 0),
                 activity_code=entry.get('activity_code', ''),
                 status='pending'
             )
@@ -135,13 +135,13 @@ def confirm_entries():
 def get_pending_entries():
     """Return all pending subcontractor entries for project/date."""
     project_id = request.args.get('project_id')
-    date_of_report = request.args.get('date_of_report')
-    if not project_id or not date_of_report:
+    date_str = request.args.get('date')
+    if not project_id or not date_str:
         return jsonify({"error": "Missing required query parameters"}), 400
 
     entries = SubcontractorEntry.query.filter_by(
         project_id=project_id,
-        date_of_report=date_of_report,
+        date=date_str,
         status='pending'
     ).all()
     return jsonify(entries=[e.to_dict() for e in entries]), 200
@@ -149,9 +149,47 @@ def get_pending_entries():
 @subcontractors_bp.route('/delete-entry/<int:entry_id>', methods=['DELETE'])
 def delete_entry(entry_id):
     # delete pending entry similar to materials_routes.delete_material_entry
-    ...
+    entry = SubcontractorEntry.query.get(entry_id)
+    if not entry:
+        return jsonify(error="Entry not found"), 404
+    if entry.status != 'pending':
+        return jsonify(error="Only pending entries can be deleted"), 403
+
+    try:
+        db.session.delete(entry)
+        db.session.commit()
+        return jsonify(message="Subcontractor entry deleted"), 200
+    except Exception as e:
+        current_app.logger.error(f"Error deleting subcontractor entry: {e}", exc_info=True)
+        db.session.rollback()
+        return jsonify(error="Failed to delete entry"), 500
 
 @subcontractors_bp.route('/update-entry/<int:entry_id>', methods=['PUT'])
 def update_entry(entry_id):
     # allow inline edit of hours / activity_code etc.
-    ...
+    data = request.get_json() or {}
+    hours = data.get('hours')
+    activity_id = data.get('activity_code_id')
+
+    if hours is None or activity_id is None:
+        return jsonify(error="Missing hours or activity_code_id"), 400
+
+    entry = SubcontractorEntry.query.get(entry_id)
+    if not entry:
+        return jsonify(error="Entry not found"), 404
+    if entry.status != 'pending':
+        return jsonify(error="Only pending entries can be updated"), 403
+
+    activity = ActivityCode.query.get(int(activity_id))
+    if not activity:
+        return jsonify(error=f"Invalid activity_code_id: {activity_id}"), 400
+
+    try:
+        entry.labor_hours = float(hours)
+        entry.activity_code_id = activity.id
+        db.session.commit()
+        return jsonify(message="Subcontractor entry updated"), 200
+    except Exception as e:
+        current_app.logger.error(f"Error updating subcontractor entry: {e}", exc_info=True)
+        db.session.rollback()
+        return jsonify(error="Failed to update entry"), 500

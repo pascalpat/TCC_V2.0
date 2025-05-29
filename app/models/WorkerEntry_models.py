@@ -15,7 +15,7 @@ class WorkerEntry(db.Model):
     worker_id = db.Column(db.Integer, db.ForeignKey('workers.id'), nullable=True)  # FK to Workers
     worker_name = db.Column(db.Text, nullable=True) ## Worker name (optional, can be derived from worker_id)
     hours_worked = db.Column(db.Float, nullable=False, default=0.0)  # Hours worked
-    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_status'), default='pending', nullable=True)
+    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_progress_status'), default='pending', nullable=True)
     payment_item_id = db.Column(db.Integer, db.ForeignKey('payment_items.id'), nullable=True)  # FK to Payment Items
     
     ################################## Additional Fields ##########################################
