@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify, current_app, session
+from datetime import datetime
 from ..models.subcontractor_models import Subcontractor
 from ..models.SubcontractorEntry import SubcontractorEntry
 from ..models.core_models import ActivityCode, Project
 from .. import db  # Import the database instance
+
+# Routes managing subcontractor data entries
 
 subcontractors_bp = Blueprint('subcontractors_bp', __name__, url_prefix='/subcontractors')
 
@@ -12,11 +15,15 @@ def list_subcontractors():
     Fetch the list of subcontractors from the database based on the active project.
     """
     try:
-        project_id = session.get('project_id')  # Ensure project_id is in session
-        if not project_id:
+        project_number = session.get('project_id')  # Stored project number
+        if not project_number:
             return jsonify({"error": "No active project selected"}), 400
 
-        subcontractors = Subcontractor.query.filter_by(project_id=project_id).all()
+        proj = Project.query.filter_by(project_number=project_number).first()
+        if not proj:
+            return jsonify({"error": "Invalid project number"}), 400
+
+        subcontractors = Subcontractor.query.filter_by(project_id=proj.id).all()
         return jsonify({"subcontractors": [sub.to_dict() for sub in subcontractors]}), 200
 
     except Exception as e:
@@ -29,10 +36,13 @@ def add_subcontractor():
     Add a new subcontractor entry to the database.
     """
     try:
-        project_id = session.get('project_id')  # Ensure project_id is in session
-        if not project_id:
+        project_number = session.get('project_id')  # Stored project number
+        if not project_number:   
             return jsonify({"error": "No active project selected"}), 400
 
+        proj = Project.query.filter_by(project_number=project_number).first()
+        if not proj:
+            return jsonify({"error": "Invalid project number"}), 400
         data = request.json
         required_fields = ["name", "task", "contractType", "totalContractValue", "paymentStatus"]
 
@@ -40,7 +50,7 @@ def add_subcontractor():
             return jsonify({"error": "Missing required fields"}), 400
 
         new_subcontractor = Subcontractor(
-            project_id=project_id,
+            project_id=proj.id,
             name=data["name"],
             task=data["task"],
             contract_type=data["contractType"],
@@ -115,13 +125,22 @@ def confirm_entries():
     # add SubcontractorEntry(status='pending') rows
     created = []
     if usage and project_number and date_str:
+        proj = Project.query.filter_by(project_number=project_number).first()
+        if not proj:
+            return jsonify({"error": "Invalid project number"}), 400
+
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
+        
         for entry in usage:
             new_entry = SubcontractorEntry(
-                project_id=project_number,
-                date=date_str,
+                project_id=proj.id,
+                date=date_obj,
                 subcontractor_id=entry.get('subcontractor_id'),
                 labor_hours=entry.get('hours', 0),
-                activity_code=entry.get('activity_code', ''),
+                activity_code_id=entry.get('activity_code_id'),
                 status='pending'
             )
             db.session.add(new_entry)
@@ -134,14 +153,23 @@ def confirm_entries():
 @subcontractors_bp.route('/by-project-date', methods=['GET'])
 def get_pending_entries():
     """Return all pending subcontractor entries for project/date."""
-    project_id = request.args.get('project_id')
+    project_number = request.args.get('project_id')
     date_str = request.args.get('date')
-    if not project_id or not date_str:
+    if not project_number or not date_str:
         return jsonify({"error": "Missing required query parameters"}), 400
 
+    proj = Project.query.filter_by(project_number=project_number).first()
+    if not proj:
+        return jsonify({"error": "Invalid project number"}), 400
+    
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify(error="Invalid date format, expected YYYY-MM-DD"), 400
+    
     entries = SubcontractorEntry.query.filter_by(
-        project_id=project_id,
-        date=date_str,
+        project_id=proj.id,
+        date=date_obj,
         status='pending'
     ).all()
     return jsonify(entries=[e.to_dict() for e in entries]), 200

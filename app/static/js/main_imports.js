@@ -6,7 +6,6 @@ import { fetchProjectNumbers } from './projects.js';
 import { initLaborEquipmentTab } from '/static/js/LaborEquipment.js';
 import { fetchAndRenderMaterials, addMaterial } from './materials.js';
 // import { fetchAndRenderEquipment, addEquipment } from './equipment.js';
-import { fetchAndRenderSubcontractors } from './subcontractors.js';
 import { fetchAndRenderDailyNotes } from './notes.js';
 import { fetchAndRenderWorkOrders } from './workorders.js';
 import { fetchAndRenderPictures } from './pictures.js';

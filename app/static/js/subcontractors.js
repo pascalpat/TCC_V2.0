@@ -3,12 +3,41 @@ import { populateDropdowns } from './populate_drop_downs.js';
 
 let stagedSubs = [];
 
+// Fetch subcontractor names for datalist
+export async function loadSubcontractorList() {
+    try {
+        const resp = await fetch('/subcontractors/list');
+        if (!resp.ok) throw new Error(await resp.text());
+        const { subcontractors } = await resp.json();
+
+        let datalist = document.getElementById('subcontractorNames');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'subcontractorNames';
+            document.body.appendChild(datalist);
+        }
+
+        datalist.innerHTML = '';
+        (subcontractors || []).forEach(sub => {
+            const opt = document.createElement('option');
+            opt.value = sub.name;
+            datalist.appendChild(opt);
+        });
+
+        const input = document.getElementById('subcontractorName');
+        if (input) input.setAttribute('list', 'subcontractorNames');
+    } catch (err) {
+        console.error('Error loading subcontractor list:', err);
+    }
+}
+
+
 export async function initSubcontractorsTab() {
     await populateDropdowns();                   // fill activity-code dropdown
     loadSubcontractorList();                     // fetch /subcontractors/list
-    document.getElementById('addSubBtn')
+    document.getElementById('addSubcontractorBtn')
         .addEventListener('click', addSubLine);
-    document.getElementById('confirmSubBtn')
+    document.getElementById('confirmSubcontractorsBtn')
         .addEventListener('click', confirmSubLines);
 
     const projectId  = document.getElementById('projectNumber').value;
