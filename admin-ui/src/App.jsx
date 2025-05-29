@@ -1,7 +1,8 @@
 import React from 'react';
+import ProjectForm from './ProjectForm';
 
 function App() {
-  return <div>Admin UI</div>;
+  return <ProjectForm />;
 }
 
 export default App;
