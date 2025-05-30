@@ -122,6 +122,10 @@ class ActivityCode(db.Model):
     work_order_entries = db.relationship('WorkOrderEntry', back_populates='activity_code')
     daily_note_entries = db.relationship('DailyNoteEntry', back_populates='activity_code', lazy=True)
 
+    def __repr__(self):
+        return f"<ActivityCode id={self.id} code={self.code}>"
+
+
 class ProjectTask(db.Model):
     __tablename__ = 'project_tasks'
 
@@ -167,6 +171,11 @@ class ProjectTask(db.Model):
     activity_code = db.relationship('ActivityCode', back_populates='project_tasks')
     work_order_entries = db.relationship("WorkOrderEntry", back_populates="task")
 
+    def __repr__(self):
+        return f"<ProjectTask id={self.id} name={self.name}>"
+
+
+
 class PaymentItem(db.Model):
     __tablename__ = 'payment_items'
 
@@ -191,6 +200,10 @@ class PaymentItem(db.Model):
             raise ValueError("Rate per unit cannot be negative.")
         return value
 
+    def __repr__(self):
+        return f"<PaymentItem id={self.id} code={self.payment_code}>"
+
+
 class CWPackage(db.Model):
     __tablename__ = 'cw_packages'
 
@@ -199,6 +212,21 @@ class CWPackage(db.Model):
         db.ForeignKey('projects.id'),
         primary_key=True
     )
-    code       = db.Column(db.String(50), primary_key=True)
-    name       = db.Column(db.String(255), nullable=False)
-    unit       = db.Column(db.String(20), nullable=True)
+
+    code = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    unit = db.Column(db.String(20), nullable=True)
+
+    # Relationships
+    project = db.relationship('Project', backref='cwp_packages', lazy=True)
+
+    def __repr__(self):
+        return f"<CWPackage project_id={self.project_id} code={self.code}>"
+
+    def to_dict(self):
+        return {
+            'project_id': self.project_id,
+            'code': self.code,
+            'name': self.name,
+            'unit': self.unit,
+        }

@@ -1,14 +1,9 @@
-import pytest
-from app import create_app
+"""Basic route tests"""
 
-@pytest.fixture
-def client():
-    app = create_app('testing')
-    app.config['TESTING'] = True
-    client = app.test_client()
-    yield client
+from app import app
 
-def test_home_route(client):
-    response = client.get('/')
-    assert response.status_code == 302  # Accept redirect as correct
-    assert '/login' in response.headers.get('Location', '')
+def test_redirect_to_login():
+	with app.test_client() as client:
+		response = client.get('/')  # Replace '/' with the route you want to test
+		assert response.status_code == 302
+		assert '/login' in response.headers.get('Location', '')

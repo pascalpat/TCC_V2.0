@@ -1,21 +1,15 @@
 import pytest
-from app import create_app, db
+from app import db
 from app.models.core_models import Project
 
-@pytest.fixture
-def client():
-    from app.config import TestingConfig
-    app = create_app(TestingConfig)
-    app.config['TESTING'] = True
+@pytest.fixture(autouse=True)
+def sample_project(app):
     with app.app_context():
-        db.create_all()
-        # Seed a sample project
         project = Project(name='Sample Project', project_number='P1', category='Demo')
         db.session.add(project)
         db.session.commit()
-        yield app.test_client()
+        yield project
         db.session.remove()
-        db.drop_all()
 
 def test_list_projects_returns_numbers(client):
     resp = client.get('/projects/list')

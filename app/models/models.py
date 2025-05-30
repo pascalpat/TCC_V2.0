@@ -64,6 +64,30 @@ class TabProgress(db.Model):
             return "in_progress"
         else:
             return "incomplete"
+        
+    def __repr__(self):
+        return (
+            f"<TabProgress project_id={self.project_id} date={self.date} "
+            f"tab={self.tab_name} status={self.status}>"
+        )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'date': self.date.isoformat() if self.date else None,
+            'tab_name': self.tab_name,
+            'status': self.status,
+            'progress_percentage': self.progress_percentage,
+            'is_locked': self.is_locked,
+            'status_history': self.status_history,
+            'tab_notes': self.tab_notes,
+            'last_updated_by': self.last_updated_by,
+            'reviewed_by': self.reviewed_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_updated_at': self.last_updated_at.isoformat() if self.last_updated_at else None,
+        }
+        
 
 class SustainabilityMetric(db.Model):
     __tablename__ = 'sustainability_metrics'
@@ -95,6 +119,26 @@ class SustainabilityMetric(db.Model):
     task = db.relationship('ProjectTask', backref='sustainability_metrics', lazy=True)  # Links to Task
     #daily_log = db.relationship('DailyReportData', back_populates='sustainability_metrics')
     
+    def __repr__(self):
+        return f"<SustainabilityMetric id={self.id} metric_name={self.metric_name}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'task_id': self.task_id,
+            'metric_name': self.metric_name,
+            'category': self.category,
+            'value': self.value,
+            'unit': self.unit,
+            'threshold': self.threshold,
+            'target_value': self.target_value,
+            'deviation': self.deviation,
+            'triggered_alert': self.triggered_alert,
+            'recorded_at': self.recorded_at.isoformat() if self.recorded_at else None,
+            'recorded_by': self.recorded_by,
+            'notes': self.notes,
+        }
 
 class Document(db.Model):
     __tablename__ = 'documents'
@@ -143,3 +187,30 @@ class Document(db.Model):
     activity_code = db.relationship('ActivityCode', backref='documents', lazy=True, foreign_keys=[activity_code_id])
     payment_item = db.relationship('PaymentItem', backref='documents', lazy=True, foreign_keys=[payment_item_id])
     cwp_package = db.relationship('CWPackage', backref='documents', lazy=True, foreign_keys=[cwp_code])
+
+    def __repr__(self):
+        return f"<Document id={self.id} file_name={self.file_name}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'file_name': self.file_name,
+            'file_url': self.file_url,
+            'uploaded_at': self.uploaded_at.isoformat() if self.uploaded_at else None,
+            'status': self.status,
+            'activity_code_id': self.activity_code_id,
+            'payment_item_id': self.payment_item_id,
+            'cwp_code': self.cwp_code,
+            'document_type': self.document_type,
+            'category': self.category,
+            'daily_note_id': self.daily_note_id,
+            'picture_repository_url': self.picture_repository_url,
+            'is_approved': self.is_approved,
+            'approved_by': self.approved_by,
+            'approval_date': self.approval_date.isoformat() if self.approval_date else None,
+            'tags': self.tags,
+            'doc_notes': self.doc_notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_modified_at': self.last_modified_at.isoformat() if self.last_modified_at else None,
+        }

@@ -45,5 +45,6 @@ class Equipment(db.Model):
             raise ValueError("Hourly rate cannot be negative.")
         return value
 
-
+    def __repr__(self):
+        return f"<Equipment id={self.id} name={self.name}>"
 

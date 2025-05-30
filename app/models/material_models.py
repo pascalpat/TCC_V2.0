@@ -38,3 +38,7 @@ class Material(db.Model):
             raise ValueError("Cost per unit cannot be negative.")
         return value
     
+
+    def __repr__(self):
+        return f"<Material id={self.id} name={self.name}>"
+    
