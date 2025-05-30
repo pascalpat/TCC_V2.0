@@ -1,6 +1,8 @@
 # app/routes/auth_routes.py
 
 from flask import Blueprint, render_template, request, session, redirect, url_for, current_app
+from werkzeug.security import check_password_hash
+from app.models.workforce_models import Worker
 
 # Define the Blueprint with matching variable name and URL prefix
 # Blueprint variable name must match the import in app/__init__.py (auth_bp)
@@ -15,21 +17,39 @@ auth_bp = Blueprint(
 def login():
     """Handles user login. On POST, stores user & clears any previous project/date."""
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        if not username:
-            return render_template('login.html', error="Please provide a username.")
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
 
-        # In a real app you'd validate credentials here...
-        session.clear()
-        session.permanent = False  # expire on browser close
-        session['username']   = username
-        session['user_id']    = 101      # example ID
-        session['project_id'] = None
-        session['report_date'] = None
+        if not email or not password:
+            return render_template('login.html', error="Please provide an email and password.")
 
-        current_app.logger.info(f"User {username!r} logged in as ID {session['user_id']}")
-        # Redirect to your calendar selection page (ensure calendar_bp is registered)
-        return redirect(url_for('calendar_bp.calendar_page'))
+        worker = Worker.query.filter_by(courriel=email).first()
+
+        if worker and worker.password_hash and check_password_hash(worker.password_hash, password):
+            session.clear()
+            session.permanent = False  # expire on browser close
+
+            session['role'] = worker.role
+            session['user_id'] = worker.id
+            session['username'] = worker.name
+            session['project_id'] = None
+            session['report_date'] = None
+
+            current_app.logger.info(
+                f"User {worker.name!r} logged in with role {worker.role!r} and ID {worker.id}"
+            )
+
+            role = session['role']
+            if role in ("foreman", "superintendent"):
+                return redirect(url_for('data_entry_bp.submit_data_entry'))
+            if role == 'manager':
+                return redirect(url_for('projects_bp.get_project_numbers'))
+            if role == 'admin':
+                return redirect(url_for('admin_bp.index'))
+            return redirect(url_for('calendar_bp.calendar_page'))
+
+        return render_template('login.html', error="Invalid email or password.")
+
 
     # GET → show the login form
     return render_template('login.html')

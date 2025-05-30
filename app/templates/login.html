@@ -20,7 +20,7 @@ Login
                 <p class="error">{{ error }}</p>
             {% endif %}
 
-            {{ input_field('username', 'Username:', required=True) }}
+            {{ input_field('email', 'Email:', required=True, type='email') }}
             {{ input_field('password', 'Password:', required=True, type='password') }}
             
             <button type="submit">Login</button>

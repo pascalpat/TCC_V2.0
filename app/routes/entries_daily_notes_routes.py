@@ -1,6 +1,6 @@
 # app/routes/entries_daily_notes_routes.py
 
-from flask import Blueprint, jsonify, session, current_app, request, current_app
+from flask import Blueprint, jsonify, session, current_app, request
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.daily_models import DailyNoteEntry
 from ..models.core_models import Project
