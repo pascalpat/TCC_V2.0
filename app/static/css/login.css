@@ -60,3 +60,10 @@ button:hover {
     margin-bottom: 10px;
     text-align: left;
 }
+
+/* Required field indicator */
+.required {
+    color: #c00;
+    margin-left: 0.25rem;
+    font-weight: bold;
+}

@@ -107,7 +107,7 @@
 
 /* Required field indicator */
 .required {
-    color: #c00;        /* or another highlight color */
+    color: #c00;        
     margin-left: 0.25rem;
     font-weight: bold;
 }

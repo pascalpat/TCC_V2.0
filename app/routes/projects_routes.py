@@ -53,8 +53,18 @@ def add_project():
     if missing:
         return jsonify({'error': f"Missing required fields: {', '.join(missing)}"}), 400
 
+    def parse_float(value):
+        if value in (None, ""):
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise ValueError("Invalid numeric value")
+
     try:
-        Project.validate_coordinates(data.get('latitude'), data.get('longitude'))
+        latitude = parse_float(data.get('latitude'))
+        longitude = parse_float(data.get('longitude'))
+        Project.validate_coordinates(latitude, longitude)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
@@ -77,8 +87,8 @@ def add_project():
         risk_level=data.get('risk_level'),
         risk_notes=data.get('risk_notes'),
         map_url=data.get('map_url'),
-        latitude=data.get('latitude'),
-        longitude=data.get('longitude'),
+        latitude=latitude,
+        longitude=longitude,
         picture_url=data.get('picture_url'),
         video_capture_url=data.get('video_capture_url'),
         start_date=parse_date(data.get('start_date')),

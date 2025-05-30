@@ -114,10 +114,34 @@ export default function ProjectForm() {
 
         <section>
           <h3>Project information</h3>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" required />
+          <label>
+            Project Name<span className="required">*</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              required
+            />
+          </label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
-          <input value={projectNumber} onChange={(e) => setProjectNumber(e.target.value)} placeholder="Project Number" required />
-          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category" required />
+          <label>
+            Project Number<span className="required">*</span>
+            <input
+              value={projectNumber}
+              onChange={(e) => setProjectNumber(e.target.value)}
+              placeholder="Project Number"
+              required
+            />
+          </label>
+          <label>
+            Category<span className="required">*</span>
+            <input
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Category"
+              required
+            />
+          </label>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="planned">Planned</option>
             <option value="in_progress">In Progress</option>
@@ -125,16 +149,16 @@ export default function ProjectForm() {
             <option value="on_hold">On Hold</option>
             <option value="canceled">Canceled</option>
           </select>
-        </section>
+          <input type="number" value={criticalPathDuration} onChange={(e) => setCriticalPathDuration(e.target.value)} placeholder="Critical Path Duration" />
+          <input value={keyMilestones} onChange={(e) => setKeyMilestones(e.target.value)} placeholder="Key Milestones (JSON or text)" />
 
+        </section>
         <section>
           <h3>Client Info</h3>
           <input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client Name" />
           <input value={projectManager} onChange={(e) => setProjectManager(e.target.value)} placeholder="Project Manager" />
           <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" />
         </section>
-
-
         <section>
           <h3>Budget</h3>
           <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Budget" />
@@ -142,7 +166,6 @@ export default function ProjectForm() {
           <input type="number" value={revisedBudget} onChange={(e) => setRevisedBudget(e.target.value)} placeholder="Revised Budget" />
           <input type="number" value={contingencyFund} onChange={(e) => setContingencyFund(e.target.value)} placeholder="Contingency Fund" />
         </section>
-
         <section>
           <h3>Risk Management</h3>
           <select value={riskLevel} onChange={(e) => setRiskLevel(e.target.value)}>
@@ -155,8 +178,6 @@ export default function ProjectForm() {
           <input type="number" value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="Latitude" />
           <input type="number" value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="Longitude" />
         </section>
-
-
         <section>
           <h3>Media</h3>
           <input value={pictureUrl} onChange={(e) => setPictureUrl(e.target.value)} placeholder="Picture URL" />
@@ -164,8 +185,6 @@ export default function ProjectForm() {
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </section>
-
-
         <section>
           <h3>Project Details</h3>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
@@ -189,9 +208,10 @@ export default function ProjectForm() {
             <option value="approved">Approved</option>
             <option value="non_compliant">Non-compliant</option>
           </select>
+          <input value={bimFileUrl} onChange={(e) => setBimFileUrl(e.target.value)} placeholder="BIM File URL" />
+          <input value={bimModelId} onChange={(e) => setBimModelId(e.target.value)} placeholder="BIM Model ID" />
+
         </section>
-
-
         <section>
           <h3>Community Engagement</h3>
           <input type="number" value={localHires} onChange={(e) => setLocalHires(e.target.value)} placeholder="Local Hires" />
@@ -199,12 +219,8 @@ export default function ProjectForm() {
           <input value={previousProjectId} onChange={(e) => setPreviousProjectId(e.target.value)} placeholder="Previous Project ID" />
           <input type="number" value={benchmarkCostPerUnit} onChange={(e) => setBenchmarkCostPerUnit(e.target.value)} placeholder="Benchmark Cost per Unit" />
           <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Tags (JSON or comma-separated)" />
-          <input type="number" value={criticalPathDuration} onChange={(e) => setCriticalPathDuration(e.target.value)} placeholder="Critical Path Duration" />
-          <input value={keyMilestones} onChange={(e) => setKeyMilestones(e.target.value)} placeholder="Key Milestones (JSON or text)" />
           <input type="number" value={safetyIncidents} onChange={(e) => setSafetyIncidents(e.target.value)} placeholder="Safety Incidents" />
           <textarea value={incidentNotes} onChange={(e) => setIncidentNotes(e.target.value)} placeholder="Incident Notes" />
-          <input value={bimFileUrl} onChange={(e) => setBimFileUrl(e.target.value)} placeholder="BIM File URL" />
-          <input value={bimModelId} onChange={(e) => setBimModelId(e.target.value)} placeholder="BIM Model ID" />
           <input value={updatedBy} onChange={(e) => setUpdatedBy(e.target.value)} placeholder="Updated By" />
         </section>
 
