@@ -1,6 +1,8 @@
 """Tests for /data-entry/initialize-day"""
 
 def test_initialize_day(client):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
     resp = client.post(
         "/data-entry/initialize-day", json={"dateStamp": "2024-12-06"}
     )

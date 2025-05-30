@@ -18,9 +18,6 @@ def calendar_page():
     """
     Render the calendar HTML page and handle project/date selection.
     """
-    # Ensure user is authenticated
-    if 'user_id' not in session:
-        return redirect(url_for('auth_bp.login'))
     
     if request.method == 'POST':
         project_id = request.form.get('project_id')
@@ -66,8 +63,6 @@ def get_calendar_data():
         }
       }
     """
-    if 'user_id' not in session:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     try:
         # 1) Get all Projects for labeling or a user-specific subset if needed

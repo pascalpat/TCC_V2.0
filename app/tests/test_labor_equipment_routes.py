@@ -13,6 +13,8 @@ def setup_project_and_activity(app):
 
 
 def test_confirm_and_fetch_labor_equipment(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
     project, activity = setup_project_and_activity(app)
     payload = {
         "project_id": project.project_number,

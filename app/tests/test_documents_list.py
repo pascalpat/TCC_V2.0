@@ -7,6 +7,9 @@ import os
 from datetime import datetime
 
 def test_documents_list_empty(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     with app.app_context():
         assert Document.query.count() == 0
     response = client.get('/documents/list')
@@ -16,6 +19,9 @@ def test_documents_list_empty(client, app):
 
 
 def test_download_document(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     with app.app_context():
         project = Project(name='P', project_number='P1', category='Test')
         db.session.add(project)
@@ -40,6 +46,9 @@ def test_download_document(client, app):
     os.remove(file_path)
 
 def test_upload_document_with_notes(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     with app.app_context():
         project = Project(name='TestProj', project_number='TP1', category='Test')
         db.session.add(project)
@@ -73,6 +82,9 @@ def test_upload_document_with_notes(client, app):
 
 
 def test_upload_document_with_activity_payment_cwp(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     with app.app_context():
         project = Project(name='MixProj', project_number='MX1', category='Test')
         db.session.add(project)

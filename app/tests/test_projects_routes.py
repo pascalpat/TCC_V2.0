@@ -1,6 +1,9 @@
 import pytest
 
 def test_add_project_and_duplicate(client):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     project_data = {"name": "Proj1", "project_number": "P100", "category": "Demo"}
 
     resp1 = client.post('/projects/add', json=project_data)

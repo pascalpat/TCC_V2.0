@@ -48,8 +48,6 @@ def home():
     Render the main page with pre-filled project and date selection.
     
     """
-    if 'user_id' not in session:
-        return redirect(url_for('auth_bp.login'))  # Require login first
 
     project_id  = session.get('project_id')
     report_date = session.get('report_date')

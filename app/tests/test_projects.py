@@ -12,6 +12,9 @@ def sample_project(app):
         db.session.remove()
 
 def test_list_projects_returns_numbers(client):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     resp = client.get('/projects/list')
     assert resp.status_code == 200
     data = resp.get_json()
@@ -20,12 +23,18 @@ def test_list_projects_returns_numbers(client):
     assert data['project_numbers'][0]['project_number'] == 'P1'
 
 def test_set_project_stores_session(client):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     resp = client.post('/projects/set_project', json={'projectNumber': 'P1'})
     assert resp.status_code == 200
     with client.session_transaction() as sess:
         assert sess['project_number'] == 'P1'
 
 def test_set_project_invalid_id(client):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
     resp = client.post('/projects/set_project', json={'projectNumber': 'INVALID'})
     assert resp.status_code == 404
     data = resp.get_json()

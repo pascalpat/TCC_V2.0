@@ -42,6 +42,8 @@ from app.routes.media_routes               import media_bp
 from app.routes.documents_routes           import documents_bp
 from app.routes.admin_routes               import admin_bp
 
+from app.utils.auth_decorators import login_required, roles_required
+
 # ─── Application factory ────────────────────────────────────────────────────────
 # The application factory pattern is used to create the Flask app instance.
 # This allows for better organization and testing of the app.
@@ -75,6 +77,59 @@ def create_app(config_name: str = None):
     if config_class is TestingConfig:
         with app.app_context():
             db.create_all()
+
+    # Apply authentication decorators to blueprints
+    protected_bps = [
+        calendar_bp,
+        data_entry_bp,
+        entries_daily_notes_bp,
+        main_bp,
+        workers_bp,
+        equipment_bp,
+        activity_codes_bp,
+        cwp_bp,
+        purchase_orders_bp,
+        projects_bp,
+        update_progress_bp,
+        validation_bp,
+        payment_items_bp,
+        materials_bp,
+        pictures_bp,
+        subcontractors_bp,
+        work_orders_bp,
+        data_persistence_bp,
+        labor_equipment_bp,
+        media_bp,
+        documents_bp,
+        admin_bp,
+    ]
+    for bp in protected_bps:
+        if not getattr(bp, "_login_added", False):
+            bp.before_request(login_required)
+            bp._login_added = True
+
+    if not getattr(admin_bp, "_admin_roles_added", False):
+        admin_bp.before_request(roles_required('admin'))
+        admin_bp._admin_roles_added = True
+
+    master_bps = [
+        workers_bp,
+        equipment_bp,
+        activity_codes_bp,
+        cwp_bp,
+        purchase_orders_bp,
+        projects_bp,
+        payment_items_bp,
+        materials_bp,
+        subcontractors_bp,
+        work_orders_bp,
+        documents_bp,
+    ]
+    for bp in master_bps:
+        if not getattr(bp, "_master_roles_added", False):
+            bp.before_request(roles_required('admin', 'manager'))
+            bp._master_roles_added = True
+
 
 
     # Register blueprints
