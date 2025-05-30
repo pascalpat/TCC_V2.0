@@ -1,4 +1,7 @@
 # codex_test_loop.py
+# Helper script for running tests until they pass.
+# See README "Contributing" section for details.
+
 
 import subprocess
 import time

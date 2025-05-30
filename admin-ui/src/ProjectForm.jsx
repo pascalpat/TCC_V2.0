@@ -111,6 +111,10 @@ export default function ProjectForm() {
     <form onSubmit={handleSubmit}>
       <div className="form-box">
         <h2>Add Project</h2>
+        <div className="form-header">
+          <h2>Add Project</h2>
+          <button type="submit" className="save-btn">Save Project</button>
+        </div>
 
         <section>
           <h3>Project information</h3>
@@ -224,7 +228,6 @@ export default function ProjectForm() {
           <input value={updatedBy} onChange={(e) => setUpdatedBy(e.target.value)} placeholder="Updated By" />
         </section>
 
-        <button type="submit">Save Project</button>
       </div>
     </form>
   );

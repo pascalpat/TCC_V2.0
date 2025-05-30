@@ -28,3 +28,14 @@ This creates the application with `create_app()` and serves it on `localhost:500
 ## Documentation
 
 Additional documentation can be found in the `docs/` directory, including API references and a project tree overview. Architecture notes are in `readme_files/TCC_V2.0_Architecture_Documentation.docx`.
+
+
+## Contributing
+
+Before committing any code changes, run the test suite:
+
+```bash
+pytest
+```
+
+You can also use the helper script `codex_test_loop.py` to repeatedly run the tests until they pass.

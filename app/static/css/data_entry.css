@@ -53,6 +53,27 @@
     margin-bottom: 15px;
   }
   
+
+  /* Sticky header container for form titles */
+  .form-box .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .form-box .form-header h2 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+  }
+
   .form-box label {
     font-size: 16px;
     font-weight: bold;

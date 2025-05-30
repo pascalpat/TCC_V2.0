@@ -36,7 +36,10 @@
   <div id="LaborEquipTab" class="tabcontent">
     <div class="form-table-container">
       <form id="WorkersForm" class="form-box">
-        <h2>Ajouter un Employé ou Équipement</h2>
+        <div class="form-header">
+          <h2>Ajouter un Employé ou Équipement</h2>
+          <button type="button" id="confirmEntriesBtn" class="btn btn-success">Confirmer les entrées</button>
+        </div>
 
         <label for="workerName">Sélectionner Employé / Équipement:</label>
         <select id="workerName">
@@ -82,7 +85,6 @@
 
         <div class="button-container">
           <button type="submit" id="addEntryBtn" class="btn btn-primary">Ajouter Entrée</button>
-          <button type="button" id="confirmEntriesBtn" class="btn btn-success">Confirmer les entrées</button>
         </div>
       </form>
 
@@ -110,7 +112,10 @@
   <div id="MaterialsTab" class="tabcontent">
     <div class="form-table-container">
       <form id="MaterialsForm" class="form-box">
-        <h2>Ajouter des Matériaux</h2>
+        <div class="form-header">
+          <h2>Ajouter des Matériaux</h2>
+          <button type="button" id="confirmMaterialsBtn" class="btn btn-success">Confirmer les matériaux</button>
+        </div>
 
         <label for="materialName">Nom du Matériel:</label>
         <input type="text" id="materialName" class="form-control" required>
@@ -141,7 +146,6 @@
         
         <div class="button-container">
           <button type="button" id="addMaterialBtn" class="btn btn-primary">Ajouter Matériaux</button>
-          <button type="button" id="confirmMaterialsBtn" class="btn btn-success">Confirmer les matériaux</button>
         </div>
       </form>
 
@@ -170,7 +174,10 @@
 <div id="SubcontractorsTab" class="tabcontent">
   <div class="form-table-container">
     <form id="SubcontractorsForm" class="form-box">
-      <h2>Ajouter un Sous‑traitant</h2>
+      <div class="form-header">
+        <h2>Ajouter un Sous‑traitant</h2>
+        <button type="button" id="confirmSubcontractorsBtn" class="btn btn-success">Confirmer</button>
+      </div>
 
       <label for="subcontractorName">Nom de la compagnie:</label>
       <input type="text" id="subcontractorName" class="form-control" required>
@@ -189,9 +196,6 @@
       <div class="button-container">
         <button type="button" id="addSubcontractorBtn" class="btn btn-primary">
           Ajouter
-        </button>
-        <button type="button" id="confirmSubcontractorsBtn" class="btn btn-success">
-          Confirmer
         </button>
       </div>
     </form>
@@ -225,7 +229,10 @@
   <div id="NotesTab" class="tabcontent">
     <div class="form-table-container">
       <form id="DailyNotesForm" class="form-box">
-        <h2>Ajouter une Note</h2>
+        <div class="form-header">
+          <h2>Ajouter une Note</h2>
+          <button type="button" id="confirmNotesBtn" class="btn btn-success">Confirmer les notes</button>
+        </div>
 
         <label for="noteDatetime">Date/Heure:</label>
         <!--<input type="datetime-local" id="noteDatetime" class="form-control" value="{{ current_datetime }}">-->
@@ -278,7 +285,6 @@
 
         <div class="button-container">
           <button type="button" id="addNoteBtn" class="btn btn-primary">Ajouter Note</button>
-          <button type="button" id="confirmNotesBtn" class="btn btn-success">Confirmer les notes</button>
           <button type="button" id="dictateNoteBtn" class="btn btn-secondary" onclick="startDictation('noteContent')">Dicter</button>
         </div>
       </form>
