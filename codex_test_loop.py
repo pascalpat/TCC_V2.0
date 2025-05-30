@@ -7,6 +7,12 @@ import subprocess
 import time
 import os
 
+def install_requirements():
+    """Install required packages before running tests."""
+    print("Installing dependencies...")
+    subprocess.run(["pip", "install", "-r", "requirements.txt"], check=True)
+
+
 def run_tests():
     print("Running tests...")
     result = subprocess.run(["pytest"], capture_output=True, text=True)
@@ -20,6 +26,7 @@ def stage_commit_push():
     subprocess.run(["git", "push", "origin", "main"], check=True)
 
 def loop_test_until_pass():
+    install_requirements()
     for i in range(10):
         print(f"\n⏱️ Iteration {i + 1}...")
         if run_tests():

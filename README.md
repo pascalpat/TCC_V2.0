@@ -39,3 +39,15 @@ pytest
 ```
 
 You can also use the helper script `codex_test_loop.py` to repeatedly run the tests until they pass.
+
+## Testing
+
+Before running the test suite, ensure all dependencies are installed:
+
+```bash
+pip install -r requirements.txt
+pytest
+```
+
+The `codex_test_loop.py` script performs the same installation step automatically before running tests in a loop.
+
