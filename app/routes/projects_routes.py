@@ -4,7 +4,8 @@ import pandas as pd
 from app.models.core_models import Project  # Adjust the import path as necessary
 from app import db  # Import the db object
 from datetime import datetime
-
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 
 # Define a new blueprint for projects
 projects_bp = Blueprint('projects_bp', __name__, url_prefix='/projects')
@@ -53,6 +54,11 @@ def add_project():
     if missing:
         return jsonify({'error': f"Missing required fields: {', '.join(missing)}"}), 400
 
+    # Check for duplicate project by number or name before creating
+    existing = Project.query.filter_by(project_number=data['project_number']).first()
+    if existing:
+        return jsonify({'error': f"Project number '{data['project_number']}' already exists"}), 400
+
     def parse_float(value):
         if value in (None, ""):
             return None
@@ -61,10 +67,47 @@ def add_project():
         except (TypeError, ValueError):
             raise ValueError("Invalid numeric value")
 
+    def parse_int(value):
+        if value in (None, ""):
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            raise ValueError("Invalid integer value")
+
+    def parse_bool(value):
+        if value in (None, ""):
+            return None
+        if isinstance(value, bool):
+            return value
+        str_val = str(value).strip().lower()
+        if str_val in {"true", "1", "yes"}:
+            return True
+        if str_val in {"false", "0", "no"}:
+            return False
+        raise ValueError("Invalid boolean value")
+
     try:
         latitude = parse_float(data.get('latitude'))
         longitude = parse_float(data.get('longitude'))
         Project.validate_coordinates(latitude, longitude)
+
+        budget = parse_float(data.get('budget'))
+        original_budget = parse_float(data.get('original_budget'))
+        revised_budget = parse_float(data.get('revised_budget'))
+        contingency_fund = parse_float(data.get('contingency_fund'))
+
+        integration_status = parse_bool(data.get('integration_status')) if data.get('integration_status') not in (None, '') else False
+
+        local_hires = parse_int(data.get('local_hires'))
+        previous_project_id = parse_int(data.get('previous_project_id'))
+        benchmark_cost_per_unit = parse_float(data.get('benchmark_cost_per_unit'))
+        critical_path_duration = parse_int(data.get('critical_path_duration'))
+        safety_incidents = parse_int(data.get('safety_incidents'))
+
+
+
+
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
 
@@ -80,10 +123,10 @@ def add_project():
         client_name=data.get('client_name'),
         project_manager=data.get('project_manager'),
         address=data.get('address'),
-        budget=data.get('budget'),
-        original_budget=data.get('original_budget'),
-        revised_budget=data.get('revised_budget'),
-        contingency_fund=data.get('contingency_fund'),
+        budget=budget,
+        original_budget=original_budget,
+        revised_budget=revised_budget,
+        contingency_fund=contingency_fund,
         risk_level=data.get('risk_level'),
         risk_notes=data.get('risk_notes'),
         map_url=data.get('map_url'),
@@ -98,24 +141,29 @@ def add_project():
         sustainability_rating=data.get('sustainability_rating'),
         sustainability_goals=data.get('sustainability_goals'),
         collaboration_url=data.get('collaboration_url'),
-        integration_status=data.get('integration_status', False),
+        integration_status=integration_status,
         audit_due_date=parse_date(data.get('audit_due_date')),
         compliance_status=data.get('compliance_status'),
-        local_hires=data.get('local_hires'),
+        local_hires=local_hires,
         community_engagement_notes=data.get('community_engagement_notes'),
-        previous_project_id=data.get('previous_project_id'),
-        benchmark_cost_per_unit=data.get('benchmark_cost_per_unit'),
+        previous_project_id=previous_project_id,
+        benchmark_cost_per_unit=benchmark_cost_per_unit,
         tags=data.get('tags'),
-        critical_path_duration=data.get('critical_path_duration'),
+        critical_path_duration=critical_path_duration,
         key_milestones=data.get('key_milestones'),
-        safety_incidents=data.get('safety_incidents'),
+        safety_incidents=safety_incidents,
         incident_notes=data.get('incident_notes'),
         bim_file_url=data.get('bim_file_url'),
         bim_model_id=data.get('bim_model_id'),
         updated_by=data.get('updated_by')
     )
     db.session.add(project)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Project number or name already exists'}), 400
+
     return jsonify({'message': 'Project added successfully', 'id': project.id}), 201
 
 @projects_bp.route("/entry", methods=["GET"])
