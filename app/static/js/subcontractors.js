@@ -49,10 +49,10 @@ export async function initSubcontractorsTab() {
         confirmBtn.removeEventListener('click', confirmSubLines);
         confirmBtn.addEventListener('click', confirmSubLines);
     }
-    const projectId  = document.getElementById('projectNumber').value;
+    const projectNumber = document.getElementById('projectNumber').value;
     const reportDate = document.getElementById('dateSelector').value;
-    if (projectId && reportDate) {
-        loadPendingSubs(projectId, reportDate);  // GET /subcontractors/by-project-date
+    if (projectNumber && reportDate) {
+        loadPendingSubs(projectNumber, reportDate);  // GET /subcontractors/by-project-date
     }
 }
 
@@ -127,7 +127,7 @@ async function confirmSubLines(e) {
         return alert('Aucun sous-traitant à confirmer.');
     }
 
-    const projectId  = document.getElementById('projectNumber').value;
+    const projectNumber  = document.getElementById('projectNumber').value;
     const reportDate = document.getElementById('dateSelector').value;
 
     const usage = stagedSubs.map(entry => ({
@@ -143,7 +143,7 @@ async function confirmSubLines(e) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                project_id: projectId,
+                project_number: projectNumber,
                 date: reportDate,
                 usage
             })
@@ -154,18 +154,17 @@ async function confirmSubLines(e) {
         alert(`Sous-traitants confirmés (${data.records.length} lignes).`);
         stagedSubs = [];
         renderPreviewTable();
-        await loadPendingSubs(projectId, reportDate);
+        await loadPendingSubs(projectNumber, reportDate);
     } catch (err) {
         console.error('Erreur confirmation sous-traitants:', err);
         alert('Erreur : ' + err.message);
     }
 }
 
-async function loadPendingSubs(projectId, reportDate, status = 'pending') {
+async function loadPendingSubs(projectNumber, reportDate, status = 'pending') {
     try {
         const resp = await fetch(
-            `/subcontractors/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}&status=${encodeURIComponent(status)}`
-            
+            `/subcontractors/by-project-date?project_number=${encodeURIComponent(projectNumber)}&date=${encodeURIComponent(reportDate)}&status=${encodeURIComponent(status)}`
         );
 
         if (!resp.ok) throw new Error(await resp.text());

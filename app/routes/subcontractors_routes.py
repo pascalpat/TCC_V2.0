@@ -15,7 +15,7 @@ def list_subcontractors():
     Fetch the list of subcontractors from the database based on the active project.
     """
     try:
-        project_number = session.get('project_id')  # Stored project number
+        project_number = session.get('project_number') or session.get('project_id')
         if not project_number:
             return jsonify({"error": "No active project selected"}), 400
 
@@ -36,7 +36,7 @@ def add_subcontractor():
     Add a new subcontractor entry to the database.
     """
     try:
-        project_number = session.get('project_id')  # Stored project number
+        project_number = session.get('project_number') or session.get('project_id')
         if not project_number:   
             return jsonify({"error": "No active project selected"}), 400
 
@@ -115,11 +115,11 @@ def update_subcontractor(subcontractor_id):
 def confirm_entries():
     """
     Create new SubcontractorEntry rows for the selected project/date.
-    Payload: { project_id, date, usage: [ {...} ] }
+    Payload: { project_number, date, usage: [ {...} ] }
     """
     data = request.get_json() or {}
     usage = data.get('usage')
-    project_number = data.get('project_id')
+    project_number = data.get('project_number')
     date_str = data.get('date')
     # validate project_number, date_str, and each usage line...
     created = []
@@ -172,7 +172,7 @@ def confirm_entries():
 @subcontractors_bp.route('/by-project-date', methods=['GET'])
 def get_pending_entries():
     """Return subcontractor entries for project/date, optionally filtered by status."""
-    project_number = request.args.get('project_id')
+    project_number = request.args.get('project_number')
     date_str = request.args.get('date')
     status = request.args.get('status')
     if not project_number or not date_str:

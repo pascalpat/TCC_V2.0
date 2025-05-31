@@ -113,6 +113,28 @@ This document catalogs all of the key identifiers, variables, DOM element IDs, J
 }
 ```
 
+### Subcontractors
+
+| Method | URI | Description | Payload Keys |
+| ------ | --- | ----------- | ------------ |
+| POST   | `/subcontractors/confirm-entries` | Create subcontractor entries | `project_number`, `date`, `usage` (array of entry objects) |
+| GET    | `/subcontractors/by-project-date` | List pending subcontractor entries | `project_number` (query), `date`, `status` (query, optional) |
+| PUT    | `/subcontractors/update-entry/<int:entry_id>` | Update a pending subcontractor entry | `{ hours: float, activity_code_id: int }` |
+| DELETE | `/subcontractors/delete-entry/<int:entry_id>` | Delete a pending subcontractor entry | n/a |
+
+#### Entry Object for subcontractor POST
+
+```jsonc
+{
+  "subcontractor_id": int|null,
+  "manual_name":      string|null,
+  "num_employees":    int,
+  "hours":            number,
+  "activity_code_id": int
+}
+```
+
+
 ### Labor & Equipment
 
 | Method | URI                                                   | Description                              | Payload Keys                                                                             |
