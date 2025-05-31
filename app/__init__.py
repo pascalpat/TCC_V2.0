@@ -128,7 +128,7 @@ def create_app(config_name: str = None):
     ]
     for bp in master_bps:
         if not getattr(bp, "_master_roles_added", False):
-            bp.before_request(roles_required('admin', 'manager'))
+            bp.before_request(roles_required('admin', 'manager', 'superintendent'))
             bp._master_roles_added = True
 
 

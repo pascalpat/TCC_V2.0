@@ -41,7 +41,7 @@ class SubcontractorEntry(db.Model):
         return {
             'id': self.id,
             'date': self.date.isoformat() if self.date else None,
-            'subcontractor_id': self.subcontractor_id,
+            'subcontractor_name': self.subcontractor.name if self.subcontractor else None,
             'project_id': self.project_id,
             'description': self.description,
             'equipment_hours': self.equipment_hours,
@@ -49,6 +49,8 @@ class SubcontractorEntry(db.Model):
             'labor_hours': self.labor_hours,
             'total_cost': self.total_cost,
             'progress_percentage': self.progress_percentage,
+            'activity_code_id': self.activity_code_id,
+            'activity_code': self.activity_code.code if self.activity_code else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
