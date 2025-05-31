@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, current_app
 import json
 import os
 import glob
-from pathlib import Path
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
 

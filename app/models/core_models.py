@@ -73,7 +73,7 @@ class Project(db.Model):
     ################################# Relationships ##################################
     tasks = db.relationship('ProjectTask', back_populates='project', lazy=True)
     payment_items = db.relationship('PaymentItem', back_populates='project', lazy=True)
-    associated_worker_entries = db.relationship('WorkerEntry', back_populates='related_project', lazy=True) #for future use to mange managers between projects
+    associated_worker_entries = db.relationship('WorkerEntry', back_populates='related_project', lazy=True, overlaps='worker_entries,project')  # for future use to manage managers between projects
     #daily_summaries = db.relationship('DailySummary', back_populates='related_project', lazy=True)  # One-to-Many: Project to DailySummary
     daily_statuses = db.relationship('DailyReportStatus', back_populates='project', lazy=True)
     work_orders = db.relationship('WorkOrder', back_populates='project', lazy=True)

@@ -31,8 +31,7 @@ class WorkerEntry(db.Model):
     project = db.relationship('Project', back_populates='worker_entries')  # Relates to Project model
     worker = db.relationship('Worker', back_populates='worker_entries')  # Relates to Worker model
     activity = db.relationship('ActivityCode', back_populates='worker_entries')  # Relates to ActivityCode model
-    related_project = db.relationship("Project", back_populates="associated_worker_entries")  # match the other side’s property name
-    
+    related_project = db.relationship("Project", back_populates="associated_worker_entries", overlaps="project,worker_entries")  # match the other side’s property name
     
     def __repr__(self):
         return f"<WorkerEntry id={self.id}, worker_id={self.worker_id}, date={self.date_of_report}>"

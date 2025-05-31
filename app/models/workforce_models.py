@@ -42,9 +42,6 @@ class Worker(db.Model):
     login_attempts = db.Column(db.Integer, default=0)  # Count of failed login attempts
 
     ################################## Compensation and Benefits ##################################
-    metier = db.Column(db.String(100), nullable=True)  # Occupation or trade
-    convention = db.Column(db.String(100), nullable=True)  # Collective agreement
-    taux_horaire = db.Column(db.Float, nullable=True)  # Hourly rate
     taux_over = db.Column(db.Float, nullable=True)  # Overtime rate
     Gite_couvert = db.Column(db.Float, nullable=True)  # Room and board daily cost
     transp_1 = db.Column(db.Float, nullable=True, default=0.0)  # Transportation type 1 daily cost

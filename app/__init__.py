@@ -37,9 +37,6 @@ from app.routes.pictures_routes            import pictures_bp
 from app.routes.subcontractors_routes      import subcontractors_bp
 from app.routes.work_orders_routes         import work_orders_bp
 from app.routes.data_persistence           import data_persistence_bp
-from app.routes.labor_equipment_routes     import labor_equipment_bp
-from app.routes.media_routes               import media_bp
-from app.routes.documents_routes           import documents_bp
 from app.routes.admin_routes               import admin_bp
 from app.routes.labor_equipment_routes     import labor_equipment_bp
 from app.routes.media_routes               import media_bp
