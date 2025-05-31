@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './ProjectForm.css';
+import './admin.css';
 
 export default function ProjectForm() {
   const [name, setName] = useState('');

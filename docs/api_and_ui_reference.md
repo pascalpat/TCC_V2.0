@@ -297,6 +297,20 @@ in `jpg`, `jpeg`, `png` or `gif`.
 #dictateNoteBtn
 #dailyNotesContainer
 ```
+### Admin Section
+
+```
+#adminMenu
+#menu-master
+#menu-documents
+#menu-users
+#menu-importExport
+#workerForm
+#uploadMedia
+#userAccountForm
+#databaseBackup
+```
+
 ---
 
 ## 4. JSON Payload Field Names

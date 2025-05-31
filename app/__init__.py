@@ -41,7 +41,6 @@ from app.routes.admin_routes               import admin_bp
 from app.routes.labor_equipment_routes     import labor_equipment_bp
 from app.routes.media_routes               import media_bp
 from app.routes.documents_routes           import documents_bp
-from app.routes.admin_routes               import admin_bp
 from app.utils.auth_decorators import login_required, roles_required
 
 

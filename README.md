@@ -17,6 +17,16 @@ This repository contains a modular Flask and JavaScript application for tracking
    When `FLASK_ENV=development`, variables from a local `.env` file are loaded automatically by `run.py`.
 3. Alembic migrations use `render_as_batch=True` when the database is SQLite. This is configured automatically in `migrations/env.py`.
 
+4. Initialize the database:
+   ```bash
+   flask db upgrade
+   ```
+5. Create an initial user:
+   ```bash
+   python manage.py create-user
+   ```
+   The command will prompt for an email, name, role, and password. The password is stored using a secure hash.
+
 ## Running the Application
 
 Use the main entry point `run.py` to start the Flask development server:

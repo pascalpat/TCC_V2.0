@@ -110,7 +110,7 @@ class ActivityCode(db.Model):
     # Ties to PaymentItem (one FK: activity_code_id)
     payment_items = db.relationship('PaymentItem', back_populates='activity_code', lazy=True)
     # Worker / Equipment / Material references
-    entries = db.relationship('WorkerEntry', back_populates='activity')
+    # entries = db.relationship('WorkerEntry', back_populates='activity')
     equipment_entries = db.relationship('EquipmentEntry', back_populates='activity')
     material_entries = db.relationship('MaterialEntry', back_populates='activity_code')
     # Subcontractor references
