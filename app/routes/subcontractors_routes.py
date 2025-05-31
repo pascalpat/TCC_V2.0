@@ -122,7 +122,6 @@ def confirm_entries():
     project_number = data.get('project_id')
     date_str = data.get('date')
     # validate project_number, date_str, and each usage line...
-    # add SubcontractorEntry(status='pending') rows
     created = []
     if usage and project_number and date_str:
         proj = Project.query.filter_by(project_number=project_number).first()
@@ -135,13 +134,32 @@ def confirm_entries():
             return jsonify({"error": "Invalid date format"}), 400
         
         for entry in usage:
+            sub_id    = entry.get('subcontractor_id')
+            manual_nm = entry.get('manual_name')
+            emp       = entry.get('num_employees', 0)
+            hours     = entry.get('hours', 0)
+            act_id    = entry.get('activity_code_id')
+
+            if sub_id is None and not manual_nm:
+                return jsonify(error="Each entry requires subcontractor_id or manual_name"), 400
+            if hours is None or act_id is None:
+                return jsonify(error="Missing hours or activity_code_id"), 400
+
+            if sub_id is None:
+                existing = Subcontractor.query.filter_by(project_id=proj.id, name=manual_nm).first()
+                if not existing:
+                    existing = Subcontractor(project_id=proj.id, name=manual_nm)
+                    db.session.add(existing)
+                    db.session.flush()
+                sub_id = existing.id
+
             new_entry = SubcontractorEntry(
                 project_id=proj.id,
                 date=date_obj,
-                subcontractor_id=entry.get('subcontractor_id'),
-                num_employees=entry.get('num_employees', 0),
-                labor_hours=entry.get('hours', 0),
-                activity_code_id=entry.get('activity_code_id'),
+                subcontractor_id=sub_id,
+                num_employees=int(emp or 0),
+                labor_hours=float(hours),
+                activity_code_id=int(act_id) if act_id else None,
                 status='pending'
             )
             db.session.add(new_entry)
@@ -174,7 +192,7 @@ def get_pending_entries():
         project_id=proj.id,
         date=date_obj
     )
-    
+
     if status:
         query = query.filter_by(status=status)
     entries = query.all()

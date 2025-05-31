@@ -56,3 +56,36 @@ def test_get_entries_all_and_filtered(client, app):
     entries = resp.get_json()['entries']
     assert len(entries) == 1
     assert entries[0]['id'] == pending.id
+
+def test_confirm_entries_with_manual_name(client, app):
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['role'] = 'manager'
+    project, activity, _sub = setup_project_and_sub(app)
+    payload = {
+        "project_id": project.project_number,
+        "date": "2025-03-04",
+        "usage": [
+            {
+                "subcontractor_id": None,
+                "manual_name": "ManualSub",
+                "num_employees": 2,
+                "hours": 5,
+                "activity_code_id": activity.id,
+            }
+        ]
+    }
+    resp = client.post('/subcontractors/confirm-entries', json=payload)
+    assert resp.status_code == 200
+    ids = resp.get_json()['records']
+    assert len(ids) == 1
+
+    resp = client.get('/subcontractors/by-project-date', query_string={
+        'project_id': project.project_number,
+        'date': '2025-03-04'
+    })
+    assert resp.status_code == 200
+    entries = resp.get_json()['entries']
+    assert len(entries) == 1
+    assert entries[0]['subcontractor_name'] == 'ManualSub'
+    

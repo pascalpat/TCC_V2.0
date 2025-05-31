@@ -69,11 +69,7 @@ function addSubLine(e) {
     const hrsTxt = hrsInput.value.trim();
     const actId  = actSelect.value;
 
-    const subId = subcontractorMap.get(name);
-    if (!subId) {
-        return alert('Sous-traitant introuvable.');
-    }
-
+    const subId = subcontractorMap.get(name) || null;
 
     if (!name || !empTxt || !hrsTxt || !actId) {
         return alert("Veuillez remplir tous les champs (y compris le code activité).");
@@ -81,7 +77,8 @@ function addSubLine(e) {
 
     stagedSubs.push({
         subcontractor_id: subId,
-        num_employees:    parseInt(empTxt, 10)
+        manual_name:      subId ? null : name,
+        num_employees:    parseInt(empTxt, 10),
         hours:            parseFloat(hrsTxt),
         activity_code_id: parseInt(actId, 10),
         _display: {
@@ -135,6 +132,7 @@ async function confirmSubLines(e) {
 
     const usage = stagedSubs.map(entry => ({
         subcontractor_id: entry.subcontractor_id,
+        manual_name:      entry.manual_name,
         num_employees:    entry.num_employees,
         hours:            entry.hours,
         activity_code_id: entry.activity_code_id
@@ -169,7 +167,7 @@ async function loadPendingSubs(projectId, reportDate, status = 'pending') {
             `/subcontractors/by-project-date?project_id=${encodeURIComponent(projectId)}&date=${encodeURIComponent(reportDate)}&status=${encodeURIComponent(status)}`
             
         );
-        
+
         if (!resp.ok) throw new Error(await resp.text());
         const { entries } = await resp.json();
         renderConfirmedTable(entries);
