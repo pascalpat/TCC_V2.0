@@ -2,6 +2,7 @@
 import { populateDropdowns } from './populate_drop_downs.js';
 
 let stagedSubs = [];
+export const subcontractorMap = new Map();
 
 // Fetch subcontractor names for datalist
 export async function loadSubcontractorList() {
@@ -18,7 +19,9 @@ export async function loadSubcontractorList() {
         }
 
         datalist.innerHTML = '';
+        subcontractorMap.clear();
         (subcontractors || []).forEach(sub => {
+            subcontractorMap.set(sub.name, sub.id);
             const opt = document.createElement('option');
             opt.value = sub.name;
             datalist.appendChild(opt);
@@ -66,14 +69,19 @@ function addSubLine(e) {
     const hrsTxt = hrsInput.value.trim();
     const actId  = actSelect.value;
 
+    const subId = subcontractorMap.get(name);
+    if (!subId) {
+        return alert('Sous-traitant introuvable.');
+    }
+
+
     if (!name || !empTxt || !hrsTxt || !actId) {
         return alert("Veuillez remplir tous les champs (y compris le code activité).");
     }
 
     stagedSubs.push({
-        companyName:      name,
-        numEmployees:     parseInt(empTxt, 10),
-        totalHours:       parseFloat(hrsTxt),
+        subcontractor_id: subId,
+        hours:            parseFloat(hrsTxt),
         activity_code_id: parseInt(actId, 10),
         _display: {
             name,
@@ -125,9 +133,8 @@ async function confirmSubLines(e) {
     const reportDate = document.getElementById('dateSelector').value;
 
     const usage = stagedSubs.map(entry => ({
-        companyName:      entry.companyName,
-        numEmployees:     entry.numEmployees,
-        totalHours:       entry.totalHours,
+        subcontractor_id: entry.subcontractor_id,
+        hours:            entry.hours,
         activity_code_id: entry.activity_code_id
     }));
 
@@ -176,10 +183,10 @@ function renderConfirmedTable(entries = []) {
         const tr = document.createElement('tr');
         tr.classList.add('confirmed-row');
         tr.innerHTML = `
-            <td data-entry-id="${e.id}" data-subcontractor-id="${e.subcontractor_id}">${e.subcontractor_id}</td>
+            <td data-entry-id="${e.id}" data-subcontractor-id="${e.subcontractor_id}">${e.subcontractor_name}</td>
             <td>${e.num_employees || ''}</td>
             <td>${e.labor_hours || ''}</td>
-            <td data-activity-id="${e.activity_code_id || ''}">${e.activity_code_id || ''}</td>
+            <td data-activity-id="${e.activity_code_id || ''}">${e.activity_code}</td>
             <td class="actions"></td>
         `;
         tbody.appendChild(tr);

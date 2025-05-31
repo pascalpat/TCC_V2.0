@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ProjectForm from './ProjectForm';
+import ProjectForm from './pages/ProjectForm';
 import AdminMenu from './AdminMenu';
 import WorkerForm from './WorkerForm';
 import UploadMedia from './UploadMedia';

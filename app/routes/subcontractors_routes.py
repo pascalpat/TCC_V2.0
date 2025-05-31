@@ -172,7 +172,19 @@ def get_pending_entries():
         date=date_obj,
         status='pending'
     ).all()
-    return jsonify(entries=[e.to_dict() for e in entries]), 200
+
+    result = []
+    for e in entries:
+        result.append({
+            "id": e.id,
+            "subcontractor_id": e.subcontractor_id,
+            "subcontractor_name": e.subcontractor.name if e.subcontractor else None,
+            "labor_hours": e.labor_hours,
+            "activity_code_id": e.activity_code_id,
+            "activity_code": e.activity_code.code if e.activity_code else None,
+        })
+
+    return jsonify(entries=result), 200
 
 @subcontractors_bp.route('/delete-entry/<int:entry_id>', methods=['DELETE'])
 def delete_entry(entry_id):
