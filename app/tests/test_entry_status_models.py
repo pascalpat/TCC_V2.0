@@ -58,9 +58,9 @@ def test_crud_entry_progress_models(app, setup_entities):
         m = MaterialEntry(project_id=project.id, date_of_report=date)
         db.session.add(m)
         db.session.commit()
-        m.status = 'in_progress'
+        m.status = 'committed'
         db.session.commit()
-        assert MaterialEntry.query.get(m.id).status == 'in_progress'
+        assert MaterialEntry.query.get(m.id).status == 'committed'
         db.session.delete(m)
         db.session.commit()
         assert MaterialEntry.query.get(m.id) is None
@@ -69,9 +69,9 @@ def test_crud_entry_progress_models(app, setup_entities):
         e = EquipmentEntry(project_id=project.id, date_of_report=date)
         db.session.add(e)
         db.session.commit()
-        e.status = 'completed'
+        e.status = 'committed'
         db.session.commit()
-        assert EquipmentEntry.query.get(e.id).status == 'completed'
+        assert EquipmentEntry.query.get(e.id).status == 'committed'
         db.session.delete(e)
         db.session.commit()
         assert EquipmentEntry.query.get(e.id) is None
@@ -80,9 +80,9 @@ def test_crud_entry_progress_models(app, setup_entities):
         w = WorkerEntry(project_id=project.id, date_of_report=date)
         db.session.add(w)
         db.session.commit()
-        w.status = 'completed'
+        w.status = 'committed'
         db.session.commit()
-        assert WorkerEntry.query.get(w.id).status == 'completed'
+        assert WorkerEntry.query.get(w.id).status == 'committed'
         db.session.delete(w)
         db.session.commit()
         assert WorkerEntry.query.get(w.id) is None
@@ -91,9 +91,9 @@ def test_crud_entry_progress_models(app, setup_entities):
         s = SubcontractorEntry(project_id=project.id, subcontractor_id=subcontractor.id)
         db.session.add(s)
         db.session.commit()
-        s.status = 'in_progress'
+        s.status = 'rejected'
         db.session.commit()
-        assert SubcontractorEntry.query.get(s.id).status == 'in_progress'
+        assert SubcontractorEntry.query.get(s.id).status == 'rejected'
         db.session.delete(s)
         db.session.commit()
         assert SubcontractorEntry.query.get(s.id) is None
@@ -102,9 +102,9 @@ def test_crud_entry_progress_models(app, setup_entities):
         woe = WorkOrderEntry(work_order_id=work_order.id, activity_code_id=activity.id)
         db.session.add(woe)
         db.session.commit()
-        woe.status = 'completed'
+        woe.status = 'committed'
         db.session.commit()
-        assert WorkOrderEntry.query.get(woe.id).status == 'completed'
+        assert WorkOrderEntry.query.get(woe.id).status == 'committed'
         db.session.delete(woe)
         db.session.commit()
         assert WorkOrderEntry.query.get(woe.id) is None

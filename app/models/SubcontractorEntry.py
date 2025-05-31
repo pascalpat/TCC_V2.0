@@ -14,6 +14,8 @@ class SubcontractorEntry(db.Model):
     work_order_id    = db.Column(db.Integer, db.ForeignKey('work_orders.id'),    nullable=True)
     activity_code_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_progress_status'), default='pending', nullable=True)
+    status = db.Column(db.Enum('pending', 'committed', 'rejected', name='entry_progress_status'), default='pending', nullable=True)
+    
 
     ################################## Additional Fields #########################################
     date               = db.Column(db.Date, nullable=True)

@@ -34,7 +34,7 @@ def test_get_entries_all_and_filtered(client, app):
             subcontractor_id=sub.id,
             activity_code_id=activity.id,
             date=report_date,
-            status='completed'
+            status='committed'
         )
         db.session.add_all([pending, completed])
         db.session.commit()

@@ -11,8 +11,8 @@ class EquipmentEntry(db.Model):
     equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=True)
     equipment_name = db.Column(db.Text, nullable=True)  # Equipment name (optional, can be derived from equipment_id)
     hours_used = db.Column(db.Float, nullable=False, default=0.0)
-    status = db.Column(db.Enum('pending', 'in_progress', 'completed', name='entry_progress_status'),default='pending',nullable=True)
-
+    status = db.Column(db.Enum('pending', 'committed', 'rejected', name='entry_progress_status'), default='pending', nullable=True)
+                       
     ############################## Additional Fields #########################
     activity_id = db.Column(db.Integer, db.ForeignKey('activity_codes.id'), nullable=True)
     cwp = db.Column(db.String(50), nullable=True)
