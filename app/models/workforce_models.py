@@ -76,3 +76,4 @@ class Worker(db.Model):
         if role_value not in VALID_ROLES:
             raise ValueError(f"Invalid role: {role_value}. Allowed roles: {VALID_ROLES}")
         return role_value
+    

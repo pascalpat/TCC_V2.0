@@ -1,0 +1,11 @@
+<nav class="menu">
+  <a href="{{ url_for('data_entry_bp.submit_data_entry') }}">Daily Reports</a>
+
+  {% if session.get('role') == 'admin' %}
+    <a href="{{ url_for('admin_bp.index') }}">Admin</a>
+  {% endif %}
+
+  {% if session.get('role') in ['manager', 'superintendent'] %}
+    <a href="{{ url_for('projects_bp.get_project_numbers') }}">Project Control</a>
+  {% endif %}
+</nav>

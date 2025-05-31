@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, current_app
 from werkzeug.security import check_password_hash
 from app.models.workforce_models import Worker
+from sqlalchemy.orm import load_only
 
 # Define the Blueprint with matching variable name and URL prefix
 # Blueprint variable name must match the import in app/__init__.py (auth_bp)
@@ -23,7 +24,9 @@ def login():
         if not email or not password:
             return render_template('login.html', error="Please provide an email and password.")
 
-        worker = Worker.query.filter_by(courriel=email).first()
+        worker = Worker.query.options(
+            load_only(Worker.id, Worker.name, Worker.password_hash, Worker.role)
+        ).filter_by(courriel=email).first()
 
         if worker and worker.password_hash and check_password_hash(worker.password_hash, password):
             session.clear()
