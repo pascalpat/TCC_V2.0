@@ -139,6 +139,7 @@ def confirm_entries():
                 project_id=proj.id,
                 date=date_obj,
                 subcontractor_id=entry.get('subcontractor_id'),
+                num_employees=entry.get('num_employees', 0),
                 labor_hours=entry.get('hours', 0),
                 activity_code_id=entry.get('activity_code_id'),
                 status='pending'
@@ -152,11 +153,13 @@ def confirm_entries():
 
 @subcontractors_bp.route('/by-project-date', methods=['GET'])
 def get_pending_entries():
-    """Return all pending subcontractor entries for project/date."""
+    """Return subcontractor entries for project/date, optionally filtered by status."""
     project_number = request.args.get('project_id')
     date_str = request.args.get('date')
+    status = request.args.get('status')
     if not project_number or not date_str:
         return jsonify({"error": "Missing required query parameters"}), 400
+
 
     proj = Project.query.filter_by(project_number=project_number).first()
     if not proj:
@@ -167,18 +170,21 @@ def get_pending_entries():
     except ValueError:
         return jsonify(error="Invalid date format, expected YYYY-MM-DD"), 400
     
-    entries = SubcontractorEntry.query.filter_by(
+    query = SubcontractorEntry.query.filter_by(
         project_id=proj.id,
-        date=date_obj,
-        status='pending'
-    ).all()
-
+        date=date_obj
+    )
+    
+    if status:
+        query = query.filter_by(status=status)
+    entries = query.all()
     result = []
     for e in entries:
         result.append({
             "id": e.id,
             "subcontractor_id": e.subcontractor_id,
             "subcontractor_name": e.subcontractor.name if e.subcontractor else None,
+            "num_employees": e.num_employees,
             "labor_hours": e.labor_hours,
             "activity_code_id": e.activity_code_id,
             "activity_code": e.activity_code.code if e.activity_code else None,
@@ -233,3 +239,4 @@ def update_entry(entry_id):
         current_app.logger.error(f"Error updating subcontractor entry: {e}", exc_info=True)
         db.session.rollback()
         return jsonify(error="Failed to update entry"), 500
+    

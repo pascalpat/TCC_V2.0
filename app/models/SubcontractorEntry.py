@@ -22,6 +22,7 @@ class SubcontractorEntry(db.Model):
     material_cost      = db.Column(db.Float, default=0.0)
     labor_hours        = db.Column(db.Float, default=0.0)
     total_cost         = db.Column(db.Float, default=0.0)
+    num_employees      = db.Column(db.Integer, default=0)
     progress_percentage = db.Column(db.Float, default=0.0)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -48,6 +49,7 @@ class SubcontractorEntry(db.Model):
             'material_cost': self.material_cost,
             'labor_hours': self.labor_hours,
             'total_cost': self.total_cost,
+            'num_employees': self.num_employees,
             'progress_percentage': self.progress_percentage,
             'activity_code_id': self.activity_code_id,
             'activity_code': self.activity_code.code if self.activity_code else None,
